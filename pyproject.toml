@@ -44,7 +44,9 @@ dev = [
     "pytest-cov>=5.0",
     "ruff>=0.6",
 ]
+
 notebooks = [
+    "ipykernel>=6.0",
     "jupyterlab>=4.0",
     "matplotlib>=3.8",
 ]
