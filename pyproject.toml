@@ -34,6 +34,9 @@ dependencies = [
     "numpy>=1.26",
     "pandas>=2.0",
     "scipy>=1.10",
+    "requests",
+    "pyarrow",
+    "openpyxl"
 ]
 
 [project.optional-dependencies]
