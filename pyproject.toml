@@ -36,7 +36,8 @@ dependencies = [
     "scipy>=1.10",
     "requests",
     "pyarrow",
-    "openpyxl"
+    "openpyxl",
+    "matplotlib"
 ]
 
 [project.optional-dependencies]

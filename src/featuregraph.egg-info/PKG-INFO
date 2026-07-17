@@ -23,6 +23,7 @@ Requires-Dist: scipy>=1.10
 Requires-Dist: requests
 Requires-Dist: pyarrow
 Requires-Dist: openpyxl
+Requires-Dist: matplotlib
 Provides-Extra: dev
 Requires-Dist: build>=1.2; extra == "dev"
 Requires-Dist: mypy>=1.10; extra == "dev"

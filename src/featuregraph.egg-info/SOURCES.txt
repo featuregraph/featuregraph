@@ -9,6 +9,9 @@ src/featuregraph.egg-info/requires.txt
 src/featuregraph.egg-info/top_level.txt
 src/featuregraph/data_formatting/__init__.py
 src/featuregraph/data_formatting/rename_map.py
+src/featuregraph/datasets/__init__.py
+src/featuregraph/datasets/_bidmc.py
+src/featuregraph/datasets/_eastman.py
 src/featuregraph/operators/__init__.py
 src/featuregraph/operators/events.py
 src/featuregraph/operators/measures.py
@@ -19,4 +22,5 @@ src/featuregraph/oscillation/waves.py
 src/featuregraph/preprocessing/smoothing.py
 src/featuregraph/utils/bidmc.py
 src/featuregraph/utils/eastman.py
+src/featuregraph/utils/plot.py
 tests/test.py

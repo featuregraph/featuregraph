@@ -4,6 +4,7 @@ scipy>=1.10
 requests
 pyarrow
 openpyxl
+matplotlib
 
 [dev]
 build>=1.2
