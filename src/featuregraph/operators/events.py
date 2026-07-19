@@ -20,6 +20,7 @@ def event_id(df, enter_col, group=None):
         return df[enter_col].cumsum()
     return df.groupby(group)[enter_col].cumsum()
 
+
 def event_index(df, event_col, group=None):
     if group is None:
         return pd.Series(np.where(df[event_col], df.index, np.nan)).ffill()

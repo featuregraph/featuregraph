@@ -1,5 +1,67 @@
 import numpy as np
 
+def add_accumulation_signal(
+    df,
+    signals,
+    thresholds,
+    group=None,
+):
+    df = df.copy()
+
+    for signal in signals:
+        threshold = (
+            thresholds.get(signal)
+            if isinstance(thresholds, dict)
+            else thresholds
+        )
+
+        threshold_col = f"{signal}_accumulation_threshold"
+        contribution_col = f"{signal}_accumulation_contribution"
+        accumulation_col = f"{signal}_accumulation"
+
+        if threshold == "group_min":
+            if group is None:
+                raise ValueError(
+                    "group is required when threshold='group_min'"
+                )
+
+            df[threshold_col] = (
+                df.groupby(group, sort=False)[signal]
+                  .transform("min")
+            )
+
+        elif threshold == "group_mean":
+            if group is None:
+                raise ValueError(
+                    "group is required when threshold='group_mean'"
+                )
+
+            df[threshold_col] = (
+                df.groupby(group, sort=False)[signal]
+                  .transform("mean")
+            )
+
+        elif isinstance(threshold, str):
+            df[threshold_col] = df[threshold]
+
+        else:
+            df[threshold_col] = threshold
+
+        df[contribution_col] = (
+            df[signal] - df[threshold_col]
+        )
+
+        if group is None:
+            df[accumulation_col] = (
+                df[contribution_col].cumsum()
+            )
+        else:
+            df[accumulation_col] = (
+                df.groupby(group, sort=False)[contribution_col]
+                  .cumsum()
+            )
+
+    return df
 
 def add_accumulation_id(df, signals):
     """
