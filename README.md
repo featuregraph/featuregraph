@@ -3,6 +3,8 @@
 FeatureGraph is a Python framework for constructing **behavioral
 objects** from observation sequences.
 
+Project status: FeatureGraph is an early-stage research prototype. Its API, object definitions, and output schemas may change before the first stable release.
+
 Rather than treating a time series as a sequence of independent
 measurements, FeatureGraph transforms observations into explicit
 behavioral objects with well-defined identities, temporal boundaries,
