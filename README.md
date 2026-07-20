@@ -116,22 +116,19 @@ behavior.summarize(...)
 
 Every behavioral object implements the same construction lifecycle.
 
-  -----------------------------------------------------------------------
-  Stage                             Purpose
-  --------------------------------- -------------------------------------
-  **Signal**                        Select or derive the represented
+  **Signal**        -                Select or derive the represented
                                     signal
 
-  **Primitives**                    Construct the primitive states,
+  **Primitives**     -               Construct the primitive states,
                                     events, or quantities
 
-  **Identity**                      Assign a unique identifier to each
+  **Identity**        -              Assign a unique identifier to each
                                     behavioral object
 
-  **Measurements**                  Compute object-relative properties
+  **Measurements**     -             Compute object-relative properties
 
-  **Summary**                       Produce one row per behavioral object
-  -----------------------------------------------------------------------
+  **Summary**           -            Produce one row per behavioral object
+
 
 This lifecycle is implemented by the `Behavior` base class and shared by
 every behavioral object in FeatureGraph.
