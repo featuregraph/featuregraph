@@ -3,7 +3,7 @@ from __future__ import annotations
 import pandas as pd
 
 from featuregraph.utils.bidmc import load_bidmc_subject
-from featuregraph.data_formatting.rename_map import bidmc_map
+from featuregraph.utils.rename_map import bidmc_map
 
 
 def bidmc(

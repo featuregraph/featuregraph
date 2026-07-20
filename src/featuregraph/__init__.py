@@ -2,12 +2,13 @@
 FeatureGraph public API.
 """
 
-from featuregraph.oscillation import oscillate
-from featuregraph import datasets
+from .behaviors import oscillation, accumulation
+from . import datasets
 
 __version__ = "0.1.0"
 
 __all__ = [
-    "oscillate",
+    "oscillation",
+    "accumulation",
     "datasets",
 ]
