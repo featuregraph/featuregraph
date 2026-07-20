@@ -1,187 +1,249 @@
 # FeatureGraph
 
-FeatureGraph is a Python framework for transforming observation sequences into explicit behavioral objects.
+FeatureGraph is a Python framework for constructing **behavioral
+objects** from observation sequences.
 
-Instead of treating a time series only as a sequence of individual measurements, FeatureGraph constructs higher-level objects—such as oscillations—with defined temporal boundaries, intrinsic measurements, and relationships to other objects.
+Rather than treating a time series as a sequence of independent
+measurements, FeatureGraph transforms observations into explicit
+behavioral objects with well-defined identities, temporal boundaries,
+intrinsic measurements, and relationships. These behavioral objects
+provide a structured representation of how a physical system evolves
+over time.
 
-The initial release focuses on oscillation construction.
+The first release includes two behavioral object types:
 
-```python
-import featuregraph as fg
+-   **Oscillations**, which represent cyclic behavior.
+-   **Accumulations**, which represent the accumulation of a quantity
+    over the lifetime of another behavioral object.
 
-oscillation_table = fg.oscillate(X)
+## Behavioral Object Construction
+
+FeatureGraph represents an observation sequence through a common
+construction process.
+
+``` text
+Observation sequence
+        ↓
+Represented signal
+        ↓
+Behavioral primitives
+        ↓
+Behavioral object identities
+        ↓
+Object-relative measurements
+        ↓
+Behavioral object summary
 ```
 
-The result is a table containing one row per oscillation and a standardized set of measurements such as start, peak, end, rise duration, fall duration, total duration, period, amplitude, and temporal symmetry.
-
-## Why FeatureGraph?
-
-Oscillatory information is present in a signal but is usually implicit. A downstream analysis must repeatedly identify wave boundaries, locate peaks and troughs, and derive measurements before it can reason about individual oscillations.
-
-FeatureGraph performs that construction once and exposes the result through a consistent object representation:
-
-```text
-observations
-    ↓
-primitive states
-    ↓
-transition events
-    ↓
-object identifiers
-    ↓
-behavioral objects
-    ↓
-object measurements
-```
-
-The same construction procedure is intended to operate across unrelated physical domains. Domain-specific differences appear in the values of the resulting measurements rather than in the definition of the object itself.
+Every behavioral object follows the same construction lifecycle while
+defining its own primitives, measurements, and object schema.
 
 ## Installation
 
-Clone the repository and install it in editable mode:
+Clone the repository and install the package in editable mode.
 
-```bash
+``` bash
 git clone https://github.com/featuregraph/featuregraph.git
 cd featuregraph
 python -m pip install -e .
 ```
 
-Install development dependencies with:
+Install development dependencies:
 
-```bash
+``` bash
 python -m pip install -e ".[dev]"
 ```
 
-For notebook and plotting dependencies:
+Install notebook dependencies:
 
-```bash
+``` bash
 python -m pip install -e ".[notebooks]"
 ```
 
-## Quick start
+## Quick Start
 
-### Construct oscillations from a pandas Series
+### Oscillation objects
 
-```python
+``` python
 import featuregraph as fg
 
-oscillation_table = fg.oscillate(df["respiration"])
-```
-
-### Construct oscillations from a DataFrame
-
-```python
-oscillation_table = fg.oscillate(
-    df,
-    signal="reactor_pressure",
+oscillation = fg.oscillation.Oscillation(
+    signals="reactor_temperature",
     group=["fault_number", "simulation_run"],
-    smooth=True,
+    smooth_signal=True,
+    smooth_window=20,
+)
+
+features = oscillation.fit_transform(data)
+
+objects = oscillation.summarize(
+    features,
+    signal="reactor_temperature",
 )
 ```
 
-The output schema is designed to remain stable across signals and domains:
+The feature table contains row-level behavioral information. The summary
+table contains one row per oscillation.
 
-```text
-oscillation_id
-start_index
-peak_index
-end_index
-rise_duration
-fall_duration
-duration
-period
-amplitude
-temporal_symmetry
-```
+### Accumulation objects
 
-## Transformer interface
+Accumulation objects are constructed from previously identified
+behavioral objects.
 
-FeatureGraph also provides a configurable transformer-style interface for reusable workflows:
-
-```python
-from featuregraph.oscillation import OscillationTransformer
-
-transformer = OscillationTransformer(
-    smooth=True,
-    include_incomplete=False,
-)
-
-oscillation_table = transformer.transform(
-    df,
-    signal="reactor_pressure",
+``` python
+accumulation = fg.accumulation.Accumulation(
+    signals="reactor_temperature",
     group=["fault_number", "simulation_run"],
+    threshold="min",
+)
+
+features = accumulation.fit_transform(features)
+
+objects = accumulation.summarize(
+    features,
+    signal="reactor_temperature",
 )
 ```
 
-The functional and transformer interfaces use the same underlying construction algorithm.
+Both object types share the same construction interface.
 
-## Package structure
+``` python
+behavior.fit_transform(...)
+behavior.summarize(...)
+```
 
-```text
+## Behavioral Objects
+
+Every behavioral object implements the same construction lifecycle.
+
+  -----------------------------------------------------------------------
+  Stage                             Purpose
+  --------------------------------- -------------------------------------
+  **Signal**                        Select or derive the represented
+                                    signal
+
+  **Primitives**                    Construct the primitive states,
+                                    events, or quantities
+
+  **Identity**                      Assign a unique identifier to each
+                                    behavioral object
+
+  **Measurements**                  Compute object-relative properties
+
+  **Summary**                       Produce one row per behavioral object
+  -----------------------------------------------------------------------
+
+This lifecycle is implemented by the `Behavior` base class and shared by
+every behavioral object in FeatureGraph.
+
+## Oscillation Objects
+
+Oscillations are constructed directly from an observed signal.
+
+Primitive states:
+
+-   Rising
+-   Falling
+
+Event operators:
+
+-   Enter state
+-   Exit state
+
+The resulting oscillation objects provide measurements including:
+
+-   start
+-   peak
+-   end
+-   rise duration
+-   fall duration
+-   duration
+-   period
+-   amplitude
+-   temporal symmetry
+
+## Accumulation Objects
+
+Accumulations are derived from previously constructed behavioral
+objects.
+
+Rather than operating directly on the observed signal, an accumulation
+first derives an accumulation signal over the parent behavioral object
+and then applies the same behavioral construction framework.
+
+Current measurements include:
+
+-   total accumulation
+-   accumulation rate
+-   accumulation centroid
+-   half accumulation time
+-   normalized accumulation
+
+## Package Structure
+
+``` text
 featuregraph/
-├── pyproject.toml
-├── README.md
-├── LICENSE
-├── src/
-│   └── featuregraph/
-│       ├── __init__.py
-│       ├── oscillation/
-│       │   ├── __init__.py
-│       │   ├── _functional.py
-│       │   ├── _transformer.py
-│       │   └── _validation.py
-│       ├── accumulation/
-│       ├── operators/
-│       │   ├── states.py
-│       │   ├── events.py
-│       │   └── measures.py
-│       └── plotting/
-├── tests/
-└── examples/
+├── oscillation/
+├── accumulation/
+├── behaviors/
+├── operators/
+├── preprocessing/
+├── plotting/
+└── utils/
 ```
 
-Implementation modules prefixed with an underscore are private. Users should import from the public package namespaces:
+Most users should interact only with the public APIs.
 
-```python
+``` python
 import featuregraph as fg
-from featuregraph.oscillation import OscillationTransformer
+
+osc = fg.oscillation.Oscillation(...)
+acc = fg.accumulation.Accumulation(...)
 ```
 
 ## Development
 
-Run the test suite:
+Run the test suite.
 
-```bash
+``` bash
 pytest
 ```
 
-Run the linter:
+Run the linter.
 
-```bash
+``` bash
 ruff check .
 ```
 
-Run static type checking:
+Run static type checking.
 
-```bash
+``` bash
 mypy src
 ```
 
-Build the package:
+Build the package.
 
-```bash
+``` bash
 python -m build
 ```
 
-## Current research status
+## Research
 
-The first FeatureGraph research milestone is the construction of domain-independent oscillation objects. The current implementation is being validated using:
+FeatureGraph is an active research project investigating the
+construction of domain-independent behavioral objects from observation
+sequences.
 
-- BIDMC physiological respiration signals
-- Tennessee Eastman industrial reactor-pressure signals
+The current implementation has been validated on:
 
-The same state, event, segmentation, and measurement operators are used in both domains. Future work will extend the framework to accumulation objects, multi-signal interactions, and relationships among behavioral objects.
+-   physiological respiration signals (BIDMC)
+-   industrial reactor temperature and pressure signals (Tennessee
+    Eastman)
+
+The long-term objective is to develop a common mathematical framework
+for representing physical systems as collections of explicit behavioral
+objects rather than isolated observations.
 
 ## License
 
-FeatureGraph is released under the MIT License. See [LICENSE](LICENSE) for details.
+FeatureGraph is released under the MIT License. See the `LICENSE` file
+for details.
