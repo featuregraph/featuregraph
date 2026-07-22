@@ -80,6 +80,7 @@ class Oscillation(Behavior):
         self,
         df: pd.DataFrame,
     ) -> pd.DataFrame:
+        """Add directional states, boundary events, and local rates."""
         for signal in self.signals:
             source = self.working_signal(signal)
 
@@ -88,6 +89,7 @@ class Oscillation(Behavior):
             falling_col = f"{signal}_falling"
             enter_rising_col = f"enter_{rising_col}"
             exit_rising_col = f"exit_{rising_col}"
+            rate_col = f"{signal}_rate"
 
             df[rising_col] = rising_state(
                 df[source],
@@ -119,12 +121,31 @@ class Oscillation(Behavior):
                 enter_rising_col,
             )
 
+            # Approximate change per sample over diff_lag samples.
+            # Grouped differences prevent rates from crossing
+            # independent sequence boundaries.
+            if self.group_columns:
+                difference = (
+                    df.groupby(
+                        self.group_columns,
+                        sort=False,
+                    )[source]
+                    .diff(self.diff_lag)
+                )
+            else:
+                difference = df[source].diff(
+                    self.diff_lag
+                )
+
+            df[rate_col] = difference / self.diff_lag
+
         return df
 
     def add_ids(
         self,
         df: pd.DataFrame,
     ) -> pd.DataFrame:
+        """Assign one identifier to each oscillation."""
         for signal in self.signals:
             df[f"{signal}_wave_id"] = event_id(
                 df,
@@ -138,6 +159,7 @@ class Oscillation(Behavior):
         self,
         df: pd.DataFrame,
     ) -> pd.DataFrame:
+        """Add row-aligned oscillation measurements."""
         for signal in self.signals:
             source = self.working_signal(signal)
 
@@ -148,18 +170,19 @@ class Oscillation(Behavior):
 
             rising_col = f"{signal}_rising"
             falling_col = f"{signal}_falling"
+            rate_col = f"{signal}_rate"
 
             grouped = df.groupby(
                 object_group,
                 sort=False,
             )
 
-            df[f"{signal}_rising_time"] = (
+            rising_time = (
                 grouped[rising_col]
                 .transform("sum")
             )
 
-            df[f"{signal}_falling_time"] = (
+            falling_time = (
                 grouped[falling_col]
                 .transform("sum")
             )
@@ -174,14 +197,41 @@ class Oscillation(Behavior):
                 .transform("min")
             )
 
+            net_change = maximum - minimum
+
+            df[f"{signal}_rising_time"] = rising_time
+            df[f"{signal}_falling_time"] = falling_time
+
             df[f"{signal}_amplitude"] = (
-                maximum - minimum
-            ) / 2
+                net_change / 2
+            )
 
             df[f"{signal}_duration"] = (
-                df[f"{signal}_rising_time"]
-                + df[f"{signal}_falling_time"]
+                rising_time + falling_time
             )
+
+            # Mean transition rates describe the average speed
+            # from trough to peak and from peak to trough.
+            df[f"{signal}_rising_mean_rate"] = (
+                net_change / rising_time
+            ).where(rising_time > 0)
+
+            df[f"{signal}_falling_mean_rate"] = (
+                net_change / falling_time
+            ).where(falling_time > 0)
+
+            # Peak rise rate is the largest positive local rate.
+            df[f"{signal}_peak_rise_rate"] = (
+                grouped[rate_col]
+                .transform("max")
+                .clip(lower=0)
+            )
+
+            # Peak fall rate is represented as a positive magnitude.
+            df[f"{signal}_peak_fall_rate"] = (
+                -grouped[rate_col]
+                .transform("min")
+            ).clip(lower=0)
 
         return df
 
@@ -191,7 +241,7 @@ class Oscillation(Behavior):
         signal: str,
         include_partial: bool = False,
     ) -> pd.DataFrame:
-        
+        """Return one row per oscillation object."""
         if signal not in self.signals:
             raise ValueError(
                 f"Signal {signal!r} was not configured for "
@@ -231,6 +281,14 @@ class Oscillation(Behavior):
                 minimum=(
                     source,
                     "min",
+                ),
+                peak_rise_rate=(
+                    f"{signal}_peak_rise_rate",
+                    "max",
+                ),
+                peak_fall_rate=(
+                    f"{signal}_peak_fall_rate",
+                    "max",
                 ),
                 has_start=(
                     f"enter_{signal}_rising",
@@ -272,7 +330,9 @@ class Oscillation(Behavior):
 
         if not include_partial:
             summarydf = (
-                summarydf.loc[summarydf["is_complete"]]
+                summarydf.loc[
+                    summarydf["is_complete"]
+                ]
                 .copy()
                 .reset_index(drop=True)
             )
@@ -305,10 +365,26 @@ class Oscillation(Behavior):
                 summarydf["peak_index"].diff()
             )
 
-        summarydf["amplitude"] = (
+        net_change = (
             summarydf["maximum"]
             - summarydf["minimum"]
-        ) / 2
+        )
+
+        summarydf["amplitude"] = net_change / 2
+
+        summarydf["rising_mean_rate"] = (
+            net_change
+            / summarydf["rise_duration"]
+        ).where(
+            summarydf["rise_duration"] > 0
+        )
+
+        summarydf["falling_mean_rate"] = (
+            net_change
+            / summarydf["fall_duration"]
+        ).where(
+            summarydf["fall_duration"] > 0
+        )
 
         duration = summarydf["duration"]
 
@@ -334,6 +410,10 @@ class Oscillation(Behavior):
                 "duration",
                 "period",
                 "amplitude",
+                "rising_mean_rate",
+                "falling_mean_rate",
+                "peak_rise_rate",
+                "peak_fall_rate",
                 "temporal_symmetry",
             ]
         ]

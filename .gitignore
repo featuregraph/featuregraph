@@ -22,6 +22,7 @@ htmlcov/
 .ruff_cache/
 .tox/
 .nox/
+/dev/
 
 # Jupyter
 .ipynb_checkpoints/

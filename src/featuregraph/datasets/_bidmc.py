@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import pandas as pd
 
-from featuregraph.utils.bidmc import load_bidmc_subject
-from featuregraph.utils.rename_map import bidmc_map
+from featuregraph.utils._bidmc import load_bidmc_subject
+from featuregraph.utils._rename_map import bidmc_map
 
 
 def bidmc(
