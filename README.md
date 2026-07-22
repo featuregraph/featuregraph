@@ -12,8 +12,7 @@ release provides two object types:
 - **Accumulation**, representing baseline-relative cumulative contribution
   over the lifetime of an existing oscillation.
 
-FeatureGraph is an early-stage research prototype. Its API, object definitions,
-and output schemas may change before the first stable release.
+FeatureGraph is currently an alpha research release. Oscillation and wave-derived accumulation construction are functional and tested, but behavioral definitions, boundary conventions, and output schemas may change before the first stable release. Results should be independently validated before use in production or scientific conclusions.
 
 ## Construction model
 
