@@ -8,8 +8,8 @@ from featuregraph.operators.events import (
     exit_state,
 )
 from featuregraph.operators.states import (
-    falling_state,
-    rising_state,
+    negative_state,
+    positive_state,
 )
 from featuregraph.preprocessing.smoothing import smooth
 
@@ -91,39 +91,6 @@ class Oscillation(Behavior):
             exit_rising_col = f"exit_{rising_col}"
             rate_col = f"{signal}_rate"
 
-            df[rising_col] = rising_state(
-                df[source],
-                self.diff_lag,
-                self.eps,
-            )
-
-            df[falling_col] = falling_state(
-                df[source],
-                self.diff_lag,
-                self.eps,
-            )
-
-            df[enter_rising_col] = enter_state(
-                df[rising_col]
-            )
-
-            df[exit_rising_col] = exit_state(
-                df[rising_col]
-            )
-
-            df[f"{signal}_peak_index"] = event_index(
-                df,
-                exit_rising_col,
-            )
-
-            df[f"{signal}_trough_index"] = event_index(
-                df,
-                enter_rising_col,
-            )
-
-            # Approximate change per sample over diff_lag samples.
-            # Grouped differences prevent rates from crossing
-            # independent sequence boundaries.
             if self.group_columns:
                 difference = (
                     df.groupby(
@@ -132,11 +99,51 @@ class Oscillation(Behavior):
                     )[source]
                     .diff(self.diff_lag)
                 )
+                event_group = [
+                    df[column]
+                    for column in self.group_columns
+                ]
             else:
                 difference = df[source].diff(
                     self.diff_lag
                 )
+                event_group = None
 
+            df[rising_col] = positive_state(
+                difference,
+                self.eps,
+            )
+
+            df[falling_col] = negative_state(
+                difference,
+                self.eps,
+            )
+
+            df[enter_rising_col] = enter_state(
+                df[rising_col],
+                event_group,
+            )
+
+            df[exit_rising_col] = exit_state(
+                df[rising_col],
+                event_group,
+            )
+
+            df[f"{signal}_peak_index"] = event_index(
+                df,
+                exit_rising_col,
+                self.group,
+            )
+
+            df[f"{signal}_trough_index"] = event_index(
+                df,
+                enter_rising_col,
+                self.group,
+            )
+
+            # Approximate change per sample over diff_lag samples.
+            # Grouped differences prevent rates from crossing
+            # independent sequence boundaries.
             df[rate_col] = difference / self.diff_lag
 
         return df
