@@ -247,6 +247,7 @@ def main() -> None:
         signals="respiration",
         group="subject",
         smooth_signal=False,
+        diff_lag=1
     )
     bidmc_features = bidmc_builder.fit_transform(bidmc)
     bidmc_oscillations = bidmc_builder.summarize(
@@ -285,6 +286,7 @@ def main() -> None:
         group=["fault_number", "simulation_run"],
         smooth_signal=True,
         smooth_window=20,
+        diff_lag=1
     )
     eastman_features = eastman_builder.fit_transform(eastman)
     eastman_oscillations = eastman_builder.summarize(
