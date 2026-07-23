@@ -49,15 +49,7 @@ respiration_objects = respiration.summarize(
 - oscillation identities;
 - object-relative measurements.
 
-`summarize()` produces one row per complete oscillation:
-
-```python
-respiration_objects.table.head()
-```
-
-| oscillation_id | start_index | peak_index | end_index | rise_duration | fall_duration | duration | period | amplitude | temporal_symmetry |
-|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| 1 | â€¦ | â€¦ | â€¦ | â€¦ | â€¦ | â€¦ | â€¦ | â€¦ | â€¦ |
+`summarize()` produces one row per complete oscillation.
 
 The returned result contains both the object table and the evidence supporting its construction:
 
