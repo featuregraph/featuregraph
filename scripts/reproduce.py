@@ -84,6 +84,46 @@ def sha256(path: Path) -> str:
             digest.update(block)
     return digest.hexdigest()
 
+def representative_oscillation(
+    observations: Any,
+    table: Any,
+    plot_signal: str,
+) -> Any:
+    """Select a deterministic, visually valid complete oscillation."""
+
+    candidates = (
+        table.loc[table["is_complete"]]
+        .sort_values(
+            ["amplitude", "oscillation_id"],
+            ascending=[False, True],
+        )
+    )
+
+    for _, candidate in candidates.iterrows():
+        start = int(candidate["start_index"])
+        peak = int(candidate["peak_index"])
+        end = int(candidate["end_index"])
+
+        segment = observations.loc[start:end, plot_signal]
+
+        if segment.empty or peak not in segment.index:
+            continue
+
+        peak_value = observations.loc[peak, plot_signal]
+        maximum_value = segment.max()
+
+        if np.isclose(
+            peak_value,
+            maximum_value,
+            rtol=1e-9,
+            atol=1e-12,
+        ):
+            return candidate
+
+    raise RuntimeError(
+        f"No complete oscillation has a peak aligned with "
+        f"the visible maximum of {plot_signal!r}."
+    )
 
 def annotated_figure(
     observations: Any,
@@ -92,10 +132,17 @@ def annotated_figure(
     output_path: Path,
     title: str,
 ) -> None:
-    first = table.iloc[0]
-    start = int(first["start_index"])
-    peak = int(first["peak_index"])
-    end = int(first["end_index"])
+    
+    representative = representative_oscillation(
+    observations,
+    table,
+    plot_signal,
+    )
+
+    start = int(representative["start_index"])
+    peak = int(representative["peak_index"])
+    end = int(representative["end_index"])
+    oscillation_id = int(representative["oscillation_id"])
 
     segment = observations.loc[start:end, plot_signal]
 
@@ -119,9 +166,9 @@ def annotated_figure(
     )
 
     axis.set(
-        title=title,
-        xlabel="Sample index",
-        ylabel=plot_signal.replace("_", " ").title(),
+    title=f"{title} — oscillation {oscillation_id}",
+    xlabel="Sample index",
+    ylabel=plot_signal.replace("_", " ").title(),
     )
 
     axis.grid(alpha=0.2)
