@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "If you use FeatureGraph in your research, please cite this software."
+title: "FeatureGraph"
+abstract: "A Python framework for constructing explicit behavioral objects from ordered observations."
+type: software
+authors:
+  - family-names: "Habib"
+    given-names: "Nazia"
+version: "0.1.0"
+date-released: "2026-07-23"
+license: MIT
+repository-code: "https://github.com/featuregraph/featuregraph"
+url: "https://github.com/featuregraph/featuregraph"
+keywords:
+  - time series
+  - behavioral objects
+  - oscillation
+  - accumulation
+  - event detection

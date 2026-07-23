@@ -1,0 +1,27 @@
+{
+  "title": "FeatureGraph",
+  "description": "A Python framework for constructing explicit behavioral objects from ordered observations.",
+  "creators": [
+    {
+      "name": "Habib, Nazia"
+    }
+  ],
+  "version": "0.1.0",
+  "upload_type": "software",
+  "access_right": "open",
+  "license": "mit",
+  "keywords": [
+    "time series",
+    "behavioral objects",
+    "oscillation",
+    "accumulation",
+    "event detection"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/featuregraph/featuregraph",
+      "relation": "isSupplementTo",
+      "scheme": "url"
+    }
+  ]
+}

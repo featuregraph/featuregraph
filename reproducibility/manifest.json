@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "seed": 1729,
+  "datasets": {
+    "bidmc": {
+      "version": "1.0.0",
+      "subject": 1,
+      "source": "https://physionet.org/content/bidmc/1.0.0/"
+    },
+    "tennessee_eastman": {
+      "repository": "mv-per/tennessee-eastman-dataset",
+      "revision": "main",
+      "mode": 1,
+      "fault_number": 1,
+      "simulation_run": 1,
+      "source": "https://github.com/mv-per/tennessee-eastman-dataset"
+    }
+  },
+  "outputs": [
+    "tables/bidmc_oscillations.csv",
+    "tables/bidmc_accumulations.csv",
+    "tables/eastman_oscillations.csv",
+    "tables/eastman_accumulations.csv",
+    "figures/bidmc_annotated_oscillation.png",
+    "figures/eastman_annotated_oscillation.png",
+    "environment.json",
+    "run_metadata.json"
+  ]
+}
