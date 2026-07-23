@@ -248,7 +248,7 @@ class Oscillation(Behavior):
         df: pd.DataFrame,
         signal: str,
         include_partial: bool = False,
-    ) -> pd.DataFrame:
+    ) -> BehaviorObjects:
         """Return one row per oscillation object."""
         if signal not in self.signals:
             raise ValueError(

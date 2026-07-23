@@ -41,8 +41,13 @@ def test_summary_returns_complete_objects_by_default(
     behavior = Oscillation("signal", diff_lag=1)
     features = behavior.fit_transform(triangular_signal)
 
-    summary = behavior.summarize(features, "signal")
+    objects = behavior.summarize(features, "signal")
+    summary = objects.table
 
+    assert objects.behavior_type == "oscillation"
+    assert objects.signal == "signal"
+    assert objects.features is features
+    assert objects.count == 2
     assert summary["oscillation_id"].tolist() == [1, 2]
     assert summary["is_complete"].all()
     assert summary["rise_duration"].tolist() == [2, 2]
@@ -60,12 +65,14 @@ def test_summary_can_retain_partial_objects(
     behavior = Oscillation("signal", diff_lag=1)
     features = behavior.fit_transform(triangular_signal)
 
-    summary = behavior.summarize(
+    objects = behavior.summarize(
         features,
         "signal",
         include_partial=True,
     )
+    summary = objects.table
 
+    assert objects.construction["include_partial"] is True
     assert summary["oscillation_id"].tolist() == [0, 1, 2, 3]
     assert summary["is_complete"].tolist() == [False, True, True, False]
 

@@ -7,7 +7,6 @@ import pandas as pd
 from featuregraph.behaviors.base import Behavior, Group, Signals
 from featuregraph.behaviors.objects import BehaviorObjects
 
-
 ThresholdValue = Real | str
 Threshold = ThresholdValue | Mapping[str, ThresholdValue]
 
@@ -284,7 +283,7 @@ class Accumulation(Behavior):
         self,
         df: pd.DataFrame,
         signal: str,
-    ) -> pd.DataFrame:
+    ) -> BehaviorObjects:
         self.validate_signal(df, signal)
 
         object_group = self.object_group(

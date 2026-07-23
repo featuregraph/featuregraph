@@ -38,9 +38,13 @@ def test_accumulation_summary_has_expected_intrinsic_properties(
     behavior = Accumulation("signal", threshold="min")
     result = behavior.fit_transform(features)
 
-    summary = behavior.summarize(result, "signal")
+    objects = behavior.summarize(result, "signal")
+    summary = objects.table
     wave = summary.loc[summary["accumulation_id"].eq(1)].iloc[0]
 
+    assert objects.behavior_type == "accumulation"
+    assert objects.parent_behavior == "oscillation"
+    assert objects.features is result
     assert wave["start_index"] == 1
     assert wave["end_index"] == 4
     assert wave["duration"] == 4
