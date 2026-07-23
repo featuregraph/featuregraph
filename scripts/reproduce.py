@@ -88,7 +88,7 @@ def sha256(path: Path) -> str:
 def annotated_figure(
     observations: Any,
     table: Any,
-    signal: str,
+    plot_signal: str,
     output_path: Path,
     title: str,
 ) -> None:
@@ -96,21 +96,34 @@ def annotated_figure(
     start = int(first["start_index"])
     peak = int(first["peak_index"])
     end = int(first["end_index"])
-    segment = observations.loc[start:end, signal]
 
-    figure, axis = plt.subplots(figsize=(8, 4.5), constrained_layout=True)
-    axis.plot(segment.index, segment.to_numpy(), color="#3155a4", linewidth=1.5)
+    segment = observations.loc[start:end, plot_signal]
+
+    figure, axis = plt.subplots(
+        figsize=(8, 4.5),
+        constrained_layout=True,
+    )
+
+    axis.plot(
+        segment.index,
+        segment.to_numpy(),
+        color="#3155a4",
+        linewidth=1.5,
+    )
+
     axis.scatter(
         [start, peak, end],
-        observations.loc[[start, peak, end], signal],
+        observations.loc[[start, peak, end], plot_signal],
         color=["#2a9d8f", "#e76f51", "#2a9d8f"],
         zorder=3,
     )
+
     axis.set(
         title=title,
         xlabel="Sample index",
-        ylabel=signal.replace("_", " ").title(),
+        ylabel=plot_signal.replace("_", " ").title(),
     )
+
     axis.grid(alpha=0.2)
     figure.savefig(output_path, dpi=300)
     plt.close(figure)
@@ -231,13 +244,14 @@ def main() -> None:
         signal="reactor_temperature",
     )
     runs["eastman"] = save_objects(
-        "eastman",
-        eastman,
-        "reactor_temperature",
-        eastman_oscillations,
-        eastman_accumulations,
-        tables_dir,
-        figures_dir,
+    "eastman",
+    eastman_features,
+    "reactor_temperature",
+    eastman_oscillations,
+    eastman_accumulations,
+    tables_dir,
+    figures_dir,
+    plot_signal="reactor_temperature_smooth",
     )
     runs["eastman"]["wall_seconds"] = time.perf_counter() - started
     runs["eastman"]["selection"] = {
