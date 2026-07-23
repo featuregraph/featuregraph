@@ -137,20 +137,32 @@ def save_objects(
     accumulation: Any,
     tables_dir: Path,
     figures_dir: Path,
-) -> dict[str, Any]:
+    plot_signal: str | None = None,
+    ) -> dict[str, Any]:
     oscillation_path = tables_dir / f"{name}_oscillations.csv"
     accumulation_path = tables_dir / f"{name}_accumulations.csv"
     figure_path = figures_dir / f"{name}_annotated_oscillation.png"
 
-    oscillation.table.to_csv(oscillation_path, index=False, lineterminator="\n")
-    accumulation.table.to_csv(accumulation_path, index=False, lineterminator="\n")
+    oscillation.table.to_csv(
+        oscillation_path,
+        index=False,
+        lineterminator="\n",
+    )
+    accumulation.table.to_csv(
+        accumulation_path,
+        index=False,
+        lineterminator="\n",
+    )
+
     annotated_figure(
         observations,
         oscillation.table,
-        signal,
+        plot_signal or signal,
         figure_path,
         f"{name.replace('_', ' ').title()} oscillation",
     )
+
+    # Keep the existing return statement unchanged.
 
     return {
         "oscillation_count": oscillation.count,
