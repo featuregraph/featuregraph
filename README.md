@@ -6,10 +6,10 @@ A raw time series contains values. It may also contain oscillations, transitions
 
 ```text
 observations
-    â†’ states and events
-    â†’ object boundaries and identities
-    â†’ behavioral object tables
-    â†’ computational queries
+    → states and events
+    → object boundaries and identities
+    → behavioral object tables
+    → computational queries
 ```
 
 The current alpha provides oscillation objects, wave-derived accumulation objects, inspectable construction features, and a small deterministic query interface. Pandas is the reference execution model.
@@ -114,7 +114,7 @@ Result:
 }
 ```
 
-Of the 545 complete respiration oscillations FeatureGraph constructed, 175â€”or 32.11%â€”lasted at least 100 samples.
+Of the 545 complete respiration oscillations FeatureGraph constructed, 175—or 32.11%—lasted at least 100 samples.
 
 The query itself is deliberately simple. The important step happened earlier: FeatureGraph converted the waveform into identified oscillations with explicit boundaries and measurements. The query operates on that representation rather than rediscovering waves from raw samples.
 
@@ -242,20 +242,41 @@ Without an explicit representation, each downstream analysis must identify waves
 
 ```text
 raw samples
-    â†’ explicit oscillations
-    â†’ related accumulations
-    â†’ ordinary computational queries
+    → explicit oscillations
+    → related accumulations
+    → ordinary computational queries
 ```
 
 The resulting objects can support analysis, visualization, validation, inter-object relationships, and downstream models without hiding how they were constructed.
 
 ## Installation
 
+FeatureGraph supports Python 3.10 through 3.13. Install the current release from GitHub:
+
+```bash
+python -m pip install "featuregraph @ git+https://github.com/featuregraph/featuregraph.git@v0.1.0"
+```
+
+For development:
+
 ```bash
 git clone https://github.com/featuregraph/featuregraph.git
 cd featuregraph
-python -m pip install -e .
+python -m pip install -e ".[dev]"
+python -m pytest
 ```
+
+## Reproduce the research artifacts
+
+The complete deterministic reproduction command is:
+
+```bash
+python scripts/reproduce.py
+```
+
+It downloads the fixed BIDMC and Tennessee Eastman selections, reconstructs oscillation and accumulation tables, generates annotated figures, and records package, environment, hardware, timing, and checksum metadata. See [the reproducibility guide](docs/reproducibility.md) for data sources, cache locations, expected outputs, and archival-release instructions.
+
+Release history is recorded in [CHANGELOG.md](CHANGELOG.md), citation metadata in [CITATION.cff](CITATION.cff), and the final alpha-release procedure in [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md).
 
 ## Status
 
