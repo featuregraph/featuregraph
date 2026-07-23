@@ -1,6 +1,7 @@
 import pandas as pd
 
 from featuregraph.behaviors.base import Behavior, Group, Signals
+from featuregraph.behaviors.objects import BehaviorObjects
 from featuregraph.operators.events import (
     enter_state,
     event_id,
@@ -404,9 +405,7 @@ class Oscillation(Behavior):
             / duration
         ).where(duration > 0)
 
-        return summarydf[
-            [
-                *self.group_columns,
+        properties = (
                 "oscillation_id",
                 "is_complete",
                 "start_index",
@@ -422,5 +421,27 @@ class Oscillation(Behavior):
                 "peak_rise_rate",
                 "peak_fall_rate",
                 "temporal_symmetry",
+        )
+        
+        table = summarydf[
+            [
+                *self.group_columns,
+                *properties,
             ]
         ]
+
+        return BehaviorObjects(
+            behavior_type="oscillation",
+            signal=signal,
+            table=table,
+            features=df,
+            group=tuple(self.group_columns),
+            properties=properties,
+            construction={
+                "smooth_signal": self.smooth_signal,
+                "smooth_window": self.smooth_window,
+                "diff_lag": self.diff_lag,
+                "eps": self.eps,
+                "include_partial": include_partial,
+            },
+        )

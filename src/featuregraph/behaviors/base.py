@@ -140,3 +140,5 @@ class Behavior(ABC):
             raise ValueError(
                 f"Required columns are missing: {missing}"
             )
+
+

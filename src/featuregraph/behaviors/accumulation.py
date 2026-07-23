@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 
 from featuregraph.behaviors.base import Behavior, Group, Signals
+from featuregraph.behaviors.objects import BehaviorObjects
 
 
 ThresholdValue = Real | str
@@ -364,21 +365,41 @@ class Accumulation(Behavior):
             summarydf["first_moment"] / total_auc
         ).where(total_auc != 0)
 
-        return summarydf[
+        properties = (
+            "accumulation_id",
+            # "parent_oscillation_id",
+            "start_index",
+            "end_index",
+            "duration",
+            "baseline",
+            "total_auc",
+            "auc_at_peak",
+            "accumulation_before_peak",
+            "accumulation_from_peak",
+            "accumulation_rate",
+            "accumulation_symmetry",
+            "centroid_time",
+            "half_accumulation_time",
+        )
+
+        table = summarydf[
             [
                 *self.group_columns,
-                "accumulation_id",
-                "start_index",
-                "end_index",
-                "duration",
-                "baseline",
-                "total_auc",
-                "auc_at_peak",
-                "accumulation_before_peak",
-                "accumulation_from_peak",
-                "accumulation_rate",
-                "accumulation_symmetry",
-                "centroid_time",
-                "half_accumulation_time",
+                *properties,
             ]
         ]
+
+        return BehaviorObjects(
+            behavior_type="accumulation",
+            signal=signal,
+            table=table,
+            features=df,
+            group=tuple(self.group_columns),
+            properties=properties,
+            construction={
+                "threshold": self.threshold,
+                "eps": self.eps,
+            },
+            parent_behavior="oscillation",
+            parent_id="parent_oscillation_id",
+        )
