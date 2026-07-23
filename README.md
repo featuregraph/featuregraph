@@ -1,44 +1,263 @@
 # FeatureGraph
 
-FeatureGraph is a Python framework for transforming ordered observation
-sequences into explicit behavioral objects.
+FeatureGraph turns ordered observations into explicit behavioral objects that software can inspect and query.
 
-Instead of treating a time series only as a sequence of individual
-measurements, FeatureGraph constructs objects with identities, temporal
-boundaries, and intrinsic measurements. The current pandas-backed alpha
-release provides two object types:
-
-- **Oscillation**, representing alternating rising and falling behavior.
-- **Accumulation**, representing baseline-relative cumulative contribution
-  over the lifetime of an existing oscillation.
-
-FeatureGraph is currently an alpha research release. Oscillation and wave-derived accumulation construction are functional and tested, but behavioral definitions, boundary conventions, and output schemas may change before the first stable release. Results should be independently validated before use in production or scientific conclusions.
-
-## Construction model
-
-Every behavior follows the same construction lifecycle:
+A raw time series contains values. It may also contain oscillations, transitions, and accumulations, but those behaviors remain implicit until their states, boundaries, identities, and properties are constructed. FeatureGraph performs that construction deterministically and returns one row per behavioral object.
 
 ```text
-ordered observations
-        â†“
-represented signal
-        â†“
-primitive states and events
-        â†“
-object identifiers
-        â†“
-row-aligned measurements
-        â†“
-one-row-per-object summary
+observations
+    â†’ states and events
+    â†’ object boundaries and identities
+    â†’ behavioral object tables
+    â†’ computational queries
 ```
 
-`fit_transform()` returns the original observations with inspectable states,
-events, identifiers, and measurements added as columns. `summarize()` returns a
-DataFrame containing one row per behavioral object.
+The current alpha provides oscillation objects, wave-derived accumulation objects, inspectable construction features, and a small deterministic query interface. Pandas is the reference execution model.
+
+## Demo
+
+This example begins with BIDMC respiration observations:
+
+```python
+import featuregraph as fg
+
+bidmc = fg.datasets.bidmc(subject=1)
+```
+
+### Construct oscillation objects
+
+```python
+respiration = fg.oscillation.Oscillation(
+    signals="respiration",
+    group="subject",
+    smooth_signal=False,
+)
+
+respiration_features = respiration.fit_transform(bidmc)
+
+respiration_objects = respiration.summarize(
+    respiration_features,
+    signal="respiration",
+)
+```
+
+`fit_transform()` constructs the sample-level representation:
+
+- rising and falling states;
+- state-entry and state-exit events;
+- peak and trough locations;
+- oscillation identities;
+- object-relative measurements.
+
+`summarize()` produces one row per complete oscillation:
+
+```python
+respiration_objects.table.head()
+```
+
+| oscillation_id | start_index | peak_index | end_index | rise_duration | fall_duration | duration | period | amplitude | temporal_symmetry |
+|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 1 | â€¦ | â€¦ | â€¦ | â€¦ | â€¦ | â€¦ | â€¦ | â€¦ | â€¦ |
+
+The returned result contains both the object table and the evidence supporting its construction:
+
+```python
+respiration_objects.behavior_type
+# "oscillation"
+
+respiration_objects.signal
+# "respiration"
+
+respiration_objects.count
+# 545
+
+respiration_objects.table
+# one row per oscillation
+
+respiration_objects.features
+# row-level observations, states, events, and identities
+
+respiration_objects.construction
+# parameters used during construction
+```
+
+### Query the objects
+
+Once oscillations are explicit, downstream code can ask questions about them without detecting their boundaries again:
+
+```python
+long_oscillations = (
+    respiration_objects
+    .query()
+    .where(duration__ge=100)
+    .select(
+        "oscillation_id",
+        "start_index",
+        "end_index",
+        "duration",
+        "amplitude",
+    )
+    .collect()
+)
+```
+
+```python
+long_count = len(long_oscillations)
+total_count = respiration_objects.count
+
+{
+    "long_oscillations": long_count,
+    "total_oscillations": total_count,
+    "percentage": 100 * long_count / total_count,
+}
+```
+
+Result:
+
+```python
+{
+    "long_oscillations": 175,
+    "total_oscillations": 545,
+    "percentage": 32.11009174311927,
+}
+```
+
+Of the 545 complete respiration oscillations FeatureGraph constructed, 175â€”or 32.11%â€”lasted at least 100 samples.
+
+The query itself is deliberately simple. The important step happened earlier: FeatureGraph converted the waveform into identified oscillations with explicit boundaries and measurements. The query operates on that representation rather than rediscovering waves from raw samples.
+
+More structural questions use the same interface:
+
+```python
+long_symmetric_oscillations = (
+    respiration_objects
+    .query()
+    .where(
+        duration__ge=100,
+        temporal_symmetry__ge=0.9,
+    )
+    .select(
+        "oscillation_id",
+        "duration",
+        "amplitude",
+        "temporal_symmetry",
+    )
+    .order_by(
+        "amplitude",
+        ascending=False,
+    )
+    .collect()
+)
+```
+
+This finds long respiration cycles whose rise and fall durations are nearly equal, then orders them by amplitude.
+
+## Construct related accumulation objects
+
+FeatureGraph can construct a wave-derived accumulation representation from the oscillation-enriched observations:
+
+```python
+accumulation = fg.accumulation.Accumulation(
+    signals="respiration",
+    group="subject",
+)
+
+accumulation_features = accumulation.fit_transform(
+    respiration_features
+)
+
+accumulation_objects = accumulation.summarize(
+    accumulation_features,
+    signal="respiration",
+)
+```
+
+Each accumulation object exposes properties such as baseline, total area above baseline, accumulation rate, symmetry, centroid time, half-accumulation time, and parent oscillation identity.
+
+```python
+high_accumulations = (
+    accumulation_objects
+    .query()
+    .where(total_auc__gt=50)
+    .select(
+        "accumulation_id",
+        "parent_oscillation_id",
+        "total_auc",
+        "accumulation_rate",
+        "centroid_time",
+    )
+    .order_by(
+        "total_auc",
+        ascending=False,
+    )
+    .collect()
+)
+```
+
+The current `Accumulation` implementation is wave-derived: each accumulation is constructed within the boundaries of a parent oscillation.
+
+## Apply the same construction in another domain
+
+The oscillation workflow is not specific to respiration:
+
+```python
+eastman = fg.datasets.eastman(
+    fault_number=1,
+    simulation_run=1,
+)
+
+temperature = fg.oscillation.Oscillation(
+    signals="reactor_temperature",
+    group=[
+        "fault_number",
+        "simulation_run",
+    ],
+    smooth_signal=True,
+    smooth_window=20,
+)
+
+temperature_features = temperature.fit_transform(eastman)
+
+temperature_objects = temperature.summarize(
+    temperature_features,
+    signal="reactor_temperature",
+)
+```
+
+BIDMC respiration and Tennessee Eastman reactor temperature are unrelated physical signals. FeatureGraph nevertheless applies the same construction workflow and returns the same oscillation schema for both. Only the signal mapping, grouping, and optional preprocessing differ.
+
+## Reproducibility
+
+After the signal, grouping columns, and construction parameters are specified, FeatureGraph automatically:
+
+1. detects primitive states;
+2. locates boundary events;
+3. assigns object identities;
+4. distinguishes complete and boundary-truncated objects;
+5. calculates intrinsic properties;
+6. returns inspectable features and object tables;
+7. exposes those objects to deterministic queries.
+
+No individual peak, trough, oscillation, or accumulation is manually annotated. The same observations and parameters produce the same representation.
+
+FeatureGraph does not assume every waveform can be interpreted without configuration. Noise, missing observations, irregular sampling, nested frequencies, and unsuitable detection parameters may require preprocessing or a revised behavioral definition.
+
+## Why FeatureGraph?
+
+Pandas can filter a table. FeatureGraph constructs the behavioral table that makes the filtering meaningful.
+
+Without an explicit representation, each downstream analysis must identify waves, infer boundaries, and calculate measurements from raw samples. FeatureGraph performs that work once and exposes the result as an inspectable representation:
+
+```text
+raw samples
+    â†’ explicit oscillations
+    â†’ related accumulations
+    â†’ ordinary computational queries
+```
+
+The resulting objects can support analysis, visualization, validation, inter-object relationships, and downstream models without hiding how they were constructed.
 
 ## Installation
-
-FeatureGraph is currently installed from source:
 
 ```bash
 git clone https://github.com/featuregraph/featuregraph.git
@@ -46,291 +265,18 @@ cd featuregraph
 python -m pip install -e .
 ```
 
-For development:
+## Status
 
-```bash
-python -m pip install -e ".[dev]"
-```
+FeatureGraph is an alpha research release. Current development priorities include:
 
-For the included notebooks:
+- transition objects;
+- stronger completeness and boundary validation;
+- tests across multiple signals and groups;
+- additional relationships between objects;
+- a clean interface for defining new behavioral object types.
 
-```bash
-python -m pip install -e ".[notebooks]"
-```
-
-## Quick start
-
-The following example is self-contained and does not require downloading a
-dataset.
-
-```python
-import pandas as pd
-
-import featuregraph as fg
-
-
-data = pd.DataFrame(
-    {
-        "signal": [
-            0.0, 1.0, 2.0, 1.0, 0.0,
-            1.0, 2.0, 1.0, 0.0,
-            1.0, 2.0, 1.0, 0.0,
-        ]
-    }
-)
-
-oscillation = fg.oscillation.Oscillation(
-    signals="signal",
-    diff_lag=1,
-)
-
-oscillation_features = oscillation.fit_transform(data)
-oscillation_objects = oscillation.summarize(
-    oscillation_features,
-    signal="signal",
-)
-
-print(oscillation_objects)
-```
-
-The input DataFrame is not modified. `oscillation_features` contains the
-observation-level construction, while `oscillation_objects` contains only
-complete oscillations by default.
-
-Accumulation objects can then be constructed over the identified waves:
-
-```python
-accumulation = fg.accumulation.Accumulation(
-    signals="signal",
-    threshold="min",
-)
-
-accumulation_features = accumulation.fit_transform(
-    oscillation_features
-)
-
-accumulation_objects = accumulation.summarize(
-    accumulation_features,
-    signal="signal",
-)
-
-print(accumulation_objects)
-```
-
-## Oscillation objects
-
-An oscillation is constructed from rising and falling states. Entering the
-rising state establishes a new wave identifier, and exiting the rising state
-marks the peak event used by the current implementation.
-
-```python
-oscillation = fg.oscillation.Oscillation(
-    signals="respiration",
-    group="subject",
-    smooth_signal=True,
-    smooth_window=20,
-    diff_lag=10,
-    eps=0.0,
-)
-```
-
-### Parameters
-
-- `signals`: one signal name or a sequence of signal names.
-- `group`: an optional column name or sequence of columns identifying
-  independent observation sequences.
-- `smooth_signal`: whether to construct the object from a rolling mean while
-  retaining the observed signal.
-- `smooth_window`: rolling window size in observations.
-- `diff_lag`: number of observations used for directional differences.
-- `eps`: nonnegative tolerance for rising and falling state detection.
-
-### Summary schema
-
-`Oscillation.summarize()` emits:
-
-| Column | Meaning |
-|---|---|
-| grouping columns | Identity of the independent observation sequence |
-| `oscillation_id` | Identifier within the observation group |
-| `is_complete` | Whether the oscillation has the required boundaries and phases |
-| `start_index` | Constructed start position |
-| `peak_index` | Exit-rising event position |
-| `end_index` | Constructed end position |
-| `rise_duration` | Number of rising observations |
-| `fall_duration` | Number of falling observations |
-| `duration` | Rise duration plus fall duration |
-| `period` | Difference between consecutive peak indices |
-| `amplitude` | Half of the within-object maximum-minus-minimum range |
-| `rising_mean_rate` | Signal range divided by rise duration |
-| `falling_mean_rate` | Signal range divided by fall duration |
-| `peak_rise_rate` | Largest positive local rate in the object |
-| `peak_fall_rate` | Magnitude of the largest negative local rate in the object |
-| `temporal_symmetry` | Similarity of rise and fall durations on a 0â€“1 scale |
-
-Initial and final boundary-truncated objects are excluded by default. They can
-be retained for inspection:
-
-```python
-objects = oscillation.summarize(
-    oscillation_features,
-    signal="respiration",
-    include_partial=True,
-)
-```
-
-## Accumulation objects
-
-The current `Accumulation` implementation is wave-derived. It requires a
-`<signal>_wave_id` column produced by oscillation construction and assigns one
-accumulation object to each wave.
-
-For a signal value \(x_t\) and threshold \(b_t\), the contribution is:
-
-```text
-contribution_t = x_t - b_t
-```
-
-The accumulation column is the cumulative sum of this contribution within the
-parent wave.
-
-```python
-accumulation = fg.accumulation.Accumulation(
-    signals="respiration",
-    group="subject",
-    threshold="min",
-    eps=0.0,
-)
-```
-
-`threshold` can be:
-
-- a numeric constant;
-- the name of a threshold column;
-- a pandas aggregation name such as `"min"`;
-- a mapping from signal names to any of those values.
-
-### Summary schema
-
-`Accumulation.summarize()` emits:
-
-| Column | Meaning |
-|---|---|
-| grouping columns | Identity of the independent observation sequence |
-| `accumulation_id` | Identifier inherited from the parent wave |
-| `start_index` | First source index in the object |
-| `end_index` | Last source index in the object |
-| `duration` | Number of observations in the object |
-| `baseline` | Threshold used to calculate contribution |
-| `total_auc` | Sum of contribution values over the object |
-| `auc_at_peak` | Cumulative contribution at the peak event |
-| `accumulation_before_peak` | Contribution assigned before the peak event |
-| `accumulation_from_peak` | Contribution assigned from the peak event onward |
-| `accumulation_rate` | Total contribution divided by observation count |
-| `accumulation_symmetry` | Balance between contribution before and after the peak |
-| `centroid_time` | Contribution-weighted position within the object |
-| `half_accumulation_time` | First object-relative position reaching half the total |
-
-Despite the current `auc` column names, integration is presently a discrete
-sum with an implicit sample interval of one. Physical-time integration for
-irregularly sampled observations is not yet implemented.
-
-## Input requirements and current conventions
-
-FeatureGraph currently expects:
-
-- a pandas DataFrame;
-- one row per ordered observation;
-- numeric signal columns;
-- rows already sorted within each group;
-- independent sequences identified through `group` when multiple sequences
-  are present;
-- an index suitable for the current index-based boundary calculations.
-
-Durations and rates are measured in observations and change per observation,
-not physical time. If observations have a real timestamp or irregular sampling
-interval, preserve that column in the input, but do not interpret the current
-duration, period, rate, or accumulation fields as time-aware measurements.
-
-Smoothing creates a new `<signal>_smooth` column and does not replace the
-observed signal. The first `smooth_window - 1` values within each group are
-missing because a complete rolling window is required.
-
-## Example datasets
-
-FeatureGraph includes convenience loaders used by the project notebooks:
-
-```python
-bidmc = fg.datasets.bidmc(subject=1)
-
-eastman = fg.datasets.eastman(
-    fault_number=1,
-    simulation_run=1,
-)
-```
-
-The repository currently demonstrates the same oscillation and accumulation
-interfaces on:
-
-- [BIDMC physiological respiration signals](https://physionet.org/content/bidmc/1.0.0/);
-- [Tennessee Eastman industrial process signals](https://github.com/mv-per/tennessee-eastman-dataset).
-
-These loaders retrieve data from external sources and therefore require network
-access. Users should review and follow the source datasets' attribution,
-citation, and usage requirements.
-
-## Package structure
-
-```text
-src/featuregraph/
-â”œâ”€â”€ behaviors/
-â”‚   â”œâ”€â”€ base.py
-â”‚   â”œâ”€â”€ oscillation.py
-â”‚   â””â”€â”€ accumulation.py
-â”œâ”€â”€ datasets/
-â”œâ”€â”€ operators/
-â”œâ”€â”€ preprocessing/
-â””â”€â”€ utils/
-```
-
-Most users interact with behavior constructors and dataset loaders through the
-public package:
-
-```python
-import featuregraph as fg
-
-fg.oscillation.Oscillation(...)
-fg.accumulation.Accumulation(...)
-fg.datasets.bidmc(...)
-```
-
-## Development
-
-Run the automated tests:
-
-```bash
-pytest
-```
-
-Build the distribution artifacts:
-
-```bash
-python -m build
-```
-
-The test suite runs automatically on pushes and pull requests against Python
-3.10, 3.11, 3.12, and 3.13.
-
-## Project status
-
-Current work is focused on:
-
-- making boundary semantics explicit;
-- propagating partial-object completeness into accumulation objects;
-- supporting physical-time measurements and integration;
-- adding transition objects;
-- separating behavioral definitions from dataframe-specific execution.
+The API may change while these semantics are finalized.
 
 ## License
 
-FeatureGraph is released under the MIT License. See [LICENSE.md](LICENSE.md).
+FeatureGraph is released under the MIT License.
