@@ -42,3 +42,17 @@ def event_index(df, event_col, group=None):
         _group_keys(df, group),
         sort=False,
     ).ffill()
+
+
+def preceding_sample_event(event, group=None):
+    """Move a transition event to the preceding sample within each group."""
+    event = event.astype(bool)
+
+    if group is None:
+        return event.shift(-1, fill_value=False).astype(bool)
+
+    return (
+        event.groupby(group, sort=False)
+        .shift(-1, fill_value=False)
+        .astype(bool)
+    )
