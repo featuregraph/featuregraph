@@ -7,6 +7,7 @@ from featuregraph.operators.events import (
     event_id,
     event_index,
     exit_state,
+    preceding_sample_event,
 )
 from featuregraph.operators.states import (
     negative_state,
@@ -91,6 +92,8 @@ class Oscillation(Behavior):
             enter_rising_col = f"enter_{rising_col}"
             exit_rising_col = f"exit_{rising_col}"
             rate_col = f"{signal}_rate"
+            peak_col = f"{signal}_peak"
+            trough_col = f"{signal}_trough"
 
             if self.group_columns:
                 difference = (
@@ -130,15 +133,28 @@ class Oscillation(Behavior):
                 event_group,
             )
 
+            # Directional states describe the edge ending at the current
+            # row. A reversal detected at row i therefore places the
+            # corresponding extremum at the preceding sample.
+            df[peak_col] = preceding_sample_event(
+                df[exit_rising_col],
+                event_group,
+            )
+
+            df[trough_col] = preceding_sample_event(
+                df[enter_rising_col],
+                event_group,
+            )
+
             df[f"{signal}_peak_index"] = event_index(
                 df,
-                exit_rising_col,
+                peak_col,
                 self.group,
             )
 
             df[f"{signal}_trough_index"] = event_index(
                 df,
-                enter_rising_col,
+                trough_col,
                 self.group,
             )
 
