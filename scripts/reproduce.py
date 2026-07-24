@@ -104,18 +104,26 @@ def representative_oscillation(
     end_index = int(representative["end_index"])
     segment = observations.loc[start_index:end_index, plot_signal]
 
+    start_value = observations.loc[start_index, plot_signal]
     peak_value = observations.loc[peak_index, plot_signal]
+    end_value = observations.loc[end_index, plot_signal]
     maximum_value = segment.max()
 
-    if not np.isclose(
+    peak_is_maximum = np.isclose(
         peak_value,
         maximum_value,
         rtol=1e-9,
         atol=1e-12,
-    ):
+    )
+    endpoints_below_peak = (
+        start_value < peak_value
+        and end_value < peak_value
+    )
+
+    if not peak_is_maximum or not endpoints_below_peak:
         raise RuntimeError(
-            "Corrected peak index does not match the displayed "
-            f"maximum of {plot_signal!r}."
+            "Corrected trough-peak-trough boundaries do not align "
+            f"with the displayed values of {plot_signal!r}."
         )
 
     return representative
