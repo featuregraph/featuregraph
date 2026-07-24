@@ -4,7 +4,7 @@ Use this checklist for the archival alpha release.
 
 ## Repository
 
-- [ ] Merge the reproducibility pull request after all required CI jobs pass.
+- [ ] Merge the release-preparation pull request after all required CI jobs pass.
 - [ ] Confirm `python -m pip install .` succeeds in a clean environment.
 - [ ] Confirm the supported Python matrix is 3.10 through 3.13.
 - [ ] Confirm runtime and development dependencies remain bounded.
@@ -15,10 +15,11 @@ Use this checklist for the archival alpha release.
 
 ## Version and release
 
-- [ ] Confirm package version and `featuregraph.__version__` are both `0.1.0`.
-- [ ] Create annotated tag `v0.1.0` from the verified commit.
-- [ ] Push the tag and create the corresponding GitHub release.
-- [ ] Copy the `0.1.0` changelog entry into the release notes.
+- [ ] Confirm package version and `featuregraph.__version__` are both `0.1.0a1`.
+- [ ] Create annotated tag `v0.1.0a1` from the verified commit.
+- [ ] Push the tag and create the corresponding GitHub prerelease.
+- [ ] Copy the `0.1.0a1` changelog entry into the release notes.
+- [ ] Attach the wheel, source distribution, paper-artifact archive, and checksums.
 
 ## Archive and citation
 

@@ -61,7 +61,7 @@ respiration_objects.signal
 # "respiration"
 
 respiration_objects.count
-# 545
+# 1070
 
 respiration_objects.table
 # one row per oscillation
@@ -109,12 +109,12 @@ Result:
 ```python
 {
     "long_oscillations": 175,
-    "total_oscillations": 545,
-    "percentage": 32.11009174311927,
+    "total_oscillations": 1070,
+    "percentage": 16.35514018691589,
 }
 ```
 
-Of the 545 complete respiration oscillations FeatureGraph constructed, 175—or 32.11%—lasted at least 100 samples.
+Of the 1,070 complete respiration oscillations FeatureGraph constructed, 175—or 16.36%—lasted at least 100 samples.
 
 The query itself is deliberately simple. The important step happened earlier: FeatureGraph converted the waveform into identified oscillations with explicit boundaries and measurements. The query operates on that representation rather than rediscovering waves from raw samples.
 
@@ -164,7 +164,7 @@ accumulation_objects = accumulation.summarize(
 )
 ```
 
-Each accumulation object exposes properties such as baseline, total area above baseline, accumulation rate, symmetry, centroid time, half-accumulation time, and parent oscillation identity.
+Each accumulation object exposes properties such as baseline, total area above baseline, accumulation rate, symmetry, centroid time, and half-accumulation time. Its `accumulation_id` matches the identifier of its parent oscillation.
 
 ```python
 high_accumulations = (
@@ -173,7 +173,6 @@ high_accumulations = (
     .where(total_auc__gt=50)
     .select(
         "accumulation_id",
-        "parent_oscillation_id",
         "total_auc",
         "accumulation_rate",
         "centroid_time",
@@ -254,7 +253,7 @@ The resulting objects can support analysis, visualization, validation, inter-obj
 FeatureGraph supports Python 3.10 through 3.13. Install the current release from GitHub:
 
 ```bash
-python -m pip install "featuregraph @ git+https://github.com/featuregraph/featuregraph.git@v0.1.0"
+python -m pip install "featuregraph @ git+https://github.com/featuregraph/featuregraph.git@v0.1.0a1"
 ```
 
 For development:
