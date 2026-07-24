@@ -23,6 +23,7 @@ htmlcov/
 .tox/
 .nox/
 /dev/
+src/featuregraph_research/
 
 # Jupyter
 .ipynb_checkpoints/
