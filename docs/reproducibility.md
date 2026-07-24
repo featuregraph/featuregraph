@@ -78,8 +78,8 @@ CI performs tests on every supported Python version and builds both the source d
 ## Archival release
 
 1. Merge the release pull request with green CI.
-2. Create an annotated `v0.1.0` tag from the verified commit.
-3. Create a GitHub release using the matching changelog entry.
+2. Create an annotated `v0.1.0a1` tag from the verified commit.
+3. Create a GitHub prerelease using the matching changelog entry and attach the wheel, source distribution, paper-artifact archive, and checksums.
 4. Enable the repository in Zenodo and publish the GitHub release.
 5. Add the resulting DOI to `CITATION.cff`, `.zenodo.json`, and the README.
 6. Verify the Zenodo archive contains the source, citation metadata, changelog, manifest, and reproduction instructions.
