@@ -147,3 +147,34 @@ def test_summary_rejects_unconfigured_signal(
 
     with pytest.raises(ValueError, match="was not configured"):
         behavior.summarize(features, "other")
+
+
+def test_summary_uses_extrema_boundaries_across_flat_regions() -> None:
+    df = pd.DataFrame(
+        {
+            "signal": [
+                0.0,
+                1.0,
+                2.0,
+                2.0,
+                1.0,
+                0.0,
+                1.0,
+                2.0,
+                2.0,
+                1.0,
+                0.0,
+            ]
+        }
+    )
+    behavior = Oscillation("signal", diff_lag=1)
+    features = behavior.fit_transform(df)
+
+    summary = behavior.summarize(features, "signal").table
+
+    assert summary.loc[0, "start_index"] == 0
+    assert summary.loc[0, "peak_index"] == 2
+    assert summary.loc[0, "end_index"] == 5
+    assert summary.loc[0, "rise_duration"] == 2
+    assert summary.loc[0, "fall_duration"] == 3
+    assert summary.loc[0, "duration"] == 5
