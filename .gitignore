@@ -24,6 +24,7 @@ htmlcov/
 .nox/
 /dev/
 src/featuregraph_research/
+/paper/
 
 # Jupyter
 .ipynb_checkpoints/
