@@ -257,6 +257,41 @@ class Oscillation(Behavior):
                 .transform("min")
             ).clip(lower=0)
 
+            wave_id_col = f"{signal}_wave_id"
+            start_index = grouped[
+                f"{signal}_trough_index"
+            ].transform("first")
+            peak_index = grouped[
+                f"{signal}_peak_index"
+            ].transform("max")
+            end_index = grouped[
+                f"{signal}_trough_index"
+            ].transform("max")
+            has_start = grouped[
+                f"enter_{signal}_rising"
+            ].transform("max").astype(bool)
+
+            if self.group_columns:
+                last_wave_id = (
+                    df.groupby(
+                        self.group_columns,
+                        sort=False,
+                    )[wave_id_col]
+                    .transform("max")
+                )
+            else:
+                last_wave_id = df[wave_id_col].max()
+
+            df[f"{signal}_wave_complete"] = (
+                has_start
+                & start_index.notna()
+                & peak_index.notna()
+                & end_index.notna()
+                & start_index.lt(peak_index)
+                & peak_index.lt(end_index)
+                & df[wave_id_col].lt(last_wave_id)
+            )
+
         return df
 
     def summarize(
@@ -322,9 +357,9 @@ class Oscillation(Behavior):
                     f"{signal}_peak_fall_rate",
                     "max",
                 ),
-                has_start=(
-                    f"enter_{signal}_rising",
-                    "max",
+                is_complete=(
+                    f"{signal}_wave_complete",
+                    "first",
                 ),
             )
             .reset_index()
@@ -334,32 +369,6 @@ class Oscillation(Behavior):
                         "oscillation_id",
                 }
             )
-        )
-
-        if self.group_columns:
-            has_next_boundary = (
-                summarydf.groupby(
-                    self.group_columns,
-                    sort=False,
-                )["oscillation_id"]
-                .shift(-1)
-                .notna()
-            )
-        else:
-            has_next_boundary = (
-                summarydf["oscillation_id"]
-                .shift(-1)
-                .notna()
-            )
-
-        summarydf["is_complete"] = (
-            summarydf["has_start"].astype(bool)
-            & summarydf["start_index"].notna()
-            & summarydf["peak_index"].notna()
-            & summarydf["end_index"].notna()
-            & summarydf["start_index"].lt(summarydf["peak_index"])
-            & summarydf["peak_index"].lt(summarydf["end_index"])
-            & has_next_boundary
         )
 
         if not include_partial:
