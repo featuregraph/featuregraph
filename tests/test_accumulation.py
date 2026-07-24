@@ -29,6 +29,8 @@ def test_accumulation_constructs_contribution_and_running_total(
     assert wave["signal_accumulation_contribution"].tolist() == [1.0, 2.0, 1.0, 0.0]
     assert wave["signal_accumulation"].tolist() == [1.0, 3.0, 4.0, 4.0]
     assert wave["signal_accumulation_id"].tolist() == [1] * 4
+    assert result.loc[2, "signal_peak"]
+    assert result.loc[2, "signal_accumulation"] == 3
 
 
 def test_accumulation_summary_has_expected_intrinsic_properties(
@@ -50,7 +52,7 @@ def test_accumulation_summary_has_expected_intrinsic_properties(
     assert wave["duration"] == 4
     assert wave["baseline"] == 0
     assert wave["total_auc"] == 4
-    assert wave["auc_at_peak"] == 4
+    assert wave["auc_at_peak"] == 3
     assert wave["accumulation_rate"] == 1
     assert wave["centroid_time"] == 1
     assert wave["half_accumulation_time"] == 1
@@ -62,7 +64,7 @@ def test_numeric_and_column_thresholds() -> None:
             "signal": [1.0, 2.0, 3.0],
             "baseline": [0.5, 1.0, 1.5],
             "signal_wave_id": [1, 1, 1],
-            "exit_signal_rising": [False, True, False],
+            "signal_peak": [False, True, False],
         }
     )
 
@@ -87,7 +89,7 @@ def test_accumulation_requires_peak_event(
     triangular_signal: pd.DataFrame,
 ) -> None:
     features = oscillation_features(triangular_signal).drop(
-        columns="exit_signal_rising"
+        columns="signal_peak"
     )
     behavior = Accumulation("signal")
 
