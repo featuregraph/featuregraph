@@ -3,7 +3,8 @@
   "description": "A Python framework for constructing explicit behavioral objects from ordered observations.",
   "creators": [
     {
-      "name": "Habib, Nazia"
+      "name": "Habib, Nazia",
+      "orcid": "0009-0000-5474-277X"
     }
   ],
   "version": "0.1.0a1",
@@ -22,6 +23,11 @@
       "identifier": "https://github.com/featuregraph/featuregraph",
       "relation": "isSupplementTo",
       "scheme": "url"
+    },
+    {
+      "identifier": "10.5281/zenodo.21535661",
+      "relation": "isVersionOf",
+      "scheme": "doi"
     }
   ]
 }
