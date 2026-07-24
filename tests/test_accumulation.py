@@ -119,4 +119,4 @@ def test_accumulation_propagates_parent_completeness(
         True,
         False,
     ]
-\n
+
