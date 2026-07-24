@@ -176,7 +176,7 @@ class Accumulation(Behavior):
             cumulative_col = f"{signal}_accumulation"
             index_col = f"{signal}_accumulation_index"
             source_index_col = f"{signal}_source_index"
-            peak_event_col = f"exit_{signal}_rising"
+            peak_event_col = f"{signal}_peak"
 
             before_peak_col = f"{signal}_before_peak"
             after_peak_col = f"{signal}_after_peak"
