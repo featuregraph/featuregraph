@@ -173,7 +173,6 @@ high_accumulations = (
     .where(total_auc__gt=50)
     .select(
         "accumulation_id",
-        "parent_oscillation_id",
         "total_auc",
         "accumulation_rate",
         "centroid_time",
