@@ -1,0 +1,11 @@
+{
+  "FeatureGraph": {
+    "diff_lag": 10,
+    "eps": 0.03,
+    "smooth_window": 9
+  },
+  "SciPy baseline": {
+    "distance_fraction": 0.6,
+    "prominence": 0.1
+  }
+}

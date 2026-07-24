@@ -5,6 +5,7 @@ matched,12.0
 precision,1.0
 recall,1.0
 f1,1.0
+interval_iou_mean,1.0
 start_index_mae,0.0
 peak_index_mae,0.0
 end_index_mae,0.0
