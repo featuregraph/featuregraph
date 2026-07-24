@@ -1,0 +1,48 @@
+{
+  "featuregraph_version": "0.1.0a1",
+  "python_version": "3.12.11",
+  "numpy_version": "2.5.1",
+  "pandas_version": "3.0.3",
+  "seed": 1729,
+  "cycles": 12,
+  "period": 80,
+  "noise_levels": [
+    0.0,
+    0.05,
+    0.1,
+    0.2,
+    0.3,
+    0.4
+  ],
+  "robustness_replicates": 10,
+  "matching_tolerance_samples": 20,
+  "featuregraph_operating_point": {
+    "smooth_window": 9,
+    "diff_lag": 5,
+    "eps": 0.0
+  },
+  "scipy_operating_point": {
+    "minimum_peak_distance_fraction_of_period": 0.45,
+    "prominence": 0.25
+  },
+  "sensitivity_grid": {
+    "smooth_windows": [
+      1,
+      5,
+      9,
+      15
+    ],
+    "diff_lags": [
+      1,
+      3,
+      5,
+      10
+    ],
+    "eps_values": [
+      0.0,
+      0.01,
+      0.03
+    ],
+    "replicates": 5
+  }
+}
