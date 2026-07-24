@@ -1,5 +1,7 @@
 # FeatureGraph
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21535661.svg)](https://doi.org/10.5281/zenodo.21535661)
+
 FeatureGraph turns ordered observations into explicit behavioral objects that software can inspect and query.
 
 A raw time series contains values. It may also contain oscillations, transitions, and accumulations, but those behaviors remain implicit until their states, boundaries, identities, and properties are constructed. FeatureGraph performs that construction deterministically and returns one row per behavioral object.
@@ -274,6 +276,8 @@ python scripts/reproduce.py
 ```
 
 It downloads the fixed BIDMC and Tennessee Eastman selections, reconstructs oscillation and accumulation tables, generates annotated figures, and records package, environment, hardware, timing, and checksum metadata. See [the reproducibility guide](docs/reproducibility.md) for data sources, cache locations, expected outputs, and archival-release instructions.
+
+FeatureGraph 0.1.0a1 is archived on Zenodo under the [version DOI 10.5281/zenodo.21535662](https://doi.org/10.5281/zenodo.21535662). Cite the version DOI for results produced with this release; use the [concept DOI 10.5281/zenodo.21535661](https://doi.org/10.5281/zenodo.21535661) to refer to FeatureGraph across versions.
 
 Release history is recorded in [CHANGELOG.md](CHANGELOG.md), citation metadata in [CITATION.cff](CITATION.cff), and the final alpha-release procedure in [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md).
 
