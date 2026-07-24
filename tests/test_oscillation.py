@@ -19,8 +19,10 @@ def test_fit_transform_constructs_expected_primitives(
     )
     assert result["enter_signal_rising"].sum() == 3
     assert result["exit_signal_rising"].sum() == 3
-    assert result.loc[3, "signal_peak_index"] == 3
-    assert result.loc[5, "signal_trough_index"] == 5
+    assert result.loc[2, "signal_peak"]
+    assert result.loc[2, "signal_peak_index"] == 2
+    assert result.loc[4, "signal_trough"]
+    assert result.loc[5, "signal_trough_index"] == 4
 
 
 def test_fit_transform_does_not_mutate_input(
@@ -53,6 +55,9 @@ def test_summary_returns_complete_objects_by_default(
     assert summary["rise_duration"].tolist() == [2, 2]
     assert summary["fall_duration"].tolist() == [2, 2]
     assert summary["duration"].tolist() == [4, 4]
+    assert summary["start_index"].tolist() == [0, 4]
+    assert summary["peak_index"].tolist() == [2, 6]
+    assert summary["end_index"].tolist() == [4, 8]
     assert summary["amplitude"].tolist() == [1.0, 1.0]
     assert summary["temporal_symmetry"].tolist() == [1.0, 1.0]
     assert np.isnan(summary.loc[0, "period"])
@@ -142,3 +147,34 @@ def test_summary_rejects_unconfigured_signal(
 
     with pytest.raises(ValueError, match="was not configured"):
         behavior.summarize(features, "other")
+
+
+def test_summary_uses_extrema_boundaries_across_flat_regions() -> None:
+    df = pd.DataFrame(
+        {
+            "signal": [
+                0.0,
+                1.0,
+                2.0,
+                2.0,
+                1.0,
+                0.0,
+                1.0,
+                2.0,
+                2.0,
+                1.0,
+                0.0,
+            ]
+        }
+    )
+    behavior = Oscillation("signal", diff_lag=1)
+    features = behavior.fit_transform(df)
+
+    summary = behavior.summarize(features, "signal").table
+
+    assert summary.loc[0, "start_index"] == 0
+    assert summary.loc[0, "peak_index"] == 2
+    assert summary.loc[0, "end_index"] == 5
+    assert summary.loc[0, "rise_duration"] == 2
+    assert summary.loc[0, "fall_duration"] == 3
+    assert summary.loc[0, "duration"] == 5

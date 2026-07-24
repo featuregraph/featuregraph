@@ -89,41 +89,45 @@ def representative_oscillation(
     table: Any,
     plot_signal: str,
 ) -> Any:
-    """Select a deterministic, visually valid complete oscillation."""
-
-    candidates = (
+    """Select and validate a deterministic representative oscillation."""
+    representative = (
         table.loc[table["is_complete"]]
         .sort_values(
             ["amplitude", "oscillation_id"],
             ascending=[False, True],
         )
+        .iloc[0]
     )
 
-    for _, candidate in candidates.iterrows():
-        start = int(candidate["start_index"])
-        peak = int(candidate["peak_index"])
-        end = int(candidate["end_index"])
+    start_index = int(representative["start_index"])
+    peak_index = int(representative["peak_index"])
+    end_index = int(representative["end_index"])
+    segment = observations.loc[start_index:end_index, plot_signal]
 
-        segment = observations.loc[start:end, plot_signal]
+    start_value = observations.loc[start_index, plot_signal]
+    peak_value = observations.loc[peak_index, plot_signal]
+    end_value = observations.loc[end_index, plot_signal]
+    maximum_value = segment.max()
 
-        if segment.empty or peak not in segment.index:
-            continue
-
-        peak_value = observations.loc[peak, plot_signal]
-        maximum_value = segment.max()
-
-        if np.isclose(
-            peak_value,
-            maximum_value,
-            rtol=1e-9,
-            atol=1e-12,
-        ):
-            return candidate
-
-    raise RuntimeError(
-        f"No complete oscillation has a peak aligned with "
-        f"the visible maximum of {plot_signal!r}."
+    peak_is_maximum = np.isclose(
+        peak_value,
+        maximum_value,
+        rtol=1e-9,
+        atol=1e-12,
     )
+    endpoints_below_peak = (
+        start_value < peak_value
+        and end_value < peak_value
+    )
+
+    if not peak_is_maximum or not endpoints_below_peak:
+        raise RuntimeError(
+            "Corrected trough-peak-trough boundaries do not align "
+            f"with the displayed values of {plot_signal!r}."
+        )
+
+    return representative
+
 
 def annotated_figure(
     observations: Any,
@@ -132,11 +136,11 @@ def annotated_figure(
     output_path: Path,
     title: str,
 ) -> None:
-    
+
     representative = representative_oscillation(
-    observations,
-    table,
-    plot_signal,
+        observations,
+        table,
+        plot_signal,
     )
 
     start = int(representative["start_index"])
@@ -166,9 +170,9 @@ def annotated_figure(
     )
 
     axis.set(
-    title=f"{title} — oscillation {oscillation_id}",
-    xlabel="Sample index",
-    ylabel=plot_signal.replace("_", " ").title(),
+        title=f"{title} — oscillation {oscillation_id}",
+        xlabel="Sample index",
+        ylabel=plot_signal.replace("_", " ").title(),
     )
 
     axis.grid(alpha=0.2)
@@ -185,7 +189,7 @@ def save_objects(
     tables_dir: Path,
     figures_dir: Path,
     plot_signal: str | None = None,
-    ) -> dict[str, Any]:
+) -> dict[str, Any]:
     oscillation_path = tables_dir / f"{name}_oscillations.csv"
     accumulation_path = tables_dir / f"{name}_accumulations.csv"
     figure_path = figures_dir / f"{name}_annotated_oscillation.png"
@@ -247,7 +251,7 @@ def main() -> None:
         signals="respiration",
         group="subject",
         smooth_signal=False,
-        diff_lag=1
+        diff_lag=1,
     )
     bidmc_features = bidmc_builder.fit_transform(bidmc)
     bidmc_oscillations = bidmc_builder.summarize(
@@ -286,7 +290,7 @@ def main() -> None:
         group=["fault_number", "simulation_run"],
         smooth_signal=True,
         smooth_window=20,
-        diff_lag=1
+        diff_lag=1,
     )
     eastman_features = eastman_builder.fit_transform(eastman)
     eastman_oscillations = eastman_builder.summarize(
@@ -305,14 +309,14 @@ def main() -> None:
         signal="reactor_temperature",
     )
     runs["eastman"] = save_objects(
-    "eastman",
-    eastman_features,
-    "reactor_temperature",
-    eastman_oscillations,
-    eastman_accumulations,
-    tables_dir,
-    figures_dir,
-    plot_signal="reactor_temperature_smooth",
+        "eastman",
+        eastman_features,
+        "reactor_temperature",
+        eastman_oscillations,
+        eastman_accumulations,
+        tables_dir,
+        figures_dir,
+        plot_signal="reactor_temperature_smooth",
     )
     runs["eastman"]["wall_seconds"] = time.perf_counter() - started
     runs["eastman"]["selection"] = {

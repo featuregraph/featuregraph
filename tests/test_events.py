@@ -6,6 +6,7 @@ from featuregraph.operators.events import (
     event_id,
     event_index,
     exit_state,
+    preceding_sample_event,
 )
 
 
@@ -65,4 +66,23 @@ def test_event_index_preserves_index_and_resets_by_group() -> None:
     assert_series_equal(
         result,
         pd.Series([float("nan"), 11.0, float("nan"), 21.0], index=df.index),
+    )
+
+
+def test_preceding_sample_event_marks_previous_row() -> None:
+    transition = pd.Series([False, False, False, True, False])
+
+    assert_series_equal(
+        preceding_sample_event(transition),
+        pd.Series([False, False, True, False, False]),
+    )
+
+
+def test_preceding_sample_event_respects_groups() -> None:
+    transition = pd.Series([False, True, False, True])
+    group = pd.Series(["a", "a", "b", "b"])
+
+    assert_series_equal(
+        preceding_sample_event(transition, group),
+        pd.Series([True, False, True, False]),
     )

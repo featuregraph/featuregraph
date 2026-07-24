@@ -7,6 +7,7 @@ from featuregraph.operators.events import (
     event_id,
     event_index,
     exit_state,
+    preceding_sample_event,
 )
 from featuregraph.operators.states import (
     negative_state,
@@ -91,6 +92,8 @@ class Oscillation(Behavior):
             enter_rising_col = f"enter_{rising_col}"
             exit_rising_col = f"exit_{rising_col}"
             rate_col = f"{signal}_rate"
+            peak_col = f"{signal}_peak"
+            trough_col = f"{signal}_trough"
 
             if self.group_columns:
                 difference = (
@@ -130,15 +133,28 @@ class Oscillation(Behavior):
                 event_group,
             )
 
+            # Directional states describe the edge ending at the current
+            # row. A reversal detected at row i therefore places the
+            # corresponding extremum at the preceding sample.
+            df[peak_col] = preceding_sample_event(
+                df[exit_rising_col],
+                event_group,
+            )
+
+            df[trough_col] = preceding_sample_event(
+                df[enter_rising_col],
+                event_group,
+            )
+
             df[f"{signal}_peak_index"] = event_index(
                 df,
-                exit_rising_col,
+                peak_col,
                 self.group,
             )
 
             df[f"{signal}_trough_index"] = event_index(
                 df,
-                enter_rising_col,
+                trough_col,
                 self.group,
             )
 
@@ -241,6 +257,41 @@ class Oscillation(Behavior):
                 .transform("min")
             ).clip(lower=0)
 
+            wave_id_col = f"{signal}_wave_id"
+            start_index = grouped[
+                f"{signal}_trough_index"
+            ].transform("first")
+            peak_index = grouped[
+                f"{signal}_peak_index"
+            ].transform("max")
+            end_index = grouped[
+                f"{signal}_trough_index"
+            ].transform("max")
+            has_start = grouped[
+                f"enter_{signal}_rising"
+            ].transform("max").astype(bool)
+
+            if self.group_columns:
+                last_wave_id = (
+                    df.groupby(
+                        self.group_columns,
+                        sort=False,
+                    )[wave_id_col]
+                    .transform("max")
+                )
+            else:
+                last_wave_id = df[wave_id_col].max()
+
+            df[f"{signal}_wave_complete"] = (
+                has_start
+                & start_index.notna()
+                & peak_index.notna()
+                & end_index.notna()
+                & start_index.lt(peak_index)
+                & peak_index.lt(end_index)
+                & df[wave_id_col].lt(last_wave_id)
+            )
+
         return df
 
     def summarize(
@@ -270,15 +321,23 @@ class Oscillation(Behavior):
                 sort=False,
             )
             .agg(
+                start_index=(
+                    f"{signal}_trough_index",
+                    "first",
+                ),
                 peak_index=(
                     f"{signal}_peak_index",
                     "max",
                 ),
-                rise_duration=(
+                end_index=(
+                    f"{signal}_trough_index",
+                    "max",
+                ),
+                rising_samples=(
                     f"{signal}_rising",
                     "sum",
                 ),
-                fall_duration=(
+                falling_samples=(
                     f"{signal}_falling",
                     "sum",
                 ),
@@ -298,9 +357,9 @@ class Oscillation(Behavior):
                     f"{signal}_peak_fall_rate",
                     "max",
                 ),
-                has_start=(
-                    f"enter_{signal}_rising",
-                    "max",
+                is_complete=(
+                    f"{signal}_wave_complete",
+                    "first",
                 ),
             )
             .reset_index()
@@ -312,30 +371,6 @@ class Oscillation(Behavior):
             )
         )
 
-        if self.group_columns:
-            has_next_boundary = (
-                summarydf.groupby(
-                    self.group_columns,
-                    sort=False,
-                )["oscillation_id"]
-                .shift(-1)
-                .notna()
-            )
-        else:
-            has_next_boundary = (
-                summarydf["oscillation_id"]
-                .shift(-1)
-                .notna()
-            )
-
-        summarydf["is_complete"] = (
-            summarydf["has_start"].astype(bool)
-            & summarydf["peak_index"].notna()
-            & summarydf["rise_duration"].gt(0)
-            & summarydf["fall_duration"].gt(0)
-            & has_next_boundary
-        )
-
         if not include_partial:
             summarydf = (
                 summarydf.loc[
@@ -345,19 +380,19 @@ class Oscillation(Behavior):
                 .reset_index(drop=True)
             )
 
-        summarydf["start_index"] = (
+        summarydf["rise_duration"] = (
             summarydf["peak_index"]
-            - summarydf["rise_duration"]
+            - summarydf["start_index"]
         )
 
-        summarydf["end_index"] = (
-            summarydf["peak_index"]
-            + summarydf["fall_duration"]
+        summarydf["fall_duration"] = (
+            summarydf["end_index"]
+            - summarydf["peak_index"]
         )
 
         summarydf["duration"] = (
-            summarydf["rise_duration"]
-            + summarydf["fall_duration"]
+            summarydf["end_index"]
+            - summarydf["start_index"]
         )
 
         if self.group_columns:
