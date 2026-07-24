@@ -84,6 +84,67 @@ def sha256(path: Path) -> str:
             digest.update(block)
     return digest.hexdigest()
 
+def validate_object_tables(
+    name: str,
+    oscillation: Any,
+    accumulation: Any,
+) -> None:
+    """Fail when exported parent and child object tables disagree."""
+    oscillations = oscillation.table
+    accumulations = accumulation.table
+
+    if oscillations.empty or accumulations.empty:
+        raise RuntimeError(f"{name}: generated object tables cannot be empty.")
+
+    if not oscillations["is_complete"].astype(bool).all():
+        raise RuntimeError(f"{name}: oscillation table contains partial objects.")
+
+    if not accumulations["is_complete"].astype(bool).all():
+        raise RuntimeError(f"{name}: accumulation table contains partial objects.")
+
+    ordered = (
+        oscillations["start_index"].lt(oscillations["peak_index"])
+        & oscillations["peak_index"].lt(oscillations["end_index"])
+    )
+    if not ordered.all():
+        raise RuntimeError(f"{name}: invalid trough-peak-trough boundary order.")
+
+    expected_durations = {
+        "rise_duration": (
+            oscillations["peak_index"] - oscillations["start_index"]
+        ),
+        "fall_duration": (
+            oscillations["end_index"] - oscillations["peak_index"]
+        ),
+        "duration": (
+            oscillations["end_index"] - oscillations["start_index"]
+        ),
+    }
+    for column, expected in expected_durations.items():
+        if not np.allclose(oscillations[column], expected):
+            raise RuntimeError(f"{name}: inconsistent {column} values.")
+
+    group_columns = [
+        column
+        for column in oscillation.group
+        if column in accumulations.columns
+    ]
+    oscillation_keys = set(
+        oscillations[
+            [*group_columns, "oscillation_id"]
+        ].itertuples(index=False, name=None)
+    )
+    accumulation_keys = set(
+        accumulations[
+            [*group_columns, "accumulation_id"]
+        ].itertuples(index=False, name=None)
+    )
+    if oscillation_keys != accumulation_keys:
+        raise RuntimeError(
+            f"{name}: oscillation and accumulation object IDs differ."
+        )
+
+
 def representative_oscillation(
     observations: Any,
     table: Any,
@@ -190,6 +251,12 @@ def save_objects(
     figures_dir: Path,
     plot_signal: str | None = None,
 ) -> dict[str, Any]:
+    validate_object_tables(
+        name,
+        oscillation,
+        accumulation,
+    )
+
     oscillation_path = tables_dir / f"{name}_oscillations.csv"
     accumulation_path = tables_dir / f"{name}_accumulations.csv"
     figure_path = figures_dir / f"{name}_annotated_oscillation.png"
