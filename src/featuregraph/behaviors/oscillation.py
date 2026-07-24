@@ -286,15 +286,23 @@ class Oscillation(Behavior):
                 sort=False,
             )
             .agg(
+                start_index=(
+                    f"{signal}_trough_index",
+                    "first",
+                ),
                 peak_index=(
                     f"{signal}_peak_index",
                     "max",
                 ),
-                rise_duration=(
+                end_index=(
+                    f"{signal}_trough_index",
+                    "max",
+                ),
+                rising_samples=(
                     f"{signal}_rising",
                     "sum",
                 ),
-                fall_duration=(
+                falling_samples=(
                     f"{signal}_falling",
                     "sum",
                 ),
@@ -346,9 +354,11 @@ class Oscillation(Behavior):
 
         summarydf["is_complete"] = (
             summarydf["has_start"].astype(bool)
+            & summarydf["start_index"].notna()
             & summarydf["peak_index"].notna()
-            & summarydf["rise_duration"].gt(0)
-            & summarydf["fall_duration"].gt(0)
+            & summarydf["end_index"].notna()
+            & summarydf["start_index"].lt(summarydf["peak_index"])
+            & summarydf["peak_index"].lt(summarydf["end_index"])
             & has_next_boundary
         )
 
@@ -361,19 +371,19 @@ class Oscillation(Behavior):
                 .reset_index(drop=True)
             )
 
-        summarydf["start_index"] = (
+        summarydf["rise_duration"] = (
             summarydf["peak_index"]
-            - summarydf["rise_duration"]
+            - summarydf["start_index"]
         )
 
-        summarydf["end_index"] = (
-            summarydf["peak_index"]
-            + summarydf["fall_duration"]
+        summarydf["fall_duration"] = (
+            summarydf["end_index"]
+            - summarydf["peak_index"]
         )
 
         summarydf["duration"] = (
-            summarydf["rise_duration"]
-            + summarydf["fall_duration"]
+            summarydf["end_index"]
+            - summarydf["start_index"]
         )
 
         if self.group_columns:
