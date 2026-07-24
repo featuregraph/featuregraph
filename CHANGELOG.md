@@ -19,6 +19,7 @@ All notable changes to FeatureGraph are documented in this file. The format foll
 - Citation and Zenodo metadata.
 - CI tests across Python 3.10 through 3.13.
 - Package-build, clean-wheel-install, and reproduction smoke checks.
+- Archival release on Zenodo with [version DOI 10.5281/zenodo.21535662](https://doi.org/10.5281/zenodo.21535662).
 
 ### Fixed
 
