@@ -283,6 +283,7 @@ class Accumulation(Behavior):
         self,
         df: pd.DataFrame,
         signal: str,
+        include_partial: bool = False,
     ) -> BehaviorObjects:
         self.validate_signal(df, signal)
 
@@ -294,6 +295,10 @@ class Accumulation(Behavior):
         summarydf = (
             df.groupby(object_group, sort=False)
             .agg(
+                is_complete=(
+                    f"{signal}_wave_complete",
+                    "first",
+                ),
                 start_index=(
                     f"{signal}_source_index",
                     "first",
@@ -344,6 +349,15 @@ class Accumulation(Behavior):
             )
         )
 
+        if not include_partial:
+            summarydf = (
+                summarydf.loc[
+                    summarydf["is_complete"]
+                ]
+                .copy()
+                .reset_index(drop=True)
+            )
+
         duration = summarydf["duration"]
 
         summarydf["accumulation_rate"] = (
@@ -366,6 +380,7 @@ class Accumulation(Behavior):
 
         properties = (
             "accumulation_id",
+            "is_complete",
             # "parent_oscillation_id",
             "start_index",
             "end_index",
