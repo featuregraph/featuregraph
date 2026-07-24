@@ -95,3 +95,28 @@ def test_accumulation_requires_peak_event(
 
     with pytest.raises(ValueError, match="peak event column"):
         behavior.fit_transform(features)
+
+def test_accumulation_propagates_parent_completeness(
+    triangular_signal: pd.DataFrame,
+) -> None:
+    features = oscillation_features(triangular_signal)
+    behavior = Accumulation("signal", threshold="min")
+    result = behavior.fit_transform(features)
+
+    complete = behavior.summarize(result, "signal").table
+    all_objects = behavior.summarize(
+        result,
+        "signal",
+        include_partial=True,
+    ).table
+
+    assert complete["accumulation_id"].tolist() == [1, 2]
+    assert complete["is_complete"].all()
+    assert all_objects["accumulation_id"].tolist() == [0, 1, 2, 3]
+    assert all_objects["is_complete"].tolist() == [
+        False,
+        True,
+        True,
+        False,
+    ]
+\n
