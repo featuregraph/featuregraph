@@ -28,10 +28,10 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
@@ -53,10 +53,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.13"
           cache: pip
@@ -71,10 +71,10 @@ jobs:
         run: |
           python -m venv /tmp/featuregraph-wheel-test
           /tmp/featuregraph-wheel-test/bin/python -m pip install dist/*.whl
-          /tmp/featuregraph-wheel-test/bin/python -c "import featuregraph; print(featuregraph.__version__)"
+          /tmp/featuregraph-wheel-test/bin/python -c "import featuregraph; assert featuregraph.__version__ == '0.1.0a1'"
 
       - name: Upload distributions
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: distributions
           path: dist/
@@ -86,10 +86,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.13"
           cache: pip
@@ -101,7 +101,7 @@ jobs:
         run: python scripts/reproduce.py --refresh
 
       - name: Upload paper artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: paper-artifacts
           path: artifacts/paper/
