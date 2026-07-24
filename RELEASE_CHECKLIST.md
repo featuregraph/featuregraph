@@ -18,7 +18,8 @@ Use this checklist for the archival alpha release.
 - [ ] Confirm package version and `featuregraph.__version__` are both `0.1.0a1`.
 - [ ] Create annotated tag `v0.1.0a1` from the verified commit.
 - [ ] Push the tag and create the corresponding GitHub prerelease.
-- [ ] Copy the `0.1.0a1` changelog entry into the release notes.\n- [ ] Attach the wheel, source distribution, paper-artifact archive, and checksums.
+- [ ] Copy the `0.1.0a1` changelog entry into the release notes.
+- [ ] Attach the wheel, source distribution, paper-artifact archive, and checksums.
 
 ## Archive and citation
 
