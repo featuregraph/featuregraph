@@ -6,11 +6,13 @@ type: software
 authors:
   - family-names: "Habib"
     given-names: "Nazia"
+    orcid: "https://orcid.org/0009-0000-5474-277X"
 version: "0.1.0a1"
+doi: "10.5281/zenodo.21535662"
 date-released: "2026-07-24"
 license: MIT
 repository-code: "https://github.com/featuregraph/featuregraph"
-url: "https://github.com/featuregraph/featuregraph"
+url: "https://doi.org/10.5281/zenodo.21535662"
 keywords:
   - time series
   - behavioral objects
