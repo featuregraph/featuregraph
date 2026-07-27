@@ -182,3 +182,53 @@ def test_summary_uses_extrema_boundaries_across_flat_regions() -> None:
     assert summary.loc[0, "rise_duration"] == 2
     assert summary.loc[0, "fall_duration"] == 3
     assert summary.loc[0, "duration"] == 5
+
+
+def test_oscillation_composes_complete_transition_objects() -> None:
+    df = pd.DataFrame(
+        {
+            "signal": [
+                0.0,
+                1.0,
+                2.0,
+                2.0,
+                1.0,
+                0.0,
+                1.0,
+                2.0,
+                2.0,
+                1.0,
+                0.0,
+            ]
+        }
+    )
+    behavior = Oscillation("signal", diff_lag=1)
+    features = behavior.fit_transform(df)
+    summary = behavior.summarize(features, "signal").table
+
+    assert set(
+        features["signal_transition_direction"].dropna()
+    ) == {"rising", "falling", "inactive"}
+    assert features["signal_transition_id"].is_monotonic_increasing
+    assert summary["start_index"].tolist() == [0]
+    assert summary["peak_index"].tolist() == [2]
+    assert summary["end_index"].tolist() == [5]
+
+
+def test_smoothing_transitions_use_the_working_signal() -> None:
+    df = pd.DataFrame(
+        {"signal": [0.0, 2.0, 4.0, 2.0, 0.0]}
+    )
+    behavior = Oscillation(
+        "signal",
+        smooth_signal=True,
+        smooth_window=2,
+        diff_lag=1,
+    )
+    features = behavior.fit_transform(df)
+
+    expected = features["signal_smooth"].diff().gt(0)
+    assert_series_equal(
+        features["signal_rising"],
+        expected.rename("signal_rising"),
+    )
