@@ -120,3 +120,83 @@ def test_accumulation_propagates_parent_completeness(
         False,
     ]
 
+
+def test_transition_oscillation_accumulation_pipeline(
+    triangular_signal: pd.DataFrame,
+) -> None:
+    oscillation = Oscillation("signal", diff_lag=1)
+    oscillation_features = oscillation.fit_transform(
+        triangular_signal
+    )
+    oscillation_objects = oscillation.summarize(
+        oscillation_features,
+        "signal",
+    )
+
+    accumulation = Accumulation("signal", threshold="min")
+    accumulation_features = accumulation.fit_transform(
+        oscillation_features
+    )
+    accumulation_objects = accumulation.summarize(
+        accumulation_features,
+        "signal",
+    )
+
+    assert "signal_transition_id" in oscillation_features
+    assert set(
+        oscillation_features[
+            "signal_transition_direction"
+        ].dropna()
+    ) == {"rising", "falling"}
+    assert oscillation_objects.table["oscillation_id"].tolist() == (
+        accumulation_objects.table["accumulation_id"].tolist()
+    )
+    assert accumulation_objects.table["is_complete"].all()
+
+
+def test_accumulation_eps_classifies_contribution_states(
+    triangular_signal: pd.DataFrame,
+) -> None:
+    features = oscillation_features(triangular_signal)
+    result = Accumulation(
+        "signal",
+        threshold=1.0,
+        eps=0.25,
+    ).fit_transform(features)
+
+    assert (
+        result["signal_is_accumulating"]
+        == result["signal_accumulation_contribution"].gt(0.25)
+    ).all()
+    assert (
+        result["signal_is_depleting"]
+        == result["signal_accumulation_contribution"].lt(-0.25)
+    ).all()
+    assert (
+        result["signal_accumulation_inactive"]
+        == result[
+            "signal_accumulation_contribution"
+        ].abs().le(0.25)
+    ).all()
+
+
+def test_accumulation_constructs_multiple_signals() -> None:
+    df = pd.DataFrame(
+        {
+            "signal": [0.0, 1.0, 0.0],
+            "other": [0.0, 2.0, 0.0],
+            "signal_wave_id": [1, 1, 1],
+            "other_wave_id": [1, 1, 1],
+            "signal_peak": [False, True, False],
+            "other_peak": [False, True, False],
+            "signal_wave_complete": [True] * 3,
+            "other_wave_complete": [True] * 3,
+        }
+    )
+    result = Accumulation(
+        ["signal", "other"],
+        threshold="min",
+    ).fit_transform(df)
+
+    assert result["signal_accumulation"].tolist() == [0.0, 1.0, 1.0]
+    assert result["other_accumulation"].tolist() == [0.0, 2.0, 2.0]
