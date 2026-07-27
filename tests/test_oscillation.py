@@ -19,6 +19,10 @@ def test_fit_transform_constructs_expected_primitives(
     )
     assert result["enter_signal_rising"].sum() == 3
     assert result["exit_signal_rising"].sum() == 3
+    assert "signal_transition_id" in result
+    assert set(
+        result["signal_transition_direction"].dropna()
+    ) == {"rising", "falling"}
     assert result.loc[2, "signal_peak"]
     assert result.loc[2, "signal_peak_index"] == 2
     assert result.loc[4, "signal_trough"]
