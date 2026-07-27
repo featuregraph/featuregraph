@@ -1,4 +1,5 @@
 """Regenerate FeatureGraph paper tables, figures, and run metadata."""
+# ruff: noqa: E402, I001
 
 from __future__ import annotations
 
@@ -86,21 +87,43 @@ def sha256(path: Path) -> str:
 
 def validate_object_tables(
     name: str,
+    transition: Any,
     oscillation: Any,
     accumulation: Any,
 ) -> None:
     """Fail when exported parent and child object tables disagree."""
+    transitions = transition.table
     oscillations = oscillation.table
     accumulations = accumulation.table
 
-    if oscillations.empty or accumulations.empty:
+    if transitions.empty or oscillations.empty or accumulations.empty:
         raise RuntimeError(f"{name}: generated object tables cannot be empty.")
+
+    if not transitions["is_complete"].astype(bool).all():
+        raise RuntimeError(f"{name}: transition table contains partial objects.")
 
     if not oscillations["is_complete"].astype(bool).all():
         raise RuntimeError(f"{name}: oscillation table contains partial objects.")
 
     if not accumulations["is_complete"].astype(bool).all():
         raise RuntimeError(f"{name}: accumulation table contains partial objects.")
+
+    valid_directions = {"rising", "falling", "inactive"}
+    observed_directions = set(transitions["direction"])
+    if not observed_directions.issubset(valid_directions):
+        raise RuntimeError(f"{name}: transition table contains invalid directions.")
+
+    transition_boundaries = transitions["start_index"].lt(
+        transitions["end_index"]
+    )
+    if not transition_boundaries.all():
+        raise RuntimeError(f"{name}: invalid transition boundary order.")
+
+    transition_duration = (
+        transitions["end_index"] - transitions["start_index"]
+    )
+    if not np.allclose(transitions["duration"], transition_duration):
+        raise RuntimeError(f"{name}: inconsistent transition duration values.")
 
     ordered = (
         oscillations["start_index"].lt(oscillations["peak_index"])
@@ -245,6 +268,7 @@ def save_objects(
     name: str,
     observations: Any,
     signal: str,
+    transition: Any,
     oscillation: Any,
     accumulation: Any,
     tables_dir: Path,
@@ -253,14 +277,21 @@ def save_objects(
 ) -> dict[str, Any]:
     validate_object_tables(
         name,
+        transition,
         oscillation,
         accumulation,
     )
 
+    transition_path = tables_dir / f"{name}_transitions.csv"
     oscillation_path = tables_dir / f"{name}_oscillations.csv"
     accumulation_path = tables_dir / f"{name}_accumulations.csv"
     figure_path = figures_dir / f"{name}_annotated_oscillation.png"
 
+    transition.table.to_csv(
+        transition_path,
+        index=False,
+        lineterminator="\n",
+    )
     oscillation.table.to_csv(
         oscillation_path,
         index=False,
@@ -280,12 +311,12 @@ def save_objects(
         f"{name.replace('_', ' ').title()} oscillation",
     )
 
-    # Keep the existing return statement unchanged.
-
     return {
+        "transition_count": transition.count,
         "oscillation_count": oscillation.count,
         "accumulation_count": accumulation.count,
         "artifacts": {
+            str(transition_path): sha256(transition_path),
             str(oscillation_path): sha256(oscillation_path),
             str(accumulation_path): sha256(accumulation_path),
             str(figure_path): sha256(figure_path),
@@ -321,6 +352,15 @@ def main() -> None:
         diff_lag=1,
     )
     bidmc_features = bidmc_builder.fit_transform(bidmc)
+    bidmc_transition_builder = fg.transition.Transition(
+        signals="respiration",
+        group="subject",
+        diff_lag=1,
+    )
+    bidmc_transitions = bidmc_transition_builder.summarize(
+        bidmc_features,
+        signal="respiration",
+    )
     bidmc_oscillations = bidmc_builder.summarize(
         bidmc_features, signal="respiration"
     )
@@ -337,6 +377,7 @@ def main() -> None:
         "bidmc",
         bidmc,
         "respiration",
+        bidmc_transitions,
         bidmc_oscillations,
         bidmc_accumulations,
         tables_dir,
@@ -360,6 +401,18 @@ def main() -> None:
         diff_lag=1,
     )
     eastman_features = eastman_builder.fit_transform(eastman)
+    eastman_transition_builder = fg.transition.Transition(
+        signals="reactor_temperature",
+        group=["fault_number", "simulation_run"],
+        diff_lag=1,
+        source_signals={
+            "reactor_temperature": "reactor_temperature_smooth",
+        },
+    )
+    eastman_transitions = eastman_transition_builder.summarize(
+        eastman_features,
+        signal="reactor_temperature",
+    )
     eastman_oscillations = eastman_builder.summarize(
         eastman_features, signal="reactor_temperature"
     )
@@ -379,6 +432,7 @@ def main() -> None:
         "eastman",
         eastman_features,
         "reactor_temperature",
+        eastman_transitions,
         eastman_oscillations,
         eastman_accumulations,
         tables_dir,
