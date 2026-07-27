@@ -283,7 +283,7 @@ class Transition(Behavior):
             ].transform("first")
             detected_end = grouped[
                 f"{signal}_transition_end_index"
-            ].transform("max")
+            ].transform("last")
             start_position = grouped[
                 f"{signal}_transition_start_position"
             ].transform("first")

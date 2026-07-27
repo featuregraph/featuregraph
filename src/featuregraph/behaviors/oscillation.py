@@ -265,10 +265,10 @@ class Oscillation(Behavior):
             ].transform("first")
             peak_index = grouped[
                 f"{signal}_peak_index"
-            ].transform("max")
+            ].transform("last")
             end_index = grouped[
                 f"{signal}_trough_index"
-            ].transform("max")
+            ].transform("last")
             start_position = grouped[
                 f"{signal}_trough_position"
             ].transform("first")
