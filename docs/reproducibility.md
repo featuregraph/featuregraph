@@ -44,7 +44,16 @@ Artifacts are written to `artifacts/paper` by default. To choose another locatio
 python scripts/reproduce.py --output-dir path/to/output
 ```
 
-The script creates four complete object tables, two annotated-object figures, `environment.json`, and `run_metadata.json`. Re-running with the same source data and FeatureGraph version produces identical CSV contents. PNG metadata and benchmark timing may vary by platform.
+The script creates six complete object tables, two annotated-object figures, `environment.json`, and `run_metadata.json`:
+
+- `tables/bidmc_transitions.csv`
+- `tables/bidmc_oscillations.csv`
+- `tables/bidmc_accumulations.csv`
+- `tables/eastman_transitions.csv`
+- `tables/eastman_oscillations.csv`
+- `tables/eastman_accumulations.csv`
+
+Re-running with the same source data and FeatureGraph version produces identical CSV contents. PNG metadata and benchmark timing may vary by platform.
 
 ## Randomness
 
@@ -73,7 +82,7 @@ python -m build
 python scripts/reproduce.py --help
 ```
 
-CI performs tests on every supported Python version and builds both the source distribution and wheel. A manual `workflow_dispatch` run can execute the network-dependent full reproduction job and upload its artifacts.
+CI performs tests on every supported Python version, builds both the source distribution and wheel, and parses, compiles, and executes every tutorial notebook against the current public API. A manual `workflow_dispatch` run can execute the network-dependent full reproduction job and upload its artifacts.
 
 ## Archival release
 

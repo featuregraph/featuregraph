@@ -4,6 +4,20 @@ All notable changes to FeatureGraph are documented in this file. The format foll
 
 ## [Unreleased]
 
+### Added
+
+- First-order `Transition` objects for contiguous rising, falling, and inactive behavior.
+- Transition summaries with boundaries, completeness, duration, value change, rate measurements, identifiers, and provenance.
+- Transition object tables in the BIDMC and Tennessee Eastman reproduction outputs.
+- Notebook parsing, compilation, API-contract, and execution checks in CI.
+- Robustness coverage for grouped records, missing values, flat regions, partial objects, multiple signals, and smoothing.
+
+### Changed
+
+- `Oscillation` now composes its directional states from `Transition` objects while preserving its public feature and object-table contracts.
+- All tutorial notebooks now use the current `Transition`, `Oscillation`, and `Accumulation` APIs.
+- The public reproduction workflow now validates the complete Transition → Oscillation → Accumulation hierarchy.
+
 ## [0.1.0a1] - 2026-07-24
 
 ### Added

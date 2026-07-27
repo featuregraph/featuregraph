@@ -8,13 +8,14 @@ A raw time series contains values. It may also contain oscillations, transitions
 
 ```text
 observations
-    → states and events
+    → directional transitions
+    → oscillations and accumulations
     → object boundaries and identities
     → behavioral object tables
     → computational queries
 ```
 
-The current alpha provides oscillation objects, wave-derived accumulation objects, inspectable construction features, and a small deterministic query interface. Pandas is the reference execution model.
+The current development version provides first-order transition objects, oscillations composed from those transitions, wave-derived accumulation objects, inspectable construction features, and a small deterministic query interface. Pandas is the reference execution model.
 
 ## Demo
 
@@ -25,6 +26,25 @@ import featuregraph as fg
 
 bidmc = fg.datasets.bidmc(subject=1)
 ```
+
+### Construct transition objects
+
+```python
+transition = fg.transition.Transition(
+    signals="respiration",
+    group="subject",
+    diff_lag=10,
+    eps=0.001,
+)
+
+transition_features = transition.fit_transform(bidmc)
+transition_objects = transition.summarize(
+    transition_features,
+    signal="respiration",
+)
+```
+
+For each signal, `Transition` assigns every observation to a contiguous rising, falling, or inactive object. The summary records object identity and boundaries, completeness, duration, start and end values, net change, and mean and peak rate. `diff_lag` controls the comparison interval and `eps` controls the minimum change treated as directional.
 
 ### Construct oscillation objects
 
@@ -45,13 +65,14 @@ respiration_objects = respiration.summarize(
 
 `fit_transform()` constructs the sample-level representation:
 
-- rising and falling states;
+- rising, falling, and inactive transition states;
+- contiguous transition identities and measurements;
 - state-entry and state-exit events;
 - peak and trough locations;
 - oscillation identities;
 - object-relative measurements.
 
-`summarize()` produces one row per complete oscillation.
+Oscillation composes the transition layer instead of independently redefining rising and falling behavior. `summarize()` produces one row per complete oscillation.
 
 The returned result contains both the object table and the evidence supporting its construction:
 
@@ -243,12 +264,15 @@ Without an explicit representation, each downstream analysis must identify waves
 
 ```text
 raw samples
-    → explicit oscillations
+    → explicit transitions
+    → composed oscillations
     → related accumulations
     → ordinary computational queries
 ```
 
 The resulting objects can support analysis, visualization, validation, inter-object relationships, and downstream models without hiding how they were constructed.
+
+See [Behavior architecture](docs/behavior-architecture.md) for the current Transition → Oscillation → Accumulation contracts and invariants.
 
 ## Installation
 
@@ -275,7 +299,7 @@ The complete deterministic reproduction command is:
 python scripts/reproduce.py
 ```
 
-It downloads the fixed BIDMC and Tennessee Eastman selections, reconstructs oscillation and accumulation tables, generates annotated figures, and records package, environment, hardware, timing, and checksum metadata. See [the reproducibility guide](docs/reproducibility.md) for data sources, cache locations, expected outputs, and archival-release instructions.
+It downloads the fixed BIDMC and Tennessee Eastman selections, reconstructs transition, oscillation, and accumulation tables, generates annotated figures, and records package, environment, hardware, timing, and checksum metadata. See [the reproducibility guide](docs/reproducibility.md) for data sources, cache locations, expected outputs, and archival-release instructions.
 
 FeatureGraph 0.1.0a1 is archived on Zenodo under the [version DOI 10.5281/zenodo.21535662](https://doi.org/10.5281/zenodo.21535662). Cite the version DOI for results produced with this release; use the [concept DOI 10.5281/zenodo.21535661](https://doi.org/10.5281/zenodo.21535661) to refer to FeatureGraph across versions.
 
@@ -285,13 +309,15 @@ Release history is recorded in [CHANGELOG.md](CHANGELOG.md), citation metadata i
 
 FeatureGraph is an alpha research release. Current development priorities include:
 
-- transition objects;
-- stronger completeness and boundary validation;
-- tests across multiple signals and groups;
+- formal semantic specification and manuscript alignment;
+- broader consumer demonstrations and held-out validation;
 - additional relationships between objects;
-- a clean interface for defining new behavioral object types.
+- a clean interface for defining new behavioral object types;
+- tensor-native backend exploration.
 
 The API may change while these semantics are finalized.
+
+The archived `v0.1.0a1` release predates the completed Transition API. Unreleased development progress is recorded in [CHANGELOG.md](CHANGELOG.md).
 
 ## License
 
