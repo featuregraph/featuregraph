@@ -6,7 +6,22 @@ import pytest
 from scripts.reproduce import validate_object_tables
 
 
-def object_tables() -> tuple[SimpleNamespace, SimpleNamespace]:
+def object_tables() -> tuple[
+    SimpleNamespace,
+    SimpleNamespace,
+    SimpleNamespace,
+]:
+    transitions = pd.DataFrame(
+        {
+            "subject": [1],
+            "transition_id": [1],
+            "direction": ["rising"],
+            "is_complete": [True],
+            "start_index": [0],
+            "end_index": [2],
+            "duration": [2],
+        }
+    )
     oscillations = pd.DataFrame(
         {
             "subject": [1],
@@ -28,40 +43,57 @@ def object_tables() -> tuple[SimpleNamespace, SimpleNamespace]:
         }
     )
     return (
+        SimpleNamespace(table=transitions),
         SimpleNamespace(table=oscillations, group=("subject",)),
         SimpleNamespace(table=accumulations),
     )
 
 
 def test_validate_object_tables_accepts_matching_complete_objects() -> None:
-    oscillation, accumulation = object_tables()
+    transition, oscillation, accumulation = object_tables()
 
     validate_object_tables(
         "example",
+        transition,
         oscillation,
         accumulation,
     )
 
 
 def test_validate_object_tables_rejects_mismatched_parent_ids() -> None:
-    oscillation, accumulation = object_tables()
+    transition, oscillation, accumulation = object_tables()
     accumulation.table.loc[0, "accumulation_id"] = 2
 
     with pytest.raises(RuntimeError, match="object IDs differ"):
         validate_object_tables(
             "example",
+            transition,
             oscillation,
             accumulation,
         )
 
 
 def test_validate_object_tables_rejects_invalid_boundaries() -> None:
-    oscillation, accumulation = object_tables()
+    transition, oscillation, accumulation = object_tables()
     oscillation.table.loc[0, "peak_index"] = 0
 
     with pytest.raises(RuntimeError, match="boundary order"):
         validate_object_tables(
             "example",
+            transition,
+            oscillation,
+            accumulation,
+        )
+
+
+def test_validate_object_tables_rejects_invalid_transition() -> None:
+    transition, oscillation, accumulation = object_tables()
+    transition.table.loc[0, "direction"] = "unknown"
+
+    with pytest.raises(RuntimeError, match="invalid directions"):
+        validate_object_tables(
+            "example",
+            transition,
             oscillation,
             accumulation,
         )
