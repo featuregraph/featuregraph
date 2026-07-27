@@ -2,9 +2,8 @@
 FeatureGraph public API.
 """
 
-from .behaviors import oscillation, accumulation, transition
 from . import datasets
-
+from .behaviors import accumulation, oscillation, transition
 from .utils._plot import plot
 
 __version__ = "0.1.0a1"
