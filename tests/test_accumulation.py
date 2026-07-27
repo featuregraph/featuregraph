@@ -200,3 +200,47 @@ def test_accumulation_constructs_multiple_signals() -> None:
 
     assert result["signal_accumulation"].tolist() == [0.0, 1.0, 1.0]
     assert result["other_accumulation"].tolist() == [0.0, 2.0, 2.0]
+
+
+def test_accumulation_exposes_parent_oscillation_identity(
+    triangular_signal: pd.DataFrame,
+) -> None:
+    features = oscillation_features(triangular_signal)
+    behavior = Accumulation("signal", threshold="min")
+    transformed = behavior.fit_transform(features)
+    objects = behavior.summarize(transformed, "signal")
+
+    assert objects.parent_id == "parent_oscillation_id"
+    assert objects.table["parent_oscillation_id"].tolist() == (
+        objects.table["accumulation_id"].tolist()
+    )
+
+
+def test_accumulation_uses_trapezoids_with_irregular_time() -> None:
+    observations = pd.DataFrame(
+        {
+            "time": [0.0, 1.0, 3.0, 6.0, 10.0, 15.0],
+            "signal": [0.0, 1.0, 2.0, 1.0, 0.0, 1.0],
+        }
+    )
+    oscillation = Oscillation(
+        "signal",
+        diff_lag=1,
+        time="time",
+    )
+    features = oscillation.fit_transform(observations)
+    behavior = Accumulation(
+        "signal",
+        threshold="min",
+        time="time",
+    )
+    transformed = behavior.fit_transform(features)
+    objects = behavior.summarize(transformed, "signal")
+    wave = objects.table.loc[
+        objects.table["accumulation_id"].eq(1)
+    ].iloc[0]
+
+    assert objects.construction["integration"] == "trapezoidal"
+    assert wave["duration"] == 9.0
+    assert wave["total_auc"] == pytest.approx(9.5)
+    assert wave["parent_oscillation_id"] == 1

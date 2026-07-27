@@ -5,7 +5,6 @@ from pathlib import Path
 import pandas as pd
 import requests
 
-
 GITHUB_OWNER = "mv-per"
 GITHUB_REPOSITORY = "tennessee-eastman-dataset"
 GITHUB_BRANCH = "main"

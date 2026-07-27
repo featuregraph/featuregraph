@@ -6,7 +6,6 @@ from typing import Literal
 import pandas as pd
 import requests
 
-
 BIDMC_VERSION = "1.0.0"
 BIDMC_BASE_URL = (
     f"https://physionet.org/files/bidmc/{BIDMC_VERSION}/bidmc_csv"

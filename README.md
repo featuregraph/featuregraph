@@ -15,7 +15,7 @@ observations
     → computational queries
 ```
 
-The current development version provides first-order transition objects, oscillations composed from those transitions, wave-derived accumulation objects, inspectable construction features, and a small deterministic query interface. Pandas is the reference execution model.
+FeatureGraph 0.2 beta provides first-order transition objects, oscillations composed from those transitions, wave-derived accumulation objects, optional time-aware measurements, explicit parent relations, inspectable construction features, and a small deterministic query interface. Pandas is the reference execution model.
 
 ## Demo
 
@@ -187,7 +187,7 @@ accumulation_objects = accumulation.summarize(
 )
 ```
 
-Each accumulation object exposes properties such as baseline, total area above baseline, accumulation rate, symmetry, centroid time, and half-accumulation time. Its `accumulation_id` matches the identifier of its parent oscillation.
+Each accumulation object exposes properties such as baseline, total area above baseline, accumulation rate, symmetry, centroid time, and half-accumulation time. Its `parent_oscillation_id` explicitly records the matching oscillation identifier.
 
 ```python
 high_accumulations = (
@@ -274,12 +274,19 @@ The resulting objects can support analysis, visualization, validation, inter-obj
 
 See [Behavior architecture](docs/behavior-architecture.md) for the current Transition → Oscillation → Accumulation contracts and invariants.
 
+The beta contracts are defined in:
+
+- [Authoritative behavior semantics](docs/behavior-semantics.md)
+- [Beta API reference](docs/api.md)
+- [Alpha-to-beta migration guide](docs/migrating-to-beta.md)
+- [Beta release checklist](docs/beta-release-checklist.md)
+
 ## Installation
 
-FeatureGraph supports Python 3.10 through 3.13. Install the current release from GitHub:
+FeatureGraph supports Python 3.10 through 3.13. After the beta tag is published, install it from GitHub with:
 
 ```bash
-python -m pip install "featuregraph @ git+https://github.com/featuregraph/featuregraph.git@v0.1.0a1"
+python -m pip install "featuregraph @ git+https://github.com/featuregraph/featuregraph.git@v0.2.0b1"
 ```
 
 For development:
@@ -301,21 +308,21 @@ python scripts/reproduce.py
 
 It downloads the fixed BIDMC and Tennessee Eastman selections, reconstructs transition, oscillation, and accumulation tables, generates annotated figures, and records package, environment, hardware, timing, and checksum metadata. See [the reproducibility guide](docs/reproducibility.md) for data sources, cache locations, expected outputs, and archival-release instructions.
 
-FeatureGraph 0.1.0a1 is archived on Zenodo under the [version DOI 10.5281/zenodo.21535662](https://doi.org/10.5281/zenodo.21535662). Cite the version DOI for results produced with this release; use the [concept DOI 10.5281/zenodo.21535661](https://doi.org/10.5281/zenodo.21535661) to refer to FeatureGraph across versions.
+FeatureGraph 0.1.0a1 remains archived on Zenodo under the [alpha version DOI 10.5281/zenodo.21535662](https://doi.org/10.5281/zenodo.21535662). The beta archive will receive a new version DOI when the verified GitHub prerelease is published. Use the [concept DOI 10.5281/zenodo.21535661](https://doi.org/10.5281/zenodo.21535661) to refer to FeatureGraph across versions.
 
-Release history is recorded in [CHANGELOG.md](CHANGELOG.md), citation metadata in [CITATION.cff](CITATION.cff), and the final alpha-release procedure in [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md).
+Release history is recorded in [CHANGELOG.md](CHANGELOG.md), citation metadata in [CITATION.cff](CITATION.cff), and the beta procedure in [the beta release checklist](docs/beta-release-checklist.md).
 
 ## Status
 
-FeatureGraph is an alpha research release. Current development priorities include:
+FeatureGraph is a beta research release. The initial Transition → Oscillation → Accumulation architecture and held-out robustness evaluation are implemented. Current research priorities include:
 
-- formal semantic specification and manuscript alignment;
-- broader consumer demonstrations and held-out validation;
+- manuscript alignment;
+- broader consumer demonstrations and real-data validation;
 - additional relationships between objects;
 - a clean interface for defining new behavioral object types;
 - tensor-native backend exploration.
 
-The API may change while these semantics are finalized.
+The API may still change in response to beta use, especially around additional relations and time-aware conventions.
 
 The archived `v0.1.0a1` release predates the completed Transition API. Unreleased development progress is recorded in [CHANGELOG.md](CHANGELOG.md).
 

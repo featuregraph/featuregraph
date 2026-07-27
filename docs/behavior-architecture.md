@@ -17,26 +17,33 @@ Each layer has two representations:
 - falling, when the lagged change is less than `-eps`;
 - inactive, when the change remains within the sensitivity band.
 
-Contiguous observations in the same state form a transition object. Each object has a stable identifier, start and end boundaries, a completeness flag, point count, duration, start and end values, net change, and mean and peak rate.
+Contiguous observations in the same state form a transition object. Each object has a stable identifier, start and end boundaries, a completeness flag, point count, sample duration, optional elapsed-time duration, start and end values, net change, and mean and peak rate.
 
 The two sensitivity parameters have distinct roles:
 
 - `diff_lag` is the observation-space comparison interval;
 - `eps` is the value-space minimum directional change.
 
-They are stored with the objects as provenance. Group boundaries are respected, so state and identity never leak between independent records.
+They are stored with the objects as provenance. An optional `time` coordinate
+controls physical durations and rates; numeric time uses its native units and
+datetime time is normalized to seconds. Group boundaries are respected, so
+state and identity never leak between independent records.
 
 ## Oscillation
 
 `Oscillation` composes the transition layer. Rising and falling behavior is not independently redefined inside the oscillation construction; it comes from `Transition` using the same signal, grouping, lag, and sensitivity parameters.
 
-Peaks and troughs delimit waves. Each complete oscillation is a bounded wave with stable identity and intrinsic measurements such as duration and amplitude. Partial edge waves remain identifiable and carry an explicit completeness state rather than being silently discarded.
+Peaks and troughs delimit waves. Each complete oscillation is a bounded wave with stable identity and intrinsic measurements such as sample duration, optional elapsed-time duration, period, and amplitude. Partial edge waves remain identifiable and carry an explicit completeness state rather than being silently discarded.
 
 This composition preserves the observation-level transition columns needed for inspection while producing an oscillation object table for relational work.
 
 ## Accumulation
 
-`Accumulation` is derived from oscillation waves. It preserves the parent oscillation identity and completeness semantics while measuring wave-level accumulation behavior.
+`Accumulation` is derived from oscillation waves. It preserves an explicit
+`parent_oscillation_id` and the parent completeness semantics while measuring
+wave-level accumulation behavior. Without `time`, accumulation retains the
+sample-sum contract. With `time`, it uses trapezoidal integration over the
+supplied coordinate, including irregular intervals.
 
 Because the outward Oscillation contract remains stable, adding the explicit Transition layer does not require a separate accumulation interpretation. Accumulation continues to operate on the same wave boundaries and parent identifiers.
 
@@ -50,7 +57,10 @@ The current implementation and tests enforce these structural expectations:
 - transitions partition directional behavior into rising, falling, and inactive states;
 - higher-order objects retain inspectable links to their parents;
 - partial boundary objects are represented explicitly;
-- flat regions, missing values, multiple signals, and grouped records do not create cross-boundary objects;
+- flat regions, missing values, multiple signals, grouped records, string
+  indexes, and irregular time do not create cross-boundary objects;
+- indexes are unique and optional time coordinates are nonmissing and strictly
+  increasing within each group;
 - object tables contain provenance sufficient to identify the construction parameters.
 
 ## Validation
@@ -61,4 +71,6 @@ The repository validates the hierarchy at three levels:
 - all tutorial notebooks are parsed, compiled, and executed against the current API;
 - the pinned BIDMC and Tennessee Eastman reproduction pipeline writes transition, oscillation, and accumulation object tables and verifies their structural assertions.
 
-These contracts describe the current implementation. Formal mathematical semantics and broader held-out validation remain active research work.
+The normative definitions are in `docs/behavior-semantics.md`. Held-out
+synthetic evaluation is included with the beta candidate; broader expert
+boundary validation on real data remains active research work.

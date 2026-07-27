@@ -1,6 +1,6 @@
-
 import matplotlib.pyplot as plt
 import pandas as pd
+
 
 def plot(
     df: pd.DataFrame,
@@ -55,7 +55,7 @@ def plot(
 
     axes = axes[:, 0]
 
-    for ax, columns in zip(axes, rows):
+    for ax, columns in zip(axes, rows, strict=True):
         for column in columns:
             ax.plot(
                 df.index,
@@ -215,10 +215,6 @@ def plot_annotated_oscillation(
 
     return fig, ax
 
-import matplotlib.pyplot as plt
-import pandas as pd
-
-
 def plot_oscillation_panel(
     ax,
     df,
@@ -327,8 +323,6 @@ def plot_oscillation_panel(
 
         start_value = df.loc[start_index, construction_signal]
         peak_value = df.loc[peak_index, construction_signal]
-        end_value = df.loc[end_index, construction_signal]
-
         # Rising and falling phases.
         ax.axvspan(
             start_index,

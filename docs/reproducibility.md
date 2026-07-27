@@ -44,7 +44,10 @@ Artifacts are written to `artifacts/paper` by default. To choose another locatio
 python scripts/reproduce.py --output-dir path/to/output
 ```
 
-The script creates six complete object tables, two annotated-object figures, `environment.json`, and `run_metadata.json`:
+The script creates six complete object tables, two annotated-object figures,
+`environment.json`, and `run_metadata.json`. The object tables exercise the
+same Transition → Oscillation → Accumulation hierarchy used by the documented
+API:
 
 - `tables/bidmc_transitions.csv`
 - `tables/bidmc_oscillations.csv`
@@ -78,6 +81,7 @@ Before a release:
 
 ```bash
 python -m pytest
+ruff check src tests scripts
 python -m build
 python scripts/reproduce.py --help
 ```
@@ -87,10 +91,11 @@ CI performs tests on every supported Python version, builds both the source dist
 ## Archival release
 
 1. Merge the release pull request with green CI.
-2. Create an annotated `v0.1.0a1` tag from the verified commit.
+2. Create an annotated `v0.2.0b1` tag from the verified commit.
 3. Create a GitHub prerelease using the matching changelog entry and attach the wheel, source distribution, paper-artifact archive, and checksums.
 4. Enable the repository in Zenodo and publish the GitHub release.
-5. Add the resulting DOI to `CITATION.cff`, `.zenodo.json`, and the README.
+5. Add the resulting version DOI to `CITATION.cff`, `.zenodo.json`, and the
+   README while retaining the existing concept DOI.
 6. Verify the Zenodo archive contains the source, citation metadata, changelog, manifest, and reproduction instructions.
 
 A DOI cannot be recorded before Zenodo creates it. Do not invent or pre-allocate one in repository metadata.

@@ -3,9 +3,9 @@
     "artifacts/paper/evaluation/clean_recovery.csv": "c917c78f6cd69ac8a74aef61d8091a87b2e6779adbb5b54a6153a5d237744419",
     "artifacts/paper/evaluation/featuregraph_tuning_replicates.csv": "00a5a4d4b87ac1c2d958af93590c38e99f1bfae124273bab17d2363e46c379d8",
     "artifacts/paper/evaluation/featuregraph_tuning_summary.csv": "29cf4e5fa1ca8fadfc04223e09f631d08ca367086e47534f2cc66606e6fa4585",
-    "artifacts/paper/evaluation/figures/noise_robustness.png": "700cb377c161cb6c637b545d9773d443d8006ac50b3da69091b145f6dea7f220",
-    "artifacts/paper/evaluation/figures/parameter_sensitivity.png": "ab1d8b193a9f480b1087ae01d971f7a10b540c0d7763007de3796a69de61da8e",
-    "artifacts/paper/evaluation/figures/synthetic_ground_truth.png": "cb25da3fbfb8f67faff2d315215b2fb9636940829eebf74d23e3a801feebd979",
+    "artifacts/paper/evaluation/figures/noise_robustness.png": "ef095072a2961ec15ed01f359143cfd500fca4f49db263526e64a89ded90f289",
+    "artifacts/paper/evaluation/figures/parameter_sensitivity.png": "d3853271d671f32d96ff42a7bce0099121235f057c1879b7ce136414c0dfc3bb",
+    "artifacts/paper/evaluation/figures/synthetic_ground_truth.png": "720d8e9772c6e7951edfdf9ea31a639a26e5018fea9e0db7c350b07dd33b196f",
     "artifacts/paper/evaluation/noise_robustness_replicates.csv": "5d2e67f4cb99d0dbf16ea826817c8a6ec55b336bb02ee1173649663c4270e550",
     "artifacts/paper/evaluation/noise_robustness_summary.csv": "25b84d33f758871060fd7e144cd9db9381241612e9b702944bb394c51e5fbd94",
     "artifacts/paper/evaluation/scipy_tuning_replicates.csv": "d55f94f3ac8e759dbd964b742444a05d85e9acd135579c62ddc7180f3c8baf93",
@@ -34,15 +34,15 @@
       15
     ]
   },
-  "featuregraph_version": "0.1.0a1",
-  "generated_at_utc": "2026-07-24T19:24:09.901515+00:00",
+  "featuregraph_version": "0.2.0b1",
+  "generated_at_utc": "2026-07-27T20:26:40.603767+00:00",
   "matching_protocol": {
     "minimum_interval_iou": 0.5,
     "peak_tolerance_samples": 10
   },
-  "matplotlib_version": "3.10.8",
-  "numpy_version": "2.3.5",
-  "pandas_version": "2.2.3",
+  "matplotlib_version": "3.11.1",
+  "numpy_version": "2.5.1",
+  "pandas_version": "3.0.5",
   "period_samples": 80,
   "platform": "Linux-6.12.13-x86_64-with-glibc2.39",
   "python_version": "3.12.13",
@@ -58,7 +58,7 @@
       0.4
     ]
   },
-  "scipy_version": "1.17.0",
+  "scipy_version": "1.18.0",
   "selected_operating_points": {
     "FeatureGraph": {
       "diff_lag": 10,
@@ -70,8 +70,8 @@
       "prominence": 0.1
     }
   },
-  "source_commit": "1e585a76e3e2c19c05a1b9711319eb48317f5e37",
-  "source_release": "v0.1.0a1",
+  "source_commit": "fd8abacd39bb7b90a4f7270bf9d55c3e10ee94c9",
+  "source_release": "v0.2.0b1",
   "test_noise_levels": [
     0.0,
     0.05,

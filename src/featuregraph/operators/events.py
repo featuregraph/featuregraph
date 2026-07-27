@@ -1,4 +1,3 @@
-import numpy as np
 import pandas as pd
 
 
@@ -30,15 +29,25 @@ def event_id(df, enter_col, group=None):
 
 
 def event_index(df, event_col, group=None):
-    indices = pd.Series(
-        np.where(df[event_col], df.index, np.nan),
-        index=df.index,
-    )
+    indices = pd.Series(df.index, index=df.index).where(df[event_col])
 
     if group is None:
         return indices.ffill()
 
     return indices.groupby(
+        _group_keys(df, group),
+        sort=False,
+    ).ffill()
+
+
+def event_value(df, event_col, values, group=None):
+    """Forward-fill a row-aligned value from the latest event."""
+    event_values = pd.Series(values, index=df.index).where(df[event_col])
+
+    if group is None:
+        return event_values.ffill()
+
+    return event_values.groupby(
         _group_keys(df, group),
         sort=False,
     ).ffill()

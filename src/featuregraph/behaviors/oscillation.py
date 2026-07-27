@@ -1,11 +1,12 @@
 import pandas as pd
 
-from featuregraph.behaviors.base import Behavior, Group, Signals
+from featuregraph.behaviors.base import Behavior, Group, Signals, Time
 from featuregraph.behaviors.objects import BehaviorObjects
 from featuregraph.behaviors.transition import Transition
 from featuregraph.operators.events import (
     event_id,
     event_index,
+    event_value,
     preceding_sample_event,
 )
 from featuregraph.preprocessing.smoothing import smooth
@@ -22,10 +23,12 @@ class Oscillation(Behavior):
         smooth_window: int = 20,
         diff_lag: int = 10,
         eps: float = 0.0,
+        time: Time = None,
     ) -> None:
         super().__init__(
             signals=signals,
             group=group,
+            time=time,
         )
 
         if smooth_window < 1:
@@ -87,6 +90,7 @@ class Oscillation(Behavior):
                 signal: self.working_signal(signal)
                 for signal in self.signals
             },
+            time=self.time,
         )
         df = transitions.fit_transform(df)
 
@@ -103,6 +107,9 @@ class Oscillation(Behavior):
                 ]
             else:
                 event_group = None
+
+            positions = self.positions(df)
+            numeric_time = self.numeric_time(df)
 
             # Directional states describe the edge ending at the current
             # row. A reversal detected at row i therefore places the
@@ -128,6 +135,34 @@ class Oscillation(Behavior):
                 trough_col,
                 self.group,
             )
+            df[f"{signal}_peak_position"] = event_value(
+                df,
+                peak_col,
+                positions,
+                self.group,
+            )
+            df[f"{signal}_trough_position"] = event_value(
+                df,
+                trough_col,
+                positions,
+                self.group,
+            )
+            if numeric_time is None:
+                df[f"{signal}_peak_time"] = pd.NA
+                df[f"{signal}_trough_time"] = pd.NA
+            else:
+                df[f"{signal}_peak_time"] = event_value(
+                    df,
+                    peak_col,
+                    numeric_time,
+                    self.group,
+                )
+                df[f"{signal}_trough_time"] = event_value(
+                    df,
+                    trough_col,
+                    numeric_time,
+                    self.group,
+                )
 
         return df
 
@@ -234,6 +269,15 @@ class Oscillation(Behavior):
             end_index = grouped[
                 f"{signal}_trough_index"
             ].transform("max")
+            start_position = grouped[
+                f"{signal}_trough_position"
+            ].transform("first")
+            peak_position = grouped[
+                f"{signal}_peak_position"
+            ].transform("max")
+            end_position = grouped[
+                f"{signal}_trough_position"
+            ].transform("max")
             has_start = grouped[
                 f"enter_{signal}_rising"
             ].transform("max").astype(bool)
@@ -254,8 +298,8 @@ class Oscillation(Behavior):
                 & start_index.notna()
                 & peak_index.notna()
                 & end_index.notna()
-                & start_index.lt(peak_index)
-                & peak_index.lt(end_index)
+                & start_position.lt(peak_position)
+                & peak_position.lt(end_position)
                 & df[wave_id_col].lt(last_wave_id)
             )
 
@@ -298,6 +342,30 @@ class Oscillation(Behavior):
                 ),
                 end_index=(
                     f"{signal}_trough_index",
+                    "max",
+                ),
+                start_position=(
+                    f"{signal}_trough_position",
+                    "first",
+                ),
+                peak_position=(
+                    f"{signal}_peak_position",
+                    "max",
+                ),
+                end_position=(
+                    f"{signal}_trough_position",
+                    "max",
+                ),
+                start_time=(
+                    f"{signal}_trough_time",
+                    "first",
+                ),
+                peak_time=(
+                    f"{signal}_peak_time",
+                    "max",
+                ),
+                end_time=(
+                    f"{signal}_trough_time",
                     "max",
                 ),
                 rising_samples=(
@@ -349,33 +417,62 @@ class Oscillation(Behavior):
                 .reset_index(drop=True)
             )
 
-        summarydf["rise_duration"] = (
-            summarydf["peak_index"]
-            - summarydf["start_index"]
+        summarydf["rise_duration_samples"] = (
+            summarydf["peak_position"]
+            - summarydf["start_position"]
         )
 
-        summarydf["fall_duration"] = (
-            summarydf["end_index"]
-            - summarydf["peak_index"]
+        summarydf["fall_duration_samples"] = (
+            summarydf["end_position"]
+            - summarydf["peak_position"]
         )
 
-        summarydf["duration"] = (
-            summarydf["end_index"]
-            - summarydf["start_index"]
+        summarydf["duration_samples"] = (
+            summarydf["end_position"]
+            - summarydf["start_position"]
         )
 
         if self.group_columns:
-            summarydf["period"] = (
+            summarydf["period_samples"] = (
                 summarydf.groupby(
                     self.group_columns,
                     sort=False,
-                )["peak_index"]
+                )["peak_position"]
                 .diff()
             )
         else:
-            summarydf["period"] = (
-                summarydf["peak_index"].diff()
+            summarydf["period_samples"] = (
+                summarydf["peak_position"].diff()
             )
+
+        if self.time is None:
+            summarydf["rise_duration"] = summarydf[
+                "rise_duration_samples"
+            ]
+            summarydf["fall_duration"] = summarydf[
+                "fall_duration_samples"
+            ]
+            summarydf["duration"] = summarydf["duration_samples"]
+            summarydf["period"] = summarydf["period_samples"]
+        else:
+            summarydf["rise_duration"] = (
+                summarydf["peak_time"] - summarydf["start_time"]
+            )
+            summarydf["fall_duration"] = (
+                summarydf["end_time"] - summarydf["peak_time"]
+            )
+            summarydf["duration"] = (
+                summarydf["end_time"] - summarydf["start_time"]
+            )
+            if self.group_columns:
+                summarydf["period"] = (
+                    summarydf.groupby(
+                        self.group_columns,
+                        sort=False,
+                    )["peak_time"].diff()
+                )
+            else:
+                summarydf["period"] = summarydf["peak_time"].diff()
 
         net_change = (
             summarydf["maximum"]
@@ -415,6 +512,13 @@ class Oscillation(Behavior):
                 "start_index",
                 "peak_index",
                 "end_index",
+                "start_time",
+                "peak_time",
+                "end_time",
+                "rise_duration_samples",
+                "fall_duration_samples",
+                "duration_samples",
+                "period_samples",
                 "rise_duration",
                 "fall_duration",
                 "duration",
@@ -446,6 +550,7 @@ class Oscillation(Behavior):
                 "smooth_window": self.smooth_window,
                 "diff_lag": self.diff_lag,
                 "eps": self.eps,
+                "time": self.time,
                 "include_partial": include_partial,
             },
         )

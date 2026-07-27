@@ -3,7 +3,7 @@ from collections.abc import Mapping
 import numpy as np
 import pandas as pd
 
-from featuregraph.behaviors.base import Behavior, Group, Signals
+from featuregraph.behaviors.base import Behavior, Group, Signals, Time
 from featuregraph.behaviors.objects import BehaviorObjects
 from featuregraph.operators.events import (
     enter_state,
@@ -30,8 +30,9 @@ class Transition(Behavior):
         diff_lag: int = 10,
         eps: float = 0.0,
         source_signals: Mapping[str, str] | None = None,
+        time: Time = None,
     ) -> None:
-        super().__init__(signals=signals, group=group)
+        super().__init__(signals=signals, group=group, time=time)
 
         if diff_lag < 1:
             raise ValueError("diff_lag must be at least 1.")
@@ -70,6 +71,8 @@ class Transition(Behavior):
             source = self.source_for(signal)
             difference_col = f"{signal}_difference"
             rate_col = f"{signal}_rate"
+            positions = self.positions(df)
+            numeric_time = self.numeric_time(df)
 
             if self.group_columns:
                 difference = (
@@ -80,12 +83,22 @@ class Transition(Behavior):
                     df[column]
                     for column in self.group_columns
                 ]
+                if numeric_time is not None:
+                    elapsed = numeric_time.groupby(
+                        event_group,
+                        sort=False,
+                    ).diff(self.diff_lag)
             else:
                 difference = df[source].diff(self.diff_lag)
                 event_group = None
+                if numeric_time is not None:
+                    elapsed = numeric_time.diff(self.diff_lag)
 
             df[difference_col] = difference
-            df[rate_col] = difference / self.diff_lag
+            if numeric_time is None:
+                df[rate_col] = difference / self.diff_lag
+            else:
+                df[rate_col] = difference / elapsed
 
             state_operators = {
                 "rising": positive_state,
@@ -158,9 +171,21 @@ class Transition(Behavior):
                     event_group,
                     sort=False,
                 ).shift(1)
+                previous_position = positions.groupby(
+                    event_group,
+                    sort=False,
+                ).shift(1)
+                if numeric_time is not None:
+                    previous_time = numeric_time.groupby(
+                        event_group,
+                        sort=False,
+                    ).shift(1)
             else:
                 previous_index = source_index.shift(1)
                 previous_value = df[source].shift(1)
+                previous_position = positions.shift(1)
+                if numeric_time is not None:
+                    previous_time = numeric_time.shift(1)
 
             start_index = previous_index.where(
                 df[f"enter_{signal}_transition"]
@@ -168,6 +193,13 @@ class Transition(Behavior):
             start_value = previous_value.where(
                 df[f"enter_{signal}_transition"]
             )
+            start_position = previous_position.where(
+                df[f"enter_{signal}_transition"]
+            )
+            if numeric_time is not None:
+                start_time = previous_time.where(
+                    df[f"enter_{signal}_transition"]
+                )
 
             if self.group_columns:
                 start_index = start_index.groupby(
@@ -178,17 +210,36 @@ class Transition(Behavior):
                     event_group,
                     sort=False,
                 ).ffill()
+                start_position = start_position.groupby(
+                    event_group,
+                    sort=False,
+                ).ffill()
+                if numeric_time is not None:
+                    start_time = start_time.groupby(
+                        event_group,
+                        sort=False,
+                    ).ffill()
             else:
                 start_index = start_index.ffill()
                 start_value = start_value.ffill()
+                start_position = start_position.ffill()
+                if numeric_time is not None:
+                    start_time = start_time.ffill()
 
             df[f"{signal}_transition_start_index"] = start_index
             df[f"{signal}_transition_start_value"] = start_value
-            df[f"{signal}_transition_end_index"] = np.where(
-                df[f"{signal}_transition_end"],
-                df.index,
-                np.nan,
+            df[f"{signal}_transition_start_position"] = start_position
+            df[f"{signal}_transition_end_index"] = source_index.where(
+                df[f"{signal}_transition_end"]
             )
+            df[f"{signal}_transition_end_position"] = positions.where(
+                df[f"{signal}_transition_end"]
+            )
+            if numeric_time is not None:
+                df[f"{signal}_transition_start_time"] = start_time
+                df[f"{signal}_transition_end_time"] = numeric_time.where(
+                    df[f"{signal}_transition_end"]
+                )
 
         return df
 
@@ -233,28 +284,79 @@ class Transition(Behavior):
             detected_end = grouped[
                 f"{signal}_transition_end_index"
             ].transform("max")
+            start_position = grouped[
+                f"{signal}_transition_start_position"
+            ].transform("first")
+            detected_end_position = grouped[
+                f"{signal}_transition_end_position"
+            ].transform("max")
 
             if self.group_columns:
                 sequence_end = (
                     df.groupby(self.group_columns, sort=False)[source]
                     .transform(lambda values: values.index[-1])
                 )
+                sequence_end_position = self.positions(df).groupby(
+                    [df[column] for column in self.group_columns],
+                    sort=False,
+                ).transform("max")
             else:
                 sequence_end = pd.Series(
                     df.index[-1],
                     index=df.index,
                 )
+                sequence_end_position = pd.Series(
+                    len(df) - 1,
+                    index=df.index,
+                )
 
             end_index = detected_end.fillna(sequence_end)
+            end_position = detected_end_position.fillna(
+                sequence_end_position
+            )
             start_value = grouped[
                 f"{signal}_transition_start_value"
             ].transform("first")
             end_value = grouped[source].transform("last")
-            duration = end_index - start_index
+            duration_samples = end_position - start_position
+
+            if self.time is None:
+                duration = duration_samples
+                start_time = pd.Series(pd.NA, index=df.index)
+                end_time = pd.Series(pd.NA, index=df.index)
+            else:
+                numeric_time = self.numeric_time(df)
+                assert numeric_time is not None
+                start_time = grouped[
+                    f"{signal}_transition_start_time"
+                ].transform("first")
+                detected_end_time = grouped[
+                    f"{signal}_transition_end_time"
+                ].transform("max")
+                if self.group_columns:
+                    sequence_end_time = numeric_time.groupby(
+                        [
+                            df[column]
+                            for column in self.group_columns
+                        ],
+                        sort=False,
+                    ).transform("last")
+                else:
+                    sequence_end_time = pd.Series(
+                        numeric_time.iloc[-1],
+                        index=df.index,
+                    )
+                end_time = detected_end_time.fillna(sequence_end_time)
+                duration = end_time - start_time
 
             df[f"{signal}_transition_start_index"] = start_index
             df[f"{signal}_transition_end_index"] = end_index
+            df[f"{signal}_transition_start_position"] = start_position
+            df[f"{signal}_transition_end_position"] = end_position
+            df[f"{signal}_transition_duration_samples"] = duration_samples
             df[f"{signal}_transition_duration"] = duration
+            df[f"{signal}_transition_start_time"] = start_time
+            df[f"{signal}_transition_end_time"] = end_time
             df[f"{signal}_transition_start_value"] = start_value
             df[f"{signal}_transition_end_value"] = end_value
             df[f"{signal}_transition_net_change"] = (
@@ -317,6 +419,18 @@ class Transition(Behavior):
                     f"{signal}_transition_end_index",
                     "first",
                 ),
+                start_time=(
+                    f"{signal}_transition_start_time",
+                    "first",
+                ),
+                end_time=(
+                    f"{signal}_transition_end_time",
+                    "first",
+                ),
+                duration_samples=(
+                    f"{signal}_transition_duration_samples",
+                    "first",
+                ),
                 duration=(
                     f"{signal}_transition_duration",
                     "first",
@@ -363,6 +477,9 @@ class Transition(Behavior):
             "is_complete",
             "start_index",
             "end_index",
+            "start_time",
+            "end_time",
+            "duration_samples",
             "duration",
             "start_value",
             "end_value",
@@ -383,6 +500,7 @@ class Transition(Behavior):
             construction={
                 "diff_lag": self.diff_lag,
                 "eps": self.eps,
+                "time": self.time,
                 "include_partial": include_partial,
             },
         )

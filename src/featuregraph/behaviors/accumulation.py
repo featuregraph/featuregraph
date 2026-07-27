@@ -4,7 +4,7 @@ from numbers import Real
 import numpy as np
 import pandas as pd
 
-from featuregraph.behaviors.base import Behavior, Group, Signals
+from featuregraph.behaviors.base import Behavior, Group, Signals, Time
 from featuregraph.behaviors.objects import BehaviorObjects
 
 ThresholdValue = Real | str
@@ -28,10 +28,12 @@ class Accumulation(Behavior):
         group: Group = None,
         threshold: Threshold = "min",
         eps: float = 0.0,
+        time: Time = None,
     ) -> None:
         super().__init__(
             signals=signals,
             group=group,
+            time=time,
         )
 
         if eps < 0:
@@ -92,6 +94,9 @@ class Accumulation(Behavior):
             accumulation_col = (
                 f"{signal}_accumulation"
             )
+            interval_area_col = (
+                f"{signal}_accumulation_interval_area"
+            )
 
             if isinstance(threshold, str):
                 if threshold in df.columns:
@@ -116,13 +121,33 @@ class Accumulation(Behavior):
                 df[signal] - df[threshold_col]
             )
 
-            df[accumulation_col] = (
-                df.groupby(
+            if self.time is None:
+                df[interval_area_col] = df[contribution_col]
+            else:
+                numeric_time = self.numeric_time(df)
+                assert numeric_time is not None
+                grouped_contribution = df.groupby(
                     object_group,
                     sort=False,
                 )[contribution_col]
-                .cumsum()
-            )
+                previous_contribution = grouped_contribution.shift(1)
+                elapsed = numeric_time.groupby(
+                    [df[column] for column in object_group],
+                    sort=False,
+                ).diff()
+                df[interval_area_col] = (
+                    (
+                        df[contribution_col]
+                        + previous_contribution
+                    )
+                    / 2
+                    * elapsed
+                ).fillna(0.0)
+
+            df[accumulation_col] = df.groupby(
+                object_group,
+                sort=False,
+            )[interval_area_col].cumsum()
 
         return df
 
@@ -170,8 +195,8 @@ class Accumulation(Behavior):
                 "accumulation_id",
             )
 
-            contribution_col = (
-                f"{signal}_accumulation_contribution"
+            interval_area_col = (
+                f"{signal}_accumulation_interval_area"
             )
             cumulative_col = f"{signal}_accumulation"
             index_col = f"{signal}_accumulation_index"
@@ -210,6 +235,19 @@ class Accumulation(Behavior):
             )
 
             df[source_index_col] = df.index
+            if self.time is None:
+                df[f"{signal}_accumulation_time"] = pd.NA
+                relative_time = df[index_col]
+            else:
+                numeric_time = self.numeric_time(df)
+                assert numeric_time is not None
+                df[f"{signal}_accumulation_time"] = numeric_time
+                start_time = numeric_time.groupby(
+                    [df[column] for column in object_group],
+                    sort=False,
+                ).transform("first")
+                relative_time = numeric_time - start_time
+            df[f"{signal}_accumulation_elapsed_time"] = relative_time
 
             peak_count = (
                 df.groupby(
@@ -224,13 +262,13 @@ class Accumulation(Behavior):
 
             df[before_contribution_col] = np.where(
                 df[before_peak_col],
-                df[contribution_col],
+                df[interval_area_col],
                 0.0,
             )
 
             df[after_contribution_col] = np.where(
                 df[after_peak_col],
-                df[contribution_col],
+                df[interval_area_col],
                 0.0,
             )
 
@@ -241,14 +279,14 @@ class Accumulation(Behavior):
             )
 
             df[weighted_col] = (
-                df[index_col] * df[contribution_col]
+                relative_time * df[interval_area_col]
             )
 
             df[total_col] = (
                 df.groupby(
                     object_group,
                     sort=False,
-                )[contribution_col]
+                )[interval_area_col]
                 .transform("sum")
             )
 
@@ -266,7 +304,11 @@ class Accumulation(Behavior):
 
             half_times = first_half_rows.set_index(
                 object_group
-            )[index_col]
+            )[
+                f"{signal}_accumulation_elapsed_time"
+                if self.time is not None
+                else index_col
+            ]
 
             if len(object_group) == 1:
                 keys = df[object_group[0]]
@@ -307,7 +349,15 @@ class Accumulation(Behavior):
                     f"{signal}_source_index",
                     "last",
                 ),
-                duration=(
+                start_time=(
+                    f"{signal}_accumulation_time",
+                    "first",
+                ),
+                end_time=(
+                    f"{signal}_accumulation_time",
+                    "last",
+                ),
+                duration_observations=(
                     f"{signal}_accumulation_index",
                     "count",
                 ),
@@ -316,7 +366,7 @@ class Accumulation(Behavior):
                     "first",
                 ),
                 total_auc=(
-                    f"{signal}_accumulation_contribution",
+                    f"{signal}_accumulation_interval_area",
                     "sum",
                 ),
                 accumulation_before_peak=(
@@ -339,6 +389,10 @@ class Accumulation(Behavior):
                     f"{signal}_half_accumulation_time",
                     "first",
                 ),
+                peak_accumulation_rate=(
+                    f"{signal}_accumulation_contribution",
+                    lambda values: values.abs().max(),
+                ),
             )
             .reset_index()
             .rename(
@@ -356,6 +410,18 @@ class Accumulation(Behavior):
                 ]
                 .copy()
                 .reset_index(drop=True)
+            )
+
+        summarydf["duration_samples"] = (
+            summarydf["duration_observations"] - 1
+        ).clip(lower=0)
+        if self.time is None:
+            summarydf["duration"] = summarydf[
+                "duration_observations"
+            ]
+        else:
+            summarydf["duration"] = (
+                summarydf["end_time"] - summarydf["start_time"]
             )
 
         duration = summarydf["duration"]
@@ -377,13 +443,20 @@ class Accumulation(Behavior):
         summarydf["centroid_time"] = (
             summarydf["first_moment"] / total_auc
         ).where(total_auc != 0)
+        summarydf["parent_oscillation_id"] = summarydf[
+            "accumulation_id"
+        ]
 
         properties = (
             "accumulation_id",
+            "parent_oscillation_id",
             "is_complete",
-            # "parent_oscillation_id",
             "start_index",
             "end_index",
+            "start_time",
+            "end_time",
+            "duration_observations",
+            "duration_samples",
             "duration",
             "baseline",
             "total_auc",
@@ -391,6 +464,7 @@ class Accumulation(Behavior):
             "accumulation_before_peak",
             "accumulation_from_peak",
             "accumulation_rate",
+            "peak_accumulation_rate",
             "accumulation_symmetry",
             "centroid_time",
             "half_accumulation_time",
@@ -413,6 +487,13 @@ class Accumulation(Behavior):
             construction={
                 "threshold": self.threshold,
                 "eps": self.eps,
+                "time": self.time,
+                "integration": (
+                    "trapezoidal"
+                    if self.time is not None
+                    else "sample_sum"
+                ),
+                "include_partial": include_partial,
             },
             parent_behavior="oscillation",
             parent_id="parent_oscillation_id",

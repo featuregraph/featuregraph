@@ -263,3 +263,47 @@ def test_transition_summary_rejects_unconfigured_signal() -> None:
 
     with pytest.raises(ValueError, match="was not configured"):
         behavior.summarize(features, "other")
+
+
+def test_transition_supports_non_default_index_labels() -> None:
+    df = pd.DataFrame(
+        {"signal": [0.0, 1.0, 2.0, 1.0]},
+        index=["a", "b", "c", "d"],
+    )
+    behavior = Transition("signal", diff_lag=1)
+    features = behavior.fit_transform(df)
+    table = behavior.summarize(
+        features,
+        "signal",
+        include_partial=True,
+    ).table
+
+    assert table["start_index"].tolist() == ["a", "c"]
+    assert table["end_index"].tolist() == ["c", "d"]
+    assert table["duration_samples"].tolist() == [2.0, 1.0]
+
+
+def test_transition_uses_elapsed_time_for_duration_and_rate() -> None:
+    df = pd.DataFrame(
+        {
+            "time": [0.0, 1.0, 3.0, 6.0],
+            "signal": [0.0, 1.0, 2.0, 1.0],
+        }
+    )
+    behavior = Transition(
+        "signal",
+        diff_lag=1,
+        time="time",
+    )
+    features = behavior.fit_transform(df)
+    table = behavior.summarize(
+        features,
+        "signal",
+        include_partial=True,
+    ).table
+
+    rising = table.loc[table["direction"].eq("rising")].iloc[0]
+    assert rising["duration_samples"] == 2
+    assert rising["duration"] == 3
+    assert rising["mean_rate"] == pytest.approx(2 / 3)
+    assert rising["peak_rate"] == 1

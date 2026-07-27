@@ -71,7 +71,7 @@ jobs:
         run: |
           python -m venv /tmp/featuregraph-wheel-test
           /tmp/featuregraph-wheel-test/bin/python -m pip install dist/*.whl
-          /tmp/featuregraph-wheel-test/bin/python -c "import featuregraph; assert featuregraph.__version__ == '0.1.0a1'"
+          /tmp/featuregraph-wheel-test/bin/python -c "import featuregraph; assert featuregraph.__version__ == '0.2.0b1'; from featuregraph.behaviors.transition import Transition"
 
       - name: Upload distributions
         uses: actions/upload-artifact@v6

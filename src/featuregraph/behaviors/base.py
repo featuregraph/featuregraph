@@ -3,9 +3,9 @@ from collections.abc import Sequence
 
 import pandas as pd
 
-
 Group = str | Sequence[str] | None
 Signals = str | Sequence[str]
+Time = str | None
 
 
 class Behavior(ABC):
@@ -17,6 +17,7 @@ class Behavior(ABC):
         self,
         signals: Signals,
         group: Group = None,
+        time: Time = None,
     ) -> None:
         if isinstance(signals, str):
             signals = [signals]
@@ -26,6 +27,7 @@ class Behavior(ABC):
 
         self.signals = list(signals)
         self.group = group
+        self.time = time
 
     @property
     def group_columns(self) -> list[str]:
@@ -50,6 +52,33 @@ class Behavior(ABC):
             *self.group_columns,
             f"{signal}_{id_suffix}",
         ]
+
+    def positions(self, df: pd.DataFrame) -> pd.Series:
+        """Return zero-based positions within each independent group."""
+        if self.group_columns:
+            return df.groupby(
+                self.group_columns,
+                sort=False,
+            ).cumcount()
+
+        return pd.Series(range(len(df)), index=df.index)
+
+    def numeric_time(self, df: pd.DataFrame) -> pd.Series | None:
+        """Return configured time as numeric values, in seconds for datetimes."""
+        if self.time is None:
+            return None
+
+        values = df[self.time]
+        if isinstance(values.dtype, pd.DatetimeTZDtype):
+            return values.astype("int64") / 1_000_000_000
+        if pd.api.types.is_datetime64_any_dtype(values):
+            return values.astype("int64") / 1_000_000_000
+        if pd.api.types.is_numeric_dtype(values):
+            return values.astype(float)
+
+        raise TypeError(
+            "The time column must contain numeric or datetime values."
+        )
 
     def fit_transform(
         self,
@@ -128,6 +157,7 @@ class Behavior(ABC):
         required = [
             *self.signals,
             *self.group_columns,
+            *([self.time] if self.time is not None else []),
         ]
 
         missing = [
@@ -141,4 +171,29 @@ class Behavior(ABC):
                 f"Required columns are missing: {missing}"
             )
 
+        if not df.index.is_unique:
+            raise ValueError(
+                "The DataFrame index must be unique so source boundaries "
+                "remain unambiguous."
+            )
+
+        if self.time is not None:
+            numeric_time = self.numeric_time(df)
+            assert numeric_time is not None
+
+            if numeric_time.isna().any():
+                raise ValueError("The time column cannot contain missing values.")
+
+            if self.group_columns:
+                differences = numeric_time.groupby(
+                    [df[column] for column in self.group_columns],
+                    sort=False,
+                ).diff()
+            else:
+                differences = numeric_time.diff()
+
+            if differences.dropna().le(0).any():
+                raise ValueError(
+                    "Time values must be strictly increasing within each group."
+                )
 

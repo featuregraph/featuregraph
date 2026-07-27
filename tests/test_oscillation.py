@@ -232,3 +232,45 @@ def test_smoothing_transitions_use_the_working_signal() -> None:
         features["signal_rising"],
         expected.rename("signal_rising"),
     )
+
+
+def test_oscillation_uses_time_for_durations_and_period() -> None:
+    df = pd.DataFrame(
+        {
+            "time": [
+                0.0,
+                1.0,
+                3.0,
+                6.0,
+                10.0,
+                15.0,
+                21.0,
+                28.0,
+                36.0,
+            ],
+            "signal": [
+                0.0,
+                1.0,
+                2.0,
+                1.0,
+                0.0,
+                1.0,
+                2.0,
+                1.0,
+                0.0,
+            ],
+        },
+        index=[f"sample-{index}" for index in range(9)],
+    )
+    behavior = Oscillation(
+        "signal",
+        diff_lag=1,
+        time="time",
+    )
+    features = behavior.fit_transform(df)
+    table = behavior.summarize(features, "signal").table
+
+    assert table["start_index"].tolist() == ["sample-0"]
+    assert table["duration_samples"].tolist() == [4]
+    assert table["rise_duration"].tolist() == [3.0]
+    assert table["fall_duration"].tolist() == [7.0]
