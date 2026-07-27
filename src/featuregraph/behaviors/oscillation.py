@@ -2,16 +2,11 @@ import pandas as pd
 
 from featuregraph.behaviors.base import Behavior, Group, Signals
 from featuregraph.behaviors.objects import BehaviorObjects
+from featuregraph.behaviors.transition import Transition
 from featuregraph.operators.events import (
-    enter_state,
     event_id,
     event_index,
-    exit_state,
     preceding_sample_event,
-)
-from featuregraph.operators.states import (
-    negative_state,
-    positive_state,
 )
 from featuregraph.preprocessing.smoothing import smooth
 
@@ -82,56 +77,32 @@ class Oscillation(Behavior):
         self,
         df: pd.DataFrame,
     ) -> pd.DataFrame:
-        """Add directional states, boundary events, and local rates."""
-        for signal in self.signals:
-            source = self.working_signal(signal)
+        """Compose extrema primitives from directional transitions."""
+        transitions = Transition(
+            signals=self.signals,
+            group=self.group,
+            diff_lag=self.diff_lag,
+            eps=self.eps,
+            source_signals={
+                signal: self.working_signal(signal)
+                for signal in self.signals
+            },
+        )
+        df = transitions.fit_transform(df)
 
-            # Derived columns retain the logical signal name.
-            rising_col = f"{signal}_rising"
-            falling_col = f"{signal}_falling"
-            enter_rising_col = f"enter_{rising_col}"
-            exit_rising_col = f"exit_{rising_col}"
-            rate_col = f"{signal}_rate"
+        for signal in self.signals:
+            enter_rising_col = f"enter_{signal}_rising"
+            exit_rising_col = f"exit_{signal}_rising"
             peak_col = f"{signal}_peak"
             trough_col = f"{signal}_trough"
 
             if self.group_columns:
-                difference = (
-                    df.groupby(
-                        self.group_columns,
-                        sort=False,
-                    )[source]
-                    .diff(self.diff_lag)
-                )
                 event_group = [
                     df[column]
                     for column in self.group_columns
                 ]
             else:
-                difference = df[source].diff(
-                    self.diff_lag
-                )
                 event_group = None
-
-            df[rising_col] = positive_state(
-                difference,
-                self.eps,
-            )
-
-            df[falling_col] = negative_state(
-                difference,
-                self.eps,
-            )
-
-            df[enter_rising_col] = enter_state(
-                df[rising_col],
-                event_group,
-            )
-
-            df[exit_rising_col] = exit_state(
-                df[rising_col],
-                event_group,
-            )
 
             # Directional states describe the edge ending at the current
             # row. A reversal detected at row i therefore places the
@@ -157,11 +128,6 @@ class Oscillation(Behavior):
                 trough_col,
                 self.group,
             )
-
-            # Approximate change per sample over diff_lag samples.
-            # Grouped differences prevent rates from crossing
-            # independent sequence boundaries.
-            df[rate_col] = difference / self.diff_lag
 
         return df
 
@@ -192,8 +158,7 @@ class Oscillation(Behavior):
                 "wave_id",
             )
 
-            rising_col = f"{signal}_rising"
-            falling_col = f"{signal}_falling"
+            direction_col = f"{signal}_transition_direction"
             rate_col = f"{signal}_rate"
 
             grouped = df.groupby(
@@ -201,14 +166,16 @@ class Oscillation(Behavior):
                 sort=False,
             )
 
-            rising_time = (
-                grouped[rising_col]
-                .transform("sum")
+            rising_time = grouped[
+                direction_col
+            ].transform(
+                lambda direction: direction.eq("rising").sum()
             )
 
-            falling_time = (
-                grouped[falling_col]
-                .transform("sum")
+            falling_time = grouped[
+                direction_col
+            ].transform(
+                lambda direction: direction.eq("falling").sum()
             )
 
             maximum = (
@@ -334,12 +301,14 @@ class Oscillation(Behavior):
                     "max",
                 ),
                 rising_samples=(
-                    f"{signal}_rising",
-                    "sum",
+                    f"{signal}_transition_direction",
+                    lambda direction:
+                        direction.eq("rising").sum(),
                 ),
                 falling_samples=(
-                    f"{signal}_falling",
-                    "sum",
+                    f"{signal}_transition_direction",
+                    lambda direction:
+                        direction.eq("falling").sum(),
                 ),
                 maximum=(
                     source,
