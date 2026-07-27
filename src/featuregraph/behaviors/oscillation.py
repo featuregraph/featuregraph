@@ -338,11 +338,11 @@ class Oscillation(Behavior):
                 ),
                 peak_index=(
                     f"{signal}_peak_index",
-                    "max",
+                    "last",
                 ),
                 end_index=(
                     f"{signal}_trough_index",
-                    "max",
+                    "last",
                 ),
                 start_position=(
                     f"{signal}_trough_position",
