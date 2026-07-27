@@ -17,8 +17,10 @@
     }
   },
   "outputs": [
+    "tables/bidmc_transitions.csv",
     "tables/bidmc_oscillations.csv",
     "tables/bidmc_accumulations.csv",
+    "tables/eastman_transitions.csv",
     "tables/eastman_oscillations.csv",
     "tables/eastman_accumulations.csv",
     "figures/bidmc_annotated_oscillation.png",
