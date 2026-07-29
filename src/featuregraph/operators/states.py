@@ -10,11 +10,11 @@ def inactive_state(quantity, eps=0):
     return quantity.abs().le(eps)
 
 
-def rising_state(series, lag=10, eps=0):
+def rising_state(series, lag=1, eps=0):
     return positive_state(series.diff(lag), eps)
 
 
-def falling_state(series, lag=10, eps=0):
+def falling_state(series, lag=1, eps=0):
     return negative_state(series.diff(lag), eps)
 
 
