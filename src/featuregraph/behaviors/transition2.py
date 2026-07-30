@@ -27,16 +27,12 @@ class Transition():
         state_col = f'{signal}_{direction}'
         enter_state_col = f'enter_{signal}_{direction}' 
         exit_state_col = f'exit_{signal}_{direction}' 
-        rate_of_change_col = f'{signal}_{direction}_rate_of_change'
         id_col = f'{signal}_id'
 
         df[state_col] = op(df[signal], eps=0)
         df[enter_state_col] = enter_state(df[f'{signal}_{direction}'])
         df[exit_state_col] = exit_state(df[f'{signal}_{direction}'])
-        df[rate_of_change_col] = rate_of_change(df, signal)
-
         df[id_col] = event_id(df, enter_state_col, group)
-
 
         self.df = df
         self.group = group
@@ -44,6 +40,17 @@ class Transition():
         self.id_col = id_col
         self.state_col = state_col
         self.rate_of_change_col = rate_of_change_col
+        
+    def accumulations(self):
+        df[baseline_col] ...
+        df[contribution_col]
+        df[accumulation_col]
+
+    def measures(self):
+        rate_of_change_col = f'{signal}_{direction}_rate_of_change'
+        df[rate_of_change_col] = rate_of_change(df, signal)
+        df[high_signal]
+        df[low_signal]
 
     def summary(self):
         summarydf = self.df.groupby(self.id_col).agg(
