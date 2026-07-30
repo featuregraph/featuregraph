@@ -6,3 +6,8 @@ def group_map(df, signal, op, group, offset=0):
 
 def rate_of_change(df, signal):
     return df[signal].diff()
+
+def signal_measure(df, signal, group_op, group, signal_op):
+    group_measure = group_transform(df, signal, group_op, group)
+    signal_value = getattr(df[signal], signal_op)()
+    return group_measure == signal_value
