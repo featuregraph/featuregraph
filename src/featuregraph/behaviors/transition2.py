@@ -30,7 +30,7 @@ class Transition():
         rate_of_change_col = f'{signal}_{direction}_rate_of_change'
         id_col = f'{signal}_id'
 
-        df[state_col] = op(df[signal], diff_lag, eps)
+        df[state_col] = op(df[signal], eps=0)
         df[enter_state_col] = enter_state(df[f'{signal}_{direction}'])
         df[exit_state_col] = exit_state(df[f'{signal}_{direction}'])
         df[rate_of_change_col] = rate_of_change(df, signal)

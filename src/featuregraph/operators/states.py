@@ -18,6 +18,10 @@ def falling_state(series, lag=1, eps=0):
     return negative_state(series.diff(lag), eps)
 
 
+def stable_state(series, lag=1, eps=0):
+    return inactive_state(series.diff(lag), eps)
+
+
 def accumulating_state(contribution, eps=0):
     return positive_state(contribution, eps)
 
