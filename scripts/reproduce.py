@@ -15,14 +15,14 @@ from pathlib import Path
 from typing import Any
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
 import featuregraph as fg
 
-
-SEED = 1729
+MANIFEST_PATH = Path("reproducibility/manifest.json")
 PACKAGES = (
     "featuregraph",
     "numpy",
@@ -74,6 +74,48 @@ def environment() -> dict[str, Any]:
         "python_version": platform.python_version(),
         "python_implementation": platform.python_implementation(),
         "packages": package_versions(),
+    }
+
+
+def load_manifest(path: Path = MANIFEST_PATH) -> dict[str, Any]:
+    """Load the versioned authority for reproduction inputs and outputs."""
+    if not path.is_file():
+        raise FileNotFoundError(f"Reproduction manifest not found: {path}")
+
+    manifest = json.loads(path.read_text(encoding="utf-8"))
+
+    if manifest.get("schema_version") != 1:
+        raise ValueError("Unsupported reproduction manifest schema.")
+
+    if "seed" not in manifest or "datasets" not in manifest:
+        raise ValueError("Manifest must define seed and datasets.")
+
+    if not manifest.get("outputs"):
+        raise ValueError("Manifest must define expected outputs.")
+
+    return manifest
+
+
+def validate_expected_outputs(
+    output_dir: Path,
+    expected_outputs: list[str],
+) -> dict[str, str]:
+    """Require every manifest-declared output and return its checksum."""
+    missing = [
+        relative_path
+        for relative_path in expected_outputs
+        if not (output_dir / relative_path).is_file()
+    ]
+    if missing:
+        raise RuntimeError(
+            "Reproduction did not create expected outputs: "
+            + ", ".join(missing)
+        )
+
+    return {
+        relative_path: sha256(output_dir / relative_path)
+        for relative_path in expected_outputs
+        if relative_path != "run_metadata.json"
     }
 
 
@@ -295,8 +337,13 @@ def save_objects(
 
 def main() -> None:
     args = parse_args()
-    random.seed(SEED)
-    np.random.seed(SEED)
+    manifest = load_manifest()
+    seed = int(manifest["seed"])
+    bidmc_selection = manifest["datasets"]["bidmc"]
+    eastman_selection = manifest["datasets"]["tennessee_eastman"]
+
+    random.seed(seed)
+    np.random.seed(seed)
 
     output_dir = args.output_dir.resolve()
     tables_dir = output_dir / "tables"
@@ -313,7 +360,10 @@ def main() -> None:
     runs: dict[str, Any] = {}
 
     started = time.perf_counter()
-    bidmc = fg.datasets.bidmc(subject=1, refresh=args.refresh)
+    bidmc = fg.datasets.bidmc(
+        subject=int(bidmc_selection["subject"]),
+        refresh=args.refresh,
+    )
     bidmc_builder = fg.oscillation.Oscillation(
         signals="respiration",
         group="subject",
@@ -343,15 +393,20 @@ def main() -> None:
         figures_dir,
     )
     runs["bidmc"]["wall_seconds"] = time.perf_counter() - started
-    runs["bidmc"]["selection"] = {"version": "1.0.0", "subject": 1}
+    runs["bidmc"]["selection"] = dict(bidmc_selection)
     runs["bidmc"]["source_file"] = bidmc.attrs.get("source_file")
 
     started = time.perf_counter()
     eastman = fg.datasets.eastman(
-        fault_number=1,
-        simulation_run=1,
+        fault_number=int(eastman_selection["fault_number"]),
+        simulation_run=int(eastman_selection["simulation_run"]),
         refresh=args.refresh,
     )
+    if eastman.attrs.get("source_revision") != eastman_selection["revision"]:
+        raise RuntimeError(
+            "Tennessee Eastman loader revision does not match "
+            "the reproduction manifest."
+        )
     eastman_builder = fg.oscillation.Oscillation(
         signals="reactor_temperature",
         group=["fault_number", "simulation_run"],
@@ -386,11 +441,7 @@ def main() -> None:
         plot_signal="reactor_temperature_smooth",
     )
     runs["eastman"]["wall_seconds"] = time.perf_counter() - started
-    runs["eastman"]["selection"] = {
-        "mode": 1,
-        "fault_number": 1,
-        "simulation_run": 1,
-    }
+    runs["eastman"]["selection"] = dict(eastman_selection)
     runs["eastman"]["source_file"] = eastman.attrs.get("source_file")
     runs["eastman"]["source_url"] = eastman.attrs.get("source_url")
 
@@ -398,7 +449,9 @@ def main() -> None:
     metadata_path.write_text(
         json.dumps(
             {
-                "seed": SEED,
+                "seed": seed,
+                "manifest": str(MANIFEST_PATH),
+                "manifest_sha256": sha256(MANIFEST_PATH),
                 "python": sys.version,
                 "runs": runs,
             },
@@ -409,7 +462,14 @@ def main() -> None:
         encoding="utf-8",
     )
 
-    print(f"Wrote reproducibility artifacts to {output_dir}")
+    checksums = validate_expected_outputs(
+        output_dir,
+        list(manifest["outputs"]),
+    )
+    print(
+        f"Wrote {len(checksums) + 1} reproducibility artifacts "
+        f"to {output_dir}"
+    )
 
 
 if __name__ == "__main__":

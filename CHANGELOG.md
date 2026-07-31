@@ -4,6 +4,21 @@ All notable changes to FeatureGraph are documented in this file. The format foll
 
 ## [Unreleased]
 
+### Added
+
+- Canonical paper index and revision guidance.
+- CI execution of the public alpha demonstration notebook.
+- Tests for manifest-driven reproduction.
+
+### Changed
+
+- Defined `alpha/v0.1.x` as a living oscillation-and-accumulation research line while keeping successor architecture work on `main`.
+- Pinned the Tennessee Eastman source revision and made its cache revision-specific.
+- Made the reproduction script read and validate the versioned manifest.
+- Focused the README on alpha installation, documentation, and research resources.
+- Completed DOI metadata and converted the prerelease checklist into an alpha release record.
+- Consolidated repository ignore rules.
+
 ## [0.1.0a1] - 2026-07-24
 
 ### Added

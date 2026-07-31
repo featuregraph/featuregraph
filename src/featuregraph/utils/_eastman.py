@@ -5,15 +5,14 @@ from pathlib import Path
 import pandas as pd
 import requests
 
-
 GITHUB_OWNER = "mv-per"
 GITHUB_REPOSITORY = "tennessee-eastman-dataset"
-GITHUB_BRANCH = "main"
+GITHUB_REVISION = "309b944f35ac440ff0c70616947ffe723c766e14"
 
 # media.githubusercontent.com resolves Git LFS files to their actual contents.
 GITHUB_MEDIA_BASE_URL = (
     "https://media.githubusercontent.com/media/"
-    f"{GITHUB_OWNER}/{GITHUB_REPOSITORY}/{GITHUB_BRANCH}"
+    f"{GITHUB_OWNER}/{GITHUB_REPOSITORY}/{GITHUB_REVISION}"
 )
 
 # XLSX files are ZIP archives and normally begin with this signature.
@@ -31,6 +30,7 @@ def get_tep_cache_dir() -> Path:
         / ".cache"
         / "featuregraph"
         / "tennessee_eastman"
+        / GITHUB_REVISION
     )
     cache_dir.mkdir(parents=True, exist_ok=True)
     return cache_dir
@@ -278,6 +278,7 @@ def load_tep_run(
     df.attrs["fault_number"] = fault_number
     df.attrs["simulation_run"] = simulation_run
     df.attrs["source_file"] = str(path)
+    df.attrs["source_revision"] = GITHUB_REVISION
     df.attrs["source_url"] = tep_run_url(
         fault_number=fault_number,
         simulation_run=simulation_run,

@@ -5,8 +5,9 @@ behavioral objects that software can inspect and query.
 
 ```{important}
 These pages document the released FeatureGraph alpha, `v0.1.0a1`. The
-`main` branch contains an unreleased architectural redesign and is not API
-compatible with this release.
+`alpha/v0.1.x` branch remains active for new datasets and research using its
+oscillation/accumulation workflow. The `main` branch contains an unreleased
+architectural redesign and is not API compatible with this release.
 ```
 
 ```{toctree}
