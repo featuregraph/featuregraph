@@ -2,10 +2,10 @@ name: tests
 
 on:
   push:
-    branches: [main]
+    branches: [alpha/v0.1.x]
     tags: ["v*"]
   pull_request:
-    branches: [main]
+    branches: [alpha/v0.1.x]
   workflow_dispatch:
     inputs:
       reproduce:
