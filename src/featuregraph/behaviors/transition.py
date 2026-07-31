@@ -3,8 +3,6 @@ from collections.abc import Mapping
 import numpy as np
 import pandas as pd
 
-from featuregraph.behaviors.base import Behavior, Group, Signals
-from featuregraph.behaviors.objects import BehaviorObjects
 from featuregraph.operators.events import (
     enter_state,
     event_id,
@@ -17,372 +15,65 @@ from featuregraph.operators.states import (
     positive_state,
 )
 
+from featuregraph.operators.measures import (
+    rate_of_change
+)
 
-class Transition(Behavior):
-    """Construct contiguous directional transitions from observed signals."""
+class Transition():
 
-    directions = ("rising", "falling", "inactive")
+    def __init__(self, df, signal, direction, op, group=None, diff_lag=1, eps=0.0):
+        state_col = f'{signal}_{direction}'
+        enter_state_col = f'enter_{signal}_{direction}' 
+        exit_state_col = f'exit_{signal}_{direction}' 
+        id_col = f'{signal}_id'
 
-    def __init__(
-        self,
-        signals: Signals,
-        group: Group = None,
-        diff_lag: int = 10,
-        eps: float = 0.0,
-        source_signals: Mapping[str, str] | None = None,
-    ) -> None:
-        super().__init__(signals=signals, group=group)
+        df[state_col] = op(df[signal], eps=0)
+        df[enter_state_col] = enter_state(df[f'{signal}_{direction}'])
+        df[exit_state_col] = exit_state(df[f'{signal}_{direction}'])
+        df[id_col] = event_id(df, enter_state_col, group)
 
-        if diff_lag < 1:
-            raise ValueError("diff_lag must be at least 1.")
+        self.df = df
+        self.group = group
+        self.signal = signal
+        self.id_col = id_col
+        self.state_col = state_col
+        # self.rate_of_change_col = rate_of_change_col
+        
+    # def accumulations(self):
+    #     df[baseline_col] ...
+    #     df[contribution_col]
+    #     df[accumulation_col]
 
-        if eps < 0:
-            raise ValueError("eps cannot be negative.")
+    # def measures(self):
+    #     rate_of_change_col = f'{signal}_{direction}_rate_of_change'
+    #     df[rate_of_change_col] = rate_of_change(df, signal)
+    #     df[high_signal]
+    #     df[low_signal]
 
-        self.diff_lag = diff_lag
-        self.eps = eps
-        self.source_signals = dict(source_signals or {})
-
-    def source_for(self, signal: str) -> str:
-        """Return the numerical source used to construct a transition."""
-        return self.source_signals.get(signal, signal)
-
-    def validate(self, df: pd.DataFrame) -> None:
-        super().validate(df)
-
-        missing = [
-            self.source_for(signal)
-            for signal in self.signals
-            if self.source_for(signal) not in df.columns
-        ]
-
-        if missing:
-            raise ValueError(
-                f"Transition source columns are missing: {missing}"
-            )
-
-    def add_primitives(
-        self,
-        df: pd.DataFrame,
-    ) -> pd.DataFrame:
-        """Add direction states and their entry and exit events."""
-        for signal in self.signals:
-            source = self.source_for(signal)
-            difference_col = f"{signal}_difference"
-            rate_col = f"{signal}_rate"
-
-            if self.group_columns:
-                difference = (
-                    df.groupby(self.group_columns, sort=False)[source]
-                    .diff(self.diff_lag)
-                )
-                event_group = [
-                    df[column]
-                    for column in self.group_columns
-                ]
-            else:
-                difference = df[source].diff(self.diff_lag)
-                event_group = None
-
-            df[difference_col] = difference
-            df[rate_col] = difference / self.diff_lag
-
-            state_operators = {
-                "rising": positive_state,
-                "falling": negative_state,
-                "inactive": inactive_state,
-            }
-
-            for direction, operator in state_operators.items():
-                state_col = f"{signal}_{direction}"
-                df[state_col] = operator(difference, self.eps)
-                df[f"enter_{state_col}"] = enter_state(
-                    df[state_col],
-                    event_group,
-                )
-                df[f"exit_{state_col}"] = exit_state(
-                    df[state_col],
-                    event_group,
-                )
-
-            df[f"{signal}_transition_direction"] = np.select(
-                [
-                    df[f"{signal}_rising"],
-                    df[f"{signal}_falling"],
-                    df[f"{signal}_inactive"],
-                ],
-                list(self.directions),
-                default=None,
-            )
-
-            enter_columns = [
-                f"enter_{signal}_{direction}"
-                for direction in self.directions
-            ]
-            exit_columns = [
-                f"exit_{signal}_{direction}"
-                for direction in self.directions
-            ]
-
-            df[f"enter_{signal}_transition"] = (
-                df[enter_columns].any(axis=1)
-            )
-            df[f"exit_{signal}_transition"] = (
-                df[exit_columns].any(axis=1)
-            )
-
-            df[f"{signal}_transition_start"] = (
-                preceding_sample_event(
-                    df[f"enter_{signal}_transition"],
-                    event_group,
-                )
-            )
-            df[f"{signal}_transition_end"] = (
-                preceding_sample_event(
-                    df[f"exit_{signal}_transition"],
-                    event_group,
-                )
-            )
-
-            source_index = pd.Series(
-                df.index,
-                index=df.index,
-            )
-
-            if self.group_columns:
-                previous_index = source_index.groupby(
-                    event_group,
-                    sort=False,
-                ).shift(1)
-                previous_value = df[source].groupby(
-                    event_group,
-                    sort=False,
-                ).shift(1)
-            else:
-                previous_index = source_index.shift(1)
-                previous_value = df[source].shift(1)
-
-            start_index = previous_index.where(
-                df[f"enter_{signal}_transition"]
-            )
-            start_value = previous_value.where(
-                df[f"enter_{signal}_transition"]
-            )
-
-            if self.group_columns:
-                start_index = start_index.groupby(
-                    event_group,
-                    sort=False,
-                ).ffill()
-                start_value = start_value.groupby(
-                    event_group,
-                    sort=False,
-                ).ffill()
-            else:
-                start_index = start_index.ffill()
-                start_value = start_value.ffill()
-
-            df[f"{signal}_transition_start_index"] = start_index
-            df[f"{signal}_transition_start_value"] = start_value
-            df[f"{signal}_transition_end_index"] = np.where(
-                df[f"{signal}_transition_end"],
-                df.index,
-                np.nan,
-            )
-
-        return df
-
-    def add_ids(
-        self,
-        df: pd.DataFrame,
-    ) -> pd.DataFrame:
-        """Assign one identifier to each contiguous direction state."""
-        for signal in self.signals:
-            transition_id_col = f"{signal}_transition_id"
-            df[transition_id_col] = event_id(
-                df,
-                f"enter_{signal}_transition",
-                self.group,
-            )
-
-            for direction in self.directions:
-                df[f"{signal}_{direction}_transition_id"] = (
-                    df[transition_id_col].where(
-                        df[f"{signal}_{direction}"]
-                    )
-                )
-
-        return df
-
-    def add_features(
-        self,
-        df: pd.DataFrame,
-    ) -> pd.DataFrame:
-        """Add row-aligned transition measurements."""
-        for signal in self.signals:
-            source = self.source_for(signal)
-            object_group = self.object_group(
-                signal,
-                "transition_id",
-            )
-            grouped = df.groupby(object_group, sort=False)
-
-            start_index = grouped[
-                f"{signal}_transition_start_index"
-            ].transform("first")
-            detected_end = grouped[
-                f"{signal}_transition_end_index"
-            ].transform("max")
-
-            if self.group_columns:
-                sequence_end = (
-                    df.groupby(self.group_columns, sort=False)[source]
-                    .transform(lambda values: values.index[-1])
-                )
-            else:
-                sequence_end = pd.Series(
-                    df.index[-1],
-                    index=df.index,
-                )
-
-            end_index = detected_end.fillna(sequence_end)
-            start_value = grouped[
-                f"{signal}_transition_start_value"
-            ].transform("first")
-            end_value = grouped[source].transform("last")
-            duration = end_index - start_index
-
-            df[f"{signal}_transition_start_index"] = start_index
-            df[f"{signal}_transition_end_index"] = end_index
-            df[f"{signal}_transition_duration"] = duration
-            df[f"{signal}_transition_start_value"] = start_value
-            df[f"{signal}_transition_end_value"] = end_value
-            df[f"{signal}_transition_net_change"] = (
-                end_value - start_value
-            )
-            df[f"{signal}_transition_mean_rate"] = (
-                (end_value - start_value) / duration
-            ).where(duration > 0)
-            df[f"{signal}_transition_peak_rate"] = (
-                grouped[f"{signal}_rate"]
-                .transform(lambda values: values.abs().max())
-            )
-            df[f"{signal}_transition_complete"] = (
-                grouped[f"{signal}_transition_end"]
-                .transform("max")
-                .astype(bool)
-            )
-
-        return df
-
-    def summarize(
-        self,
-        df: pd.DataFrame,
-        signal: str,
-        include_partial: bool = False,
-    ) -> BehaviorObjects:
-        """Return one row per directional transition."""
-        if signal not in self.signals:
-            raise ValueError(
-                f"Signal {signal!r} was not configured for "
-                "this Transition constructor."
-            )
-
-        source = self.source_for(signal)
-        self.validate_signal(df, source)
-        object_group = self.object_group(
-            signal,
-            "transition_id",
+    def summary(self):
+        summarydf = self.df.groupby(self.id_col).agg(
+            duration=(self.state_col, 'sum'),
+            start_value=(self.signal, 'first'),
+            end_value=(self.signal, 'last'),
+            peak_rate_of_change=(self.rate_of_change_col, 'max')
         )
 
-        summarydf = (
-            df.loc[
-                df[f"{signal}_transition_direction"].notna()
-            ]
-            .groupby(object_group, sort=False)
-            .agg(
-                direction=(
-                    f"{signal}_transition_direction",
-                    "first",
-                ),
-                is_complete=(
-                    f"{signal}_transition_complete",
-                    "first",
-                ),
-                start_index=(
-                    f"{signal}_transition_start_index",
-                    "first",
-                ),
-                end_index=(
-                    f"{signal}_transition_end_index",
-                    "first",
-                ),
-                duration=(
-                    f"{signal}_transition_duration",
-                    "first",
-                ),
-                start_value=(
-                    f"{signal}_transition_start_value",
-                    "first",
-                ),
-                end_value=(
-                    f"{signal}_transition_end_value",
-                    "first",
-                ),
-                net_change=(
-                    f"{signal}_transition_net_change",
-                    "first",
-                ),
-                mean_rate=(
-                    f"{signal}_transition_mean_rate",
-                    "first",
-                ),
-                peak_rate=(
-                    f"{signal}_transition_peak_rate",
-                    "first",
-                ),
-            )
-            .reset_index()
-            .rename(
-                columns={
-                    f"{signal}_transition_id": "transition_id",
-                }
-            )
-        )
+        summarydf['net_change'] = summarydf['end_value'] - summarydf['start_value']
+        summarydf['mean_rate'] = summarydf['net_change'] / summarydf['duration']
 
-        if not include_partial:
-            summarydf = (
-                summarydf.loc[summarydf["is_complete"]]
-                .copy()
-                .reset_index(drop=True)
-            )
+        return summarydf
 
-        properties = (
-            "transition_id",
-            "direction",
-            "is_complete",
-            "start_index",
-            "end_index",
-            "duration",
-            "start_value",
-            "end_value",
-            "net_change",
-            "mean_rate",
-            "peak_rate",
-        )
-
-        return BehaviorObjects(
-            behavior_type="transition",
-            signal=signal,
-            table=summarydf[
-                [*self.group_columns, *properties]
-            ],
-            features=df,
-            group=tuple(self.group_columns),
-            properties=properties,
-            construction={
-                "diff_lag": self.diff_lag,
-                "eps": self.eps,
-                "include_partial": include_partial,
-            },
-        )
+# transition_id
+# state
+# start_index
+# end_index
+# start_value
+# end_value
+# state_duration
+# interval_duration
+# net_change
+# change_magnitude
+# mean_rate
+# peak_rate
+# has_start_boundary
+# has_end_boundary
