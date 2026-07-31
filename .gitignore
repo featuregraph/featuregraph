@@ -56,6 +56,16 @@ outputs/
 .prof
 *.prof
 
+# Locally generated paper evidence
+artifacts/paper/environment.json
+artifacts/paper/run_metadata.json
+artifacts/paper/tables/bidmc_accumulations.csv
+artifacts/paper/tables/bidmc_oscillations.csv
+artifacts/paper/tables/eastman_accumulations.csv
+artifacts/paper/tables/eastman_oscillations.csv
+artifacts/paper/figures/bidmc_annotated_oscillation.png
+artifacts/paper/figures/eastman_annotated_oscillation.png
+
 # Operating systems
 .DS_Store
 .AppleDouble
