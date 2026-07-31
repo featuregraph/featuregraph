@@ -3,7 +3,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# Python packaging and build artifacts
+# Packaging and build artifacts
 build/
 dist/
 *.egg-info/
@@ -11,7 +11,13 @@ dist/
 *.egg
 pip-wheel-metadata/
 
-# Test, coverage, and type-checking caches
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Tests, coverage, linting, and type checking
 .pytest_cache/
 .coverage
 .coverage.*
@@ -22,33 +28,15 @@ htmlcov/
 .ruff_cache/
 .tox/
 .nox/
-/dev/
 
 # Jupyter
 .ipynb_checkpoints/
+*.nbconvert.ipynb
 
-# IDE and editor settings
-.vscode/*
-!.vscode/settings.json
-!.vscode/extensions.json
-!.vscode/launch.json
-!.vscode/tasks.json
+# Editors
+.vscode/
 .idea/
 *.code-workspace
-
-# macOS
-.DS_Store
-.AppleDouble
-.LSOverride
-Icon\r
-._*
-.Spotlight-V100
-.Trashes
-
-# Logs and temporary files
-*.log
-*.tmp
-*.temp
 *.swp
 *.swo
 *~
@@ -58,46 +46,23 @@ Icon\r
 .env.*
 !.env.example
 
-# Local data and generated outputs
-# Keep these ignored unless intentionally versioned.
+# Local datasets and disposable outputs
 data/
 outputs/
-artifacts/
-
-# Notebook-generated exports
-*.nbconvert.ipynb
-
-# Profiling and debugging
+*.log
+*.tmp
+*.temp
 .prof
 *.prof
 
-# OS-specific Python files
-.python-version
-
-# Python bytecode
-__pycache__/
-*.py[cod]
-*$py.class
-
-# Packaging/build metadata
-*.egg-info/
-build/
-dist/
-
-# Virtual environments
-.venv/
-venv/
-env/
-ENV/
-
-# Jupyter
-.ipynb_checkpoints/
-
-# macOS
+# Operating systems
 .DS_Store
+.AppleDouble
+.LSOverride
+Icon\r
+._*
+.Spotlight-V100
+.Trashes
 
-.vscode/
-
-# Python bytecode
-__pycache__/
-*.py[cod]
+# Local Python version managers
+.python-version
