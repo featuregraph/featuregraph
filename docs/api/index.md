@@ -12,9 +12,9 @@ The authoritative implementation is the immutable
 The [demonstration notebook](https://github.com/featuregraph/featuregraph/blob/v0.1.0a1/notebooks/demo_notebook.ipynb)
 shows the complete construction and query workflow.
 
-The alpha dataset namespace includes `bidmc()`, `eastman()`, and the
-deterministic `cartpole()` trajectory loader. See [Datasets](../datasets.md)
-for the CartPole schema and oscillation/accumulation workflow.
+The alpha dataset namespace includes `bidmc()`, `eastman()`, `cartpole()`, and
+`mountaincar()` trajectory loaders. See [Datasets](../datasets.md) for their
+schemas and oscillation/accumulation workflows.
 
 ```{note}
 Transition construction belongs to the unreleased successor architecture on
