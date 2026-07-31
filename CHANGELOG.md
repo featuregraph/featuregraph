@@ -4,19 +4,26 @@ All notable changes to FeatureGraph are documented in this file. The format foll
 
 ## [Unreleased]
 
+> The `main` branch is an in-progress successor architecture and is not API-compatible with `v0.1.0a1`. Use [`alpha/v0.1.x`](https://github.com/featuregraph/featuregraph/tree/alpha/v0.1.x) for a working alpha line or the immutable [release tag](https://github.com/featuregraph/featuregraph/releases/tag/v0.1.0a1) for exact reproduction. Migration guidance will follow after the replacement API stabilizes.
+
 ### Added
 
 - First-order `Transition` objects for contiguous rising, falling, and inactive behavior.
 - Transition summaries with boundaries, completeness, duration, value change, rate measurements, identifiers, and provenance.
-- Transition object tables in the BIDMC and Tennessee Eastman reproduction outputs.
+- Transition object tables in the BIDMC and Tennessee Eastman development reproduction outputs.
 - Notebook parsing, compilation, API-contract, and execution checks in CI.
 - Robustness coverage for grouped records, missing values, flat regions, partial objects, multiple signals, and smoothing.
 
 ### Changed
 
-- `Oscillation` now composes its directional states from `Transition` objects while preserving its public feature and object-table contracts.
-- All tutorial notebooks now use the current `Transition`, `Oscillation`, and `Accumulation` APIs.
-- The public reproduction workflow now validates the complete Transition → Oscillation → Accumulation hierarchy.
+- Began redesigning the construction API around transition summaries.
+- Development `Oscillation` composes directional behavior from `Transition`.
+- Development notebooks and reproduction code target the successor API rather than the released alpha API.
+- Alpha evaluation artifacts remain tied to `v0.1.0a1` and must not be silently regenerated with `main`.
+
+### Migration
+
+No migration guide is published yet because the replacement interface is still changing.
 
 ## [0.1.0a1] - 2026-07-24
 
