@@ -79,16 +79,20 @@ python scripts/reproduce.py
 
 The command reads the versioned reproduction manifest, downloads the fixed BIDMC and Tennessee Eastman selections, reconstructs object tables, generates annotated figures, and records environment and checksum metadata. See the [reproducibility guide](docs/reproducibility.md) for details.
 
-## Alpha maintenance policy
+## Living alpha research line
 
-Changes on `alpha/v0.1.x` are limited to:
+The alpha is not frozen. It remains an active research line for asking how well the existing oscillation and accumulation workflow transfers to additional datasets and physical domains.
 
-- correcting defects in released alpha behavior;
-- strengthening alpha tests and reproducibility;
-- completing and maintaining the alpha paper;
-- improving documentation without silently changing released semantics.
+Work on `alpha/v0.1.x` may:
 
-New behavioral objects and successor-architecture work belong on `main`. The alpha API may receive corrections, but incompatible development is kept separate.
+- add stable datasets and cross-domain demonstrations;
+- evaluate oscillation and accumulation behavior under new conditions;
+- compare object schemas, measurements, robustness, and failure modes;
+- strengthen tests, provenance, and reproducibility;
+- correct defects without silently changing released semantics;
+- extend the alpha manuscript with evidence from this line of research.
+
+Architectural redesign, successor object models, and incompatible API development belong on `main`. The distinction is between extending the alpha's empirical reach and extending its architecture.
 
 ## Citation
 
