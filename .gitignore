@@ -70,6 +70,9 @@ artifacts/paper/*
 !artifacts/paper/framework/
 artifacts/paper/framework/*
 !artifacts/paper/framework/framework.md
+!artifacts/paper/framework/alpha implementation.md
+!artifacts/paper/framework/evaluation methods.md
+!artifacts/paper/framework/results.md
 
 # Notebook-generated exports
 *.nbconvert.ipynb
