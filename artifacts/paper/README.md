@@ -45,4 +45,4 @@ When changing a manuscript claim:
 4. keep limitations visible where the corresponding result is interpreted;
 5. record substantive changes in a focused `paper:` commit.
 
-The immutable software authority is [`v0.1.0a1`](https://github.com/featuregraph/featuregraph/tree/v0.1.0a1). This branch may improve the paper and correct compatible defects, but successor architecture claims belong on `main`.
+The immutable software authority is [`v0.1.0a1`](https://github.com/featuregraph/featuregraph/tree/v0.1.0a1). This branch may extend the paper with new datasets and evaluations that use the existing oscillation/accumulation workflow. Architectural redesign and successor-only claims belong on `main`.
