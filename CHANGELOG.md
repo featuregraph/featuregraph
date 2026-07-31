@@ -6,6 +6,9 @@ All notable changes to FeatureGraph are documented in this file. The format foll
 
 ### Added
 
+- Deterministic, cached CartPole trajectories for oscillation and accumulation
+  research, including provenance metadata and an end-to-end behavioral-object
+  integration test.
 - Canonical paper index and revision guidance.
 - CI execution of the public alpha demonstration notebook.
 - Tests for manifest-driven reproduction.
