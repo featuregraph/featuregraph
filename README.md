@@ -4,106 +4,79 @@
 
 FeatureGraph turns ordered observations into explicit behavioral objects that software can inspect and query.
 
-A raw time series contains values. It may also contain oscillations, transitions, and accumulations, but those behaviors remain implicit until their states, boundaries, identities, and properties are constructed. FeatureGraph performs that construction deterministically and returns one row per behavioral object.
+A time series contains values, but behaviors such as oscillations and accumulations remain implicit until their states, boundaries, identities, and properties are constructed. FeatureGraph performs that construction deterministically and returns inspectable object tables.
 
 ```text
 observations
-    → directional transitions
-    → oscillations and accumulations
-    → object boundaries and identities
+    → states and events
+    → object identities and boundaries
     → behavioral object tables
     → computational queries
 ```
 
-The current development version provides first-order transition objects, oscillations composed from those transitions, wave-derived accumulation objects, inspectable construction features, and a small deterministic query interface. Pandas is the reference execution model.
+> **Development status:** The `main` branch contains an unreleased architectural redesign and is not API-compatible with FeatureGraph `v0.1.0a1`. To use or reproduce the public alpha, work from [`alpha/v0.1.x`](https://github.com/featuregraph/featuregraph/tree/alpha/v0.1.x) or the immutable [`v0.1.0a1` release](https://github.com/featuregraph/featuregraph/releases/tag/v0.1.0a1). Migration guidance will be published when the replacement API stabilizes.
 
-## Demo
+## Released alpha
 
-This example begins with BIDMC respiration observations:
+FeatureGraph `v0.1.0a1` provides:
+
+- explicit oscillation objects;
+- wave-derived accumulation objects;
+- retained sample-level construction evidence;
+- one-row-per-object summary tables;
+- a deterministic query interface;
+- BIDMC and Tennessee Eastman dataset loaders;
+- reproducibility scripts, tests, and archived artifacts.
+
+The release constructs observations into states and events, assigns object identities, distinguishes complete from boundary-truncated objects, calculates intrinsic properties, and exposes the resulting tables to downstream queries.
+
+## Quick start
+
+Install the released alpha:
+
+```bash
+python -m pip install   "featuregraph @ git+https://github.com/featuregraph/featuregraph.git@v0.1.0a1"
+```
+
+Or clone the maintained alpha line:
+
+```bash
+git clone --branch alpha/v0.1.x   https://github.com/featuregraph/featuregraph.git
+cd featuregraph
+python -m pip install -e ".[dev]"
+python -m pytest
+```
+
+The alpha API constructs oscillations from grouped observations:
 
 ```python
 import featuregraph as fg
 
 bidmc = fg.datasets.bidmc(subject=1)
-```
 
-### Construct transition objects
-
-```python
-transition = fg.transition.Transition(
-    signals="respiration",
-    group="subject",
-    diff_lag=10,
-    eps=0.001,
-)
-
-transition_features = transition.fit_transform(bidmc)
-transition_objects = transition.summarize(
-    transition_features,
-    signal="respiration",
-)
-```
-
-For each signal, `Transition` assigns every observation to a contiguous rising, falling, or inactive object. The summary records object identity and boundaries, completeness, duration, start and end values, net change, and mean and peak rate. `diff_lag` controls the comparison interval and `eps` controls the minimum change treated as directional.
-
-### Construct oscillation objects
-
-```python
-respiration = fg.oscillation.Oscillation(
+oscillation = fg.oscillation.Oscillation(
     signals="respiration",
     group="subject",
     smooth_signal=False,
 )
 
-respiration_features = respiration.fit_transform(bidmc)
-
-respiration_objects = respiration.summarize(
-    respiration_features,
-    signal="respiration",
-)
+features = oscillation.fit_transform(bidmc)
+objects = oscillation.summarize(features, signal="respiration")
 ```
 
-`fit_transform()` constructs the sample-level representation:
-
-- rising, falling, and inactive transition states;
-- contiguous transition identities and measurements;
-- state-entry and state-exit events;
-- peak and trough locations;
-- oscillation identities;
-- object-relative measurements.
-
-Oscillation composes the transition layer instead of independently redefining rising and falling behavior. `summarize()` produces one row per complete oscillation.
-
-The returned result contains both the object table and the evidence supporting its construction:
+The result retains both representations:
 
 ```python
-respiration_objects.behavior_type
-# "oscillation"
-
-respiration_objects.signal
-# "respiration"
-
-respiration_objects.count
-# 1070
-
-respiration_objects.table
-# one row per oscillation
-
-respiration_objects.features
-# row-level observations, states, events, and identities
-
-respiration_objects.construction
-# parameters used during construction
+objects.table         # one row per oscillation
+objects.features      # observations, states, events, and identities
+objects.construction  # construction parameters
 ```
 
-### Query the objects
-
-Once oscillations are explicit, downstream code can ask questions about them without detecting their boundaries again:
+Once objects are explicit, downstream code can query them without detecting boundaries again:
 
 ```python
 long_oscillations = (
-    respiration_objects
-    .query()
+    objects.query()
     .where(duration__ge=100)
     .select(
         "oscillation_id",
@@ -116,209 +89,43 @@ long_oscillations = (
 )
 ```
 
-```python
-long_count = len(long_oscillations)
-total_count = respiration_objects.count
-
-{
-    "long_oscillations": long_count,
-    "total_oscillations": total_count,
-    "percentage": 100 * long_count / total_count,
-}
-```
-
-Result:
-
-```python
-{
-    "long_oscillations": 175,
-    "total_oscillations": 1070,
-    "percentage": 16.35514018691589,
-}
-```
-
-Of the 1,070 complete respiration oscillations FeatureGraph constructed, 175—or 16.36%—lasted at least 100 samples.
-
-The query itself is deliberately simple. The important step happened earlier: FeatureGraph converted the waveform into identified oscillations with explicit boundaries and measurements. The query operates on that representation rather than rediscovering waves from raw samples.
-
-More structural questions use the same interface:
-
-```python
-long_symmetric_oscillations = (
-    respiration_objects
-    .query()
-    .where(
-        duration__ge=100,
-        temporal_symmetry__ge=0.9,
-    )
-    .select(
-        "oscillation_id",
-        "duration",
-        "amplitude",
-        "temporal_symmetry",
-    )
-    .order_by(
-        "amplitude",
-        ascending=False,
-    )
-    .collect()
-)
-```
-
-This finds long respiration cycles whose rise and fall durations are nearly equal, then orders them by amplitude.
-
-## Construct related accumulation objects
-
-FeatureGraph can construct a wave-derived accumulation representation from the oscillation-enriched observations:
-
-```python
-accumulation = fg.accumulation.Accumulation(
-    signals="respiration",
-    group="subject",
-)
-
-accumulation_features = accumulation.fit_transform(
-    respiration_features
-)
-
-accumulation_objects = accumulation.summarize(
-    accumulation_features,
-    signal="respiration",
-)
-```
-
-Each accumulation object exposes properties such as baseline, total area above baseline, accumulation rate, symmetry, centroid time, and half-accumulation time. Its `accumulation_id` matches the identifier of its parent oscillation.
-
-```python
-high_accumulations = (
-    accumulation_objects
-    .query()
-    .where(total_auc__gt=50)
-    .select(
-        "accumulation_id",
-        "total_auc",
-        "accumulation_rate",
-        "centroid_time",
-    )
-    .order_by(
-        "total_auc",
-        ascending=False,
-    )
-    .collect()
-)
-```
-
-The current `Accumulation` implementation is wave-derived: each accumulation is constructed within the boundaries of a parent oscillation.
-
-## Apply the same construction in another domain
-
-The oscillation workflow is not specific to respiration:
-
-```python
-eastman = fg.datasets.eastman(
-    fault_number=1,
-    simulation_run=1,
-)
-
-temperature = fg.oscillation.Oscillation(
-    signals="reactor_temperature",
-    group=[
-        "fault_number",
-        "simulation_run",
-    ],
-    smooth_signal=True,
-    smooth_window=20,
-)
-
-temperature_features = temperature.fit_transform(eastman)
-
-temperature_objects = temperature.summarize(
-    temperature_features,
-    signal="reactor_temperature",
-)
-```
-
-BIDMC respiration and Tennessee Eastman reactor temperature are unrelated physical signals. FeatureGraph nevertheless applies the same construction workflow and returns the same oscillation schema for both. Only the signal mapping, grouping, and optional preprocessing differ.
-
-## Reproducibility
-
-After the signal, grouping columns, and construction parameters are specified, FeatureGraph automatically:
-
-1. detects primitive states;
-2. locates boundary events;
-3. assigns object identities;
-4. distinguishes complete and boundary-truncated objects;
-5. calculates intrinsic properties;
-6. returns inspectable features and object tables;
-7. exposes those objects to deterministic queries.
-
-No individual peak, trough, oscillation, or accumulation is manually annotated. The same observations and parameters produce the same representation.
-
-FeatureGraph does not assume every waveform can be interpreted without configuration. Noise, missing observations, irregular sampling, nested frequencies, and unsuitable detection parameters may require preprocessing or a revised behavioral definition.
-
-## Why FeatureGraph?
-
 Pandas can filter a table. FeatureGraph constructs the behavioral table that makes the filtering meaningful.
 
-Without an explicit representation, each downstream analysis must identify waves, infer boundaries, and calculate measurements from raw samples. FeatureGraph performs that work once and exposes the result as an inspectable representation:
+See the [alpha demo notebook](https://github.com/featuregraph/featuregraph/blob/v0.1.0a1/notebooks/demo_notebook.ipynb) for oscillation, accumulation, query, BIDMC, and Tennessee Eastman examples.
 
-```text
-raw samples
-    → explicit transitions
-    → composed oscillations
-    → related accumulations
-    → ordinary computational queries
-```
+## Reproducibility and evaluation
 
-The resulting objects can support analysis, visualization, validation, inter-object relationships, and downstream models without hiding how they were constructed.
-
-See [Behavior architecture](docs/behavior-architecture.md) for the current Transition → Oscillation → Accumulation contracts and invariants.
-
-## Installation
-
-FeatureGraph supports Python 3.10 through 3.13. Install the current release from GitHub:
+The alpha research record is tied to `v0.1.0a1`, not to the changing `main` branch.
 
 ```bash
-python -m pip install "featuregraph @ git+https://github.com/featuregraph/featuregraph.git@v0.1.0a1"
-```
-
-For development:
-
-```bash
-git clone https://github.com/featuregraph/featuregraph.git
+git clone --branch v0.1.0a1 --depth 1   https://github.com/featuregraph/featuregraph.git
 cd featuregraph
 python -m pip install -e ".[dev]"
-python -m pytest
-```
-
-## Reproduce the research artifacts
-
-The complete deterministic reproduction command is:
-
-```bash
 python scripts/reproduce.py
 ```
 
-It downloads the fixed BIDMC and Tennessee Eastman selections, reconstructs transition, oscillation, and accumulation tables, generates annotated figures, and records package, environment, hardware, timing, and checksum metadata. See [the reproducibility guide](docs/reproducibility.md) for data sources, cache locations, expected outputs, and archival-release instructions.
+The release reconstructs the fixed BIDMC and Tennessee Eastman examples and records environment, timing, and checksum metadata. The synthetic evaluation materials were also produced against the alpha API and should not be silently regenerated with the development architecture.
 
-FeatureGraph 0.1.0a1 is archived on Zenodo under the [version DOI 10.5281/zenodo.21535662](https://doi.org/10.5281/zenodo.21535662). Cite the version DOI for results produced with this release; use the [concept DOI 10.5281/zenodo.21535661](https://doi.org/10.5281/zenodo.21535661) to refer to FeatureGraph across versions.
+See the [alpha reproducibility guide](https://github.com/featuregraph/featuregraph/blob/v0.1.0a1/docs/reproducibility.md), [evaluation notebook](notebooks/evaluation_notebook.ipynb), and [evaluation artifacts](artifacts/paper/evaluation/).
 
-Release history is recorded in [CHANGELOG.md](CHANGELOG.md), citation metadata in [CITATION.cff](CITATION.cff), and the final alpha-release procedure in [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md).
+FeatureGraph `v0.1.0a1` is archived under the [version DOI 10.5281/zenodo.21535662](https://doi.org/10.5281/zenodo.21535662). Use the [concept DOI 10.5281/zenodo.21535661](https://doi.org/10.5281/zenodo.21535661) to refer to FeatureGraph across versions.
 
-## Status
+## Development line
 
-FeatureGraph is an alpha research release. Current development priorities include:
+The next architecture is being developed on `main`. It centers transition summaries and revises how higher-order behaviors consume them. Its API, notebooks, and documentation may change without notice and should not be used to reproduce alpha results.
 
-- formal semantic specification and manuscript alignment;
-- broader consumer demonstrations and held-out validation;
-- additional relationships between objects;
-- a clean interface for defining new behavioral object types;
-- tensor-native backend exploration.
+Current development documentation is labeled explicitly:
 
-The API may change while these semantics are finalized.
+- [development architecture](docs/behavior-architecture.md);
+- [unreleased changes](CHANGELOG.md);
+- [current source](https://github.com/featuregraph/featuregraph/tree/main).
 
-The archived `v0.1.0a1` release predates the completed Transition API. Unreleased development progress is recorded in [CHANGELOG.md](CHANGELOG.md).
+The governing version policy is:
 
-## License
+| Reference | Purpose |
+| --- | --- |
+| `v0.1.0a1` | Immutable released and citable alpha |
+| `alpha/v0.1.x` | Usable maintenance line for the alpha API |
+| `main` | Breaking, unreleased successor architecture |
 
-FeatureGraph is released under the MIT License.
+FeatureGraph supports Python 3.10 through 3.13 and is released under the MIT License.
