@@ -55,6 +55,10 @@ notebooks = [
     "nbconvert>=7.0,<8",
     "nbformat>=5.10,<6",
 ]
+rl = [
+    "gymnasium>=1.2,<1.4",
+    "torch>=2.3,<2.4",
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]

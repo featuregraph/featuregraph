@@ -6,6 +6,8 @@ All notable changes to FeatureGraph are documented in this file. The format foll
 
 ### Added
 
+- Causal FeatureGraph observation encoders and a paired-seed DQN experiment for
+  raw, raw-history, behavioral-only, and augmented CartPole/MountainCar states.
 - Reproducible, cached MountainCar trajectories generated from the canonical
   dynamics with a seeded exploratory momentum policy and RL transition schema.
 - Deterministic, cached CartPole trajectories for oscillation and accumulation
