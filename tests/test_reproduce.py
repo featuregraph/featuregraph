@@ -1,9 +1,15 @@
+import json
+from pathlib import Path
 from types import SimpleNamespace
 
 import pandas as pd
 import pytest
 
-from scripts.reproduce import validate_object_tables
+from scripts.reproduce import (
+    load_manifest,
+    validate_expected_outputs,
+    validate_object_tables,
+)
 
 
 def object_tables() -> tuple[SimpleNamespace, SimpleNamespace]:
@@ -64,4 +70,54 @@ def test_validate_object_tables_rejects_invalid_boundaries() -> None:
             "example",
             oscillation,
             accumulation,
+        )
+
+
+def test_load_manifest_reads_versioned_inputs(tmp_path: Path) -> None:
+    path = tmp_path / "manifest.json"
+    path.write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "seed": 1729,
+                "datasets": {"example": {"revision": "abc123"}},
+                "outputs": ["table.csv"],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    manifest = load_manifest(path)
+
+    assert manifest["seed"] == 1729
+    assert manifest["datasets"]["example"]["revision"] == "abc123"
+
+
+def test_load_manifest_rejects_unsupported_schema(tmp_path: Path) -> None:
+    path = tmp_path / "manifest.json"
+    path.write_text(
+        json.dumps(
+            {
+                "schema_version": 2,
+                "seed": 1729,
+                "datasets": {},
+                "outputs": ["table.csv"],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="Unsupported"):
+        load_manifest(path)
+
+
+def test_validate_expected_outputs_requires_manifest_files(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / "present.csv").write_text("value\n1\n", encoding="utf-8")
+
+    with pytest.raises(RuntimeError, match="missing.csv"):
+        validate_expected_outputs(
+            tmp_path,
+            ["present.csv", "missing.csv"],
         )
