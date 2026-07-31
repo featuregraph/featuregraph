@@ -402,6 +402,11 @@ def main() -> None:
         simulation_run=int(eastman_selection["simulation_run"]),
         refresh=args.refresh,
     )
+    if eastman.attrs.get("source_revision") != eastman_selection["revision"]:
+        raise RuntimeError(
+            "Tennessee Eastman loader revision does not match "
+            "the reproduction manifest."
+        )
     eastman_builder = fg.oscillation.Oscillation(
         signals="reactor_temperature",
         group=["fault_number", "simulation_run"],
