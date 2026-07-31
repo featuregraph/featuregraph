@@ -64,7 +64,12 @@ Icon\r
 # Keep these ignored unless intentionally versioned.
 data/
 outputs/
-artifacts/
+artifacts/*
+!artifacts/paper/
+artifacts/paper/*
+!artifacts/paper/framework/
+artifacts/paper/framework/*
+!artifacts/paper/framework/framework.md
 
 # Notebook-generated exports
 *.nbconvert.ipynb
