@@ -93,22 +93,12 @@ Pandas can filter a table. FeatureGraph constructs the behavioral table that mak
 
 See the [alpha demo notebook](https://github.com/featuregraph/featuregraph/blob/v0.1.0a1/notebooks/demo_notebook.ipynb) for oscillation, accumulation, query, BIDMC, and Tennessee Eastman examples.
 
-## Reproducibility and evaluation
+## Alpha research record
 
-The alpha research record is tied to `v0.1.0a1`, not to the changing `main` branch.
-
-```bash
-git clone --branch v0.1.0a1 --depth 1   https://github.com/featuregraph/featuregraph.git
-cd featuregraph
-python -m pip install -e ".[dev]"
-python scripts/reproduce.py
-```
-
-The release reconstructs the fixed BIDMC and Tennessee Eastman examples and records environment, timing, and checksum metadata. The synthetic evaluation materials were also produced against the alpha API and should not be silently regenerated with the development architecture.
-
-See the [alpha reproducibility guide](https://github.com/featuregraph/featuregraph/blob/v0.1.0a1/docs/reproducibility.md), [evaluation notebook](notebooks/evaluation_notebook.ipynb), and [evaluation artifacts](artifacts/paper/evaluation/).
-
-FeatureGraph `v0.1.0a1` is archived under the [version DOI 10.5281/zenodo.21535662](https://doi.org/10.5281/zenodo.21535662). Use the [concept DOI 10.5281/zenodo.21535661](https://doi.org/10.5281/zenodo.21535661) to refer to FeatureGraph across versions.
+The alpha paper, evaluation artifacts, and reproduction tooling live on
+[`alpha/v0.1.x`](https://github.com/featuregraph/featuregraph/tree/alpha/v0.1.x).
+The immutable `v0.1.0a1` release remains the authority for exact published
+results.
 
 ## Development line
 

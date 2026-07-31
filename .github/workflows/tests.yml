@@ -7,12 +7,6 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
-    inputs:
-      reproduce:
-        description: "Regenerate and upload paper artifacts"
-        required: false
-        default: false
-        type: boolean
 
 permissions:
   contents: read
@@ -44,9 +38,6 @@ jobs:
 
       - name: Test
         run: python -m pytest --cov=featuregraph --cov-report=term-missing
-
-      - name: Check reproduction CLI
-        run: python scripts/reproduce.py --help
 
   package:
     name: Build distributions
@@ -107,29 +98,3 @@ jobs:
             --output /tmp/behavior_pipeline.executed.ipynb \
             --ExecutePreprocessor.timeout=120
 
-  reproduce:
-    name: Regenerate paper artifacts
-    if: github.event_name == 'workflow_dispatch' && inputs.reproduce
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v5
-
-      - name: Set up Python
-        uses: actions/setup-python@v7
-        with:
-          python-version: "3.13"
-          cache: pip
-
-      - name: Install package
-        run: python -m pip install -e .
-
-      - name: Regenerate artifacts
-        run: python scripts/reproduce.py --refresh
-
-      - name: Upload paper artifacts
-        uses: actions/upload-artifact@v6
-        with:
-          name: paper-artifacts
-          path: artifacts/paper/
-          if-no-files-found: error
