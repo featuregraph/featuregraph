@@ -18,6 +18,7 @@ caption: Get started
 
 installation
 quickstart
+datasets
 ```
 
 ```{toctree}

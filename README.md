@@ -63,6 +63,7 @@ long_oscillations = (
 
 - [Alpha documentation](https://featuregraph.readthedocs.io/)
 - [Quickstart](https://featuregraph.readthedocs.io/en/latest/quickstart.html)
+- [Datasets](https://featuregraph.readthedocs.io/en/latest/datasets.html)
 - [API reference](https://featuregraph.readthedocs.io/en/latest/api/index.html)
 - [Demonstration notebook](https://github.com/featuregraph/featuregraph/blob/v0.1.0a1/notebooks/demo_notebook.ipynb)
 - [Alpha manuscript and evidence](artifacts/paper/README.md)
