@@ -13,7 +13,7 @@ This file records the completed FeatureGraph alpha release and the checks that s
 | Zenodo DOI | [10.5281/zenodo.21535661](https://doi.org/10.5281/zenodo.21535661) |
 | Supported Python | 3.10–3.13 |
 
-The tag is the immutable software release. The maintenance branch contains its documentation, research record, and compatible corrections. The `main` branch contains unreleased successor work.
+The tag is the immutable software release. The maintenance branch contains its living oscillation/accumulation research line, documentation, and compatible corrections. The `main` branch contains unreleased successor architecture work.
 
 ## Release contents
 
@@ -27,6 +27,10 @@ The tag is the immutable software release. The maintenance branch contains its d
 - tests across Python 3.10 through 3.13;
 - source and wheel build checks;
 - citation and archival metadata.
+
+## Research-line scope
+
+The alpha branch may add datasets, cross-domain demonstrations, evaluation methods, generated evidence, and compatible corrections that exercise the existing oscillation/accumulation workflow. Architectural redesign and incompatible APIs belong on `main`.
 
 ## Maintenance verification
 
