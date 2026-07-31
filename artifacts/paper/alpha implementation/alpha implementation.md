@@ -99,7 +99,8 @@ Mean rising and falling rates divide the same within-object range by the corresp
 s_j =
 1 -
 rac{
-left|d^{mathrm{rise}}_j-d^{mathrm{fall}}_jight|
+left|d^{mathrm{rise}}_j-d^{mathrm{fall}}_j
+ight|
 }{
 d_j
 }.
@@ -145,7 +146,8 @@ Accumulation symmetry is implemented as
 s^{A}_j =
 1 -
 rac{
-left|Q^{mathrm{before}}_j-Q^{mathrm{from}}_jight|
+left|Q^{mathrm{before}}_j-Q^{mathrm{from}}_j
+ight|
 }{
 Q^{mathrm{before}}_j+Q^{mathrm{from}}_j
 },
