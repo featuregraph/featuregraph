@@ -13,7 +13,7 @@ FeatureGraph v0.1.0a1 was applied to two fixed datasets: respiration observation
 7. calculate object properties; and
 8. return both sample-level construction evidence and an object summary table.
 
-The shared workflow does not assert that breathing and reactor behavior are physically equivalent. It asserts only that both selected signals contain repeated directional structures that can be represented by the same formal object type.
+The shared workflow does not assert that breathing and reactor behavior are physically equivalent. It asserts only that both selected signals contain repeated directional structures that can be represented by the same formal object type. ***The shared workflow exists to demonstrate that unrelated physical signals can be meaningfully represented by the same formal object type. The waves are caused by different physical signals but are physically alike enough that a shared representation can be extracted from them.***
 
 ### BIDMC respiration
 
