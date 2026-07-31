@@ -90,3 +90,57 @@ cartpole_accumulation_objects = cartpole_accumulation.summarize(
 This representation lets us compare pole-angle cycles across episodes while
 retaining the controller actions and the cart variables needed to study their
 physical and behavioral relationships.
+
+## MountainCar oscillation dataset
+
+`featuregraph.datasets.mountaincar()` reproduces the MountainCar-v0 equations
+without adding a Gymnasium dependency. Its seeded exploratory momentum policy
+creates repeated valley traversals, while preserving successful and truncated
+episodes for later reinforcement-learning comparisons.
+
+```python
+mountaincar = fg.datasets.mountaincar(
+    episodes=10,
+    max_steps=200,
+    seed=1729,
+)
+```
+
+Each row is an RL-compatible transition. Current state is stored in `position`
+and `velocity`; `next_position` and `next_velocity` contain the resulting state.
+Actions are `0` (left), `1` (neutral), or `2` (right). The
+`momentum_action` and `exploratory_action` columns make the behavior policy
+auditable. MountainCar gives `-1.0` reward per step until the goal or time limit.
+
+Construct position-based behavioral objects independently within each episode:
+
+```python
+mountaincar_oscillation = fg.oscillation.Oscillation(
+    signals="position",
+    group="episode",
+    smooth_signal=False,
+)
+mountaincar_oscillation_features = mountaincar_oscillation.fit_transform(
+    mountaincar
+)
+mountaincar_oscillation_objects = mountaincar_oscillation.summarize(
+    mountaincar_oscillation_features,
+    signal="position",
+)
+
+mountaincar_accumulation = fg.accumulation.Accumulation(
+    signals="position",
+    group="episode",
+)
+mountaincar_accumulation_features = mountaincar_accumulation.fit_transform(
+    mountaincar_oscillation_features
+)
+mountaincar_accumulation_objects = mountaincar_accumulation.summarize(
+    mountaincar_accumulation_features,
+    signal="position",
+)
+```
+
+The cached data records the environment, generator version, policy,
+exploration rate, seed, construction parameters, source URL, and cache path in
+`DataFrame.attrs`.

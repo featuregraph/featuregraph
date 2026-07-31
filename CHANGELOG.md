@@ -6,6 +6,8 @@ All notable changes to FeatureGraph are documented in this file. The format foll
 
 ### Added
 
+- Reproducible, cached MountainCar trajectories generated from the canonical
+  dynamics with a seeded exploratory momentum policy and RL transition schema.
 - Deterministic, cached CartPole trajectories for oscillation and accumulation
   research, including provenance metadata and an end-to-end behavioral-object
   integration test.
