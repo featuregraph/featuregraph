@@ -249,6 +249,9 @@ def load_tep_run(
             f"Failed to read Tennessee Eastman workbook: {path}"
         ) from exc
 
+    if dataset == "faultfree_training":
+        df = _relabel_faultfree_measurement_columns(df)
+
     if standardize_columns:
         df = standardize_tep_columns(df)
 
@@ -278,6 +281,29 @@ def load_tep_run(
         mode=mode,
     )
     return df
+
+
+def _relabel_faultfree_measurement_columns(
+    df: pd.DataFrame,
+) -> pd.DataFrame:
+    """Correct mislabeled measurement headers in the normal workbook.
+
+    The source normal-operation workbook stores the 41 XMEAS channels
+    under XMV-style headers. Their order still follows XMEAS(1)..XMEAS(41),
+    so relabel them before applying the shared Tennessee Eastman rename map.
+    """
+    expected_columns = ["time", *[f"xmv_{index}" for index in range(1, 42)]]
+    actual_columns = [_snake_case_column(column) for column in df.columns]
+
+    if actual_columns != expected_columns:
+        raise ValueError(
+            "Unexpected fault-free Tennessee Eastman workbook schema. "
+            "Expected time followed by xmv_1 through xmv_41."
+        )
+
+    result = df.copy()
+    result.columns = ["time", *[f"xmeas_{index}" for index in range(1, 42)]]
+    return result
 
 
 def standardize_tep_columns(df: pd.DataFrame) -> pd.DataFrame:
