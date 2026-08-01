@@ -1,0 +1,221 @@
+{
+  "config": {
+    "environment": "mountaincar",
+    "representation": "raw",
+    "seed": 100,
+    "total_steps": 200000,
+    "evaluation_interval": 10000,
+    "evaluation_episodes": 20,
+    "replay_capacity": 100000,
+    "warmup_steps": 1000,
+    "batch_size": 128,
+    "gamma": 0.99,
+    "learning_rate": 0.001,
+    "target_update_interval": 1000,
+    "epsilon_start": 1.0,
+    "epsilon_end": 0.05,
+    "epsilon_decay_steps": 50000
+  },
+  "curve": [
+    {
+      "environment": "mountaincar",
+      "representation": "raw",
+      "seed": 100,
+      "step": 10000,
+      "mean_return": -200.0,
+      "return_std": 0.0,
+      "success_rate": 0.0,
+      "model_parameters": 17283
+    },
+    {
+      "environment": "mountaincar",
+      "representation": "raw",
+      "seed": 100,
+      "step": 20000,
+      "mean_return": -200.0,
+      "return_std": 0.0,
+      "success_rate": 0.0,
+      "model_parameters": 17283
+    },
+    {
+      "environment": "mountaincar",
+      "representation": "raw",
+      "seed": 100,
+      "step": 30000,
+      "mean_return": -200.0,
+      "return_std": 0.0,
+      "success_rate": 0.0,
+      "model_parameters": 17283
+    },
+    {
+      "environment": "mountaincar",
+      "representation": "raw",
+      "seed": 100,
+      "step": 40000,
+      "mean_return": -200.0,
+      "return_std": 0.0,
+      "success_rate": 0.0,
+      "model_parameters": 17283
+    },
+    {
+      "environment": "mountaincar",
+      "representation": "raw",
+      "seed": 100,
+      "step": 50000,
+      "mean_return": -200.0,
+      "return_std": 0.0,
+      "success_rate": 0.0,
+      "model_parameters": 17283
+    },
+    {
+      "environment": "mountaincar",
+      "representation": "raw",
+      "seed": 100,
+      "step": 60000,
+      "mean_return": -199.65,
+      "return_std": 1.5256146302392357,
+      "success_rate": 0.05,
+      "model_parameters": 17283
+    },
+    {
+      "environment": "mountaincar",
+      "representation": "raw",
+      "seed": 100,
+      "step": 70000,
+      "mean_return": -200.0,
+      "return_std": 0.0,
+      "success_rate": 0.0,
+      "model_parameters": 17283
+    },
+    {
+      "environment": "mountaincar",
+      "representation": "raw",
+      "seed": 100,
+      "step": 80000,
+      "mean_return": -200.0,
+      "return_std": 0.0,
+      "success_rate": 0.0,
+      "model_parameters": 17283
+    },
+    {
+      "environment": "mountaincar",
+      "representation": "raw",
+      "seed": 100,
+      "step": 90000,
+      "mean_return": -200.0,
+      "return_std": 0.0,
+      "success_rate": 0.0,
+      "model_parameters": 17283
+    },
+    {
+      "environment": "mountaincar",
+      "representation": "raw",
+      "seed": 100,
+      "step": 100000,
+      "mean_return": -200.0,
+      "return_std": 0.0,
+      "success_rate": 0.0,
+      "model_parameters": 17283
+    },
+    {
+      "environment": "mountaincar",
+      "representation": "raw",
+      "seed": 100,
+      "step": 110000,
+      "mean_return": -200.0,
+      "return_std": 0.0,
+      "success_rate": 0.0,
+      "model_parameters": 17283
+    },
+    {
+      "environment": "mountaincar",
+      "representation": "raw",
+      "seed": 100,
+      "step": 120000,
+      "mean_return": -200.0,
+      "return_std": 0.0,
+      "success_rate": 0.0,
+      "model_parameters": 17283
+    },
+    {
+      "environment": "mountaincar",
+      "representation": "raw",
+      "seed": 100,
+      "step": 130000,
+      "mean_return": -140.55,
+      "return_std": 37.59318422267526,
+      "success_rate": 1.0,
+      "model_parameters": 17283
+    },
+    {
+      "environment": "mountaincar",
+      "representation": "raw",
+      "seed": 100,
+      "step": 140000,
+      "mean_return": -144.35,
+      "return_std": 42.91418763066592,
+      "success_rate": 0.9,
+      "model_parameters": 17283
+    },
+    {
+      "environment": "mountaincar",
+      "representation": "raw",
+      "seed": 100,
+      "step": 150000,
+      "mean_return": -109.15,
+      "return_std": 9.540833296940052,
+      "success_rate": 1.0,
+      "model_parameters": 17283
+    },
+    {
+      "environment": "mountaincar",
+      "representation": "raw",
+      "seed": 100,
+      "step": 160000,
+      "mean_return": -133.05,
+      "return_std": 31.052334855852628,
+      "success_rate": 1.0,
+      "model_parameters": 17283
+    },
+    {
+      "environment": "mountaincar",
+      "representation": "raw",
+      "seed": 100,
+      "step": 170000,
+      "mean_return": -107.8,
+      "return_std": 15.344705927452633,
+      "success_rate": 1.0,
+      "model_parameters": 17283
+    },
+    {
+      "environment": "mountaincar",
+      "representation": "raw",
+      "seed": 100,
+      "step": 180000,
+      "mean_return": -109.35,
+      "return_std": 12.74078098077194,
+      "success_rate": 1.0,
+      "model_parameters": 17283
+    },
+    {
+      "environment": "mountaincar",
+      "representation": "raw",
+      "seed": 100,
+      "step": 190000,
+      "mean_return": -108.05,
+      "return_std": 10.772534520715169,
+      "success_rate": 1.0,
+      "model_parameters": 17283
+    },
+    {
+      "environment": "mountaincar",
+      "representation": "raw",
+      "seed": 100,
+      "step": 200000,
+      "mean_return": -105.3,
+      "return_std": 3.9,
+      "success_rate": 1.0,
+      "model_parameters": 17283
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "metric": "normalized_learning_curve_auc",
+  "comparisons": [
+    {
+      "environment": "cartpole",
+      "baseline": "raw",
+      "representation": "raw_history",
+      "paired_seeds": [
+        100,
+        101,
+        102
+      ],
+      "mean_auc_difference": -27.786363636363646,
+      "median_auc_difference": -43.94545454545457,
+      "bootstrap_95_low": -65.47272727272727,
+      "bootstrap_95_high": 26.059090909090898
+    },
+    {
+      "environment": "cartpole",
+      "baseline": "raw",
+      "representation": "featuregraph",
+      "paired_seeds": [
+        100,
+        101,
+        102
+      ],
+      "mean_auc_difference": -148.3681818181818,
+      "median_auc_difference": -141.19545454545454,
+      "bootstrap_95_low": -207.64999999999998,
+      "bootstrap_95_high": -96.25909090909092
+    },
+    {
+      "environment": "cartpole",
+      "baseline": "raw",
+      "representation": "augmented",
+      "paired_seeds": [
+        100,
+        101,
+        102
+      ],
+      "mean_auc_difference": 21.128787878787872,
+      "median_auc_difference": -26.813636363636363,
+      "bootstrap_95_low": -34.32272727272729,
+      "bootstrap_95_high": 124.52272727272727
+    }
+  ]
+}

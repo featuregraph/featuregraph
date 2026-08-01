@@ -1,0 +1,47 @@
+{
+  "metric": "normalized_learning_curve_auc",
+  "comparisons": [
+    {
+      "environment": "mountaincar",
+      "baseline": "raw",
+      "representation": "raw_history",
+      "paired_seeds": [
+        100,
+        101,
+        102
+      ],
+      "mean_auc_difference": 1.01363636363637,
+      "median_auc_difference": 0.8045454545454618,
+      "bootstrap_95_low": 0.0,
+      "bootstrap_95_high": 2.2363636363636488
+    },
+    {
+      "environment": "mountaincar",
+      "baseline": "raw",
+      "representation": "featuregraph",
+      "paired_seeds": [
+        100,
+        101,
+        102
+      ],
+      "mean_auc_difference": 1.4121212121212163,
+      "median_auc_difference": 0.0,
+      "bootstrap_95_low": 0.0,
+      "bootstrap_95_high": 4.236363636363649
+    },
+    {
+      "environment": "mountaincar",
+      "baseline": "raw",
+      "representation": "augmented",
+      "paired_seeds": [
+        100,
+        101,
+        102
+      ],
+      "mean_auc_difference": 2.2363636363636394,
+      "median_auc_difference": 0.0,
+      "bootstrap_95_low": 0.0,
+      "bootstrap_95_high": 6.709090909090918
+    }
+  ]
+}

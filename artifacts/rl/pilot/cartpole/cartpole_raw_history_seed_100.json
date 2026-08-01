@@ -1,0 +1,141 @@
+{
+  "config": {
+    "environment": "cartpole",
+    "representation": "raw_history",
+    "seed": 100,
+    "total_steps": 30000,
+    "evaluation_interval": 2500,
+    "evaluation_episodes": 10,
+    "replay_capacity": 100000,
+    "warmup_steps": 1000,
+    "batch_size": 128,
+    "gamma": 0.99,
+    "learning_rate": 0.001,
+    "target_update_interval": 1000,
+    "epsilon_start": 1.0,
+    "epsilon_end": 0.05,
+    "epsilon_decay_steps": 50000
+  },
+  "curve": [
+    {
+      "environment": "cartpole",
+      "representation": "raw_history",
+      "seed": 100,
+      "step": 2500,
+      "mean_return": 9.4,
+      "return_std": 0.7999999999999999,
+      "success_rate": 0.0,
+      "model_parameters": 17922
+    },
+    {
+      "environment": "cartpole",
+      "representation": "raw_history",
+      "seed": 100,
+      "step": 5000,
+      "mean_return": 25.2,
+      "return_std": 22.417850030723287,
+      "success_rate": 0.0,
+      "model_parameters": 17922
+    },
+    {
+      "environment": "cartpole",
+      "representation": "raw_history",
+      "seed": 100,
+      "step": 7500,
+      "mean_return": 76.4,
+      "return_std": 29.722718583602003,
+      "success_rate": 0.0,
+      "model_parameters": 17922
+    },
+    {
+      "environment": "cartpole",
+      "representation": "raw_history",
+      "seed": 100,
+      "step": 10000,
+      "mean_return": 168.3,
+      "return_std": 29.769279467262887,
+      "success_rate": 0.0,
+      "model_parameters": 17922
+    },
+    {
+      "environment": "cartpole",
+      "representation": "raw_history",
+      "seed": 100,
+      "step": 12500,
+      "mean_return": 95.6,
+      "return_std": 3.32264954516723,
+      "success_rate": 0.0,
+      "model_parameters": 17922
+    },
+    {
+      "environment": "cartpole",
+      "representation": "raw_history",
+      "seed": 100,
+      "step": 15000,
+      "mean_return": 91.6,
+      "return_std": 2.33238075793812,
+      "success_rate": 0.0,
+      "model_parameters": 17922
+    },
+    {
+      "environment": "cartpole",
+      "representation": "raw_history",
+      "seed": 100,
+      "step": 17500,
+      "mean_return": 210.8,
+      "return_std": 54.614650049231294,
+      "success_rate": 0.0,
+      "model_parameters": 17922
+    },
+    {
+      "environment": "cartpole",
+      "representation": "raw_history",
+      "seed": 100,
+      "step": 20000,
+      "mean_return": 153.3,
+      "return_std": 32.23057554559025,
+      "success_rate": 0.0,
+      "model_parameters": 17922
+    },
+    {
+      "environment": "cartpole",
+      "representation": "raw_history",
+      "seed": 100,
+      "step": 22500,
+      "mean_return": 216.1,
+      "return_std": 50.18655198357424,
+      "success_rate": 0.0,
+      "model_parameters": 17922
+    },
+    {
+      "environment": "cartpole",
+      "representation": "raw_history",
+      "seed": 100,
+      "step": 25000,
+      "mean_return": 220.5,
+      "return_std": 49.51009997970111,
+      "success_rate": 0.0,
+      "model_parameters": 17922
+    },
+    {
+      "environment": "cartpole",
+      "representation": "raw_history",
+      "seed": 100,
+      "step": 27500,
+      "mean_return": 114.9,
+      "return_std": 17.067220043111885,
+      "success_rate": 0.0,
+      "model_parameters": 17922
+    },
+    {
+      "environment": "cartpole",
+      "representation": "raw_history",
+      "seed": 100,
+      "step": 30000,
+      "mean_return": 98.6,
+      "return_std": 5.351635264103861,
+      "success_rate": 0.0,
+      "model_parameters": 17922
+    }
+  ]
+}
