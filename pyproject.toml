@@ -54,6 +54,7 @@ notebooks = [
     "nbclient>=0.10,<1",
     "nbconvert>=7.0,<8",
     "nbformat>=5.10,<6",
+    "scikit-learn>=1.4,<2",
 ]
 rl = [
     "gymnasium>=1.2,<1.4",
