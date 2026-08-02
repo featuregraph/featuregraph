@@ -1,0 +1,563 @@
+{
+  "Q01": [
+    {
+      "fault_number": 1,
+      "simulation_run": 5,
+      "oscillation_id": 22,
+      "amplitude": 24.038606797576904
+    },
+    {
+      "fault_number": 2,
+      "simulation_run": 2,
+      "oscillation_id": 11,
+      "amplitude": 3.708996111149645
+    },
+    {
+      "fault_number": 4,
+      "simulation_run": 5,
+      "oscillation_id": 39,
+      "amplitude": 2.433212312324713
+    },
+    {
+      "fault_number": 6,
+      "simulation_run": 5,
+      "oscillation_id": 17,
+      "amplitude": 9.48916794658112
+    },
+    {
+      "fault_number": 7,
+      "simulation_run": 1,
+      "oscillation_id": 18,
+      "amplitude": 10.69342297740286
+    },
+    {
+      "fault_number": 12,
+      "simulation_run": 3,
+      "oscillation_id": 26,
+      "amplitude": 4.172958338330773
+    },
+    {
+      "fault_number": 14,
+      "simulation_run": 3,
+      "oscillation_id": 40,
+      "amplitude": 2.184600170273143
+    }
+  ],
+  "Q02": [
+    {
+      "fault_number": 1,
+      "simulation_run": 3,
+      "oscillation_id": 14,
+      "duration": 205.0
+    },
+    {
+      "fault_number": 2,
+      "simulation_run": 2,
+      "oscillation_id": 11,
+      "duration": 187.0
+    },
+    {
+      "fault_number": 4,
+      "simulation_run": 2,
+      "oscillation_id": 26,
+      "duration": 135.0
+    },
+    {
+      "fault_number": 6,
+      "simulation_run": 5,
+      "oscillation_id": 17,
+      "duration": 154.0
+    },
+    {
+      "fault_number": 7,
+      "simulation_run": 2,
+      "oscillation_id": 7,
+      "duration": 124.0
+    },
+    {
+      "fault_number": 12,
+      "simulation_run": 2,
+      "oscillation_id": 42,
+      "duration": 113.0
+    },
+    {
+      "fault_number": 14,
+      "simulation_run": 4,
+      "oscillation_id": 12,
+      "duration": 142.0
+    }
+  ],
+  "Q03": [
+    {
+      "fault_number": 1,
+      "simulation_run": 1,
+      "oscillation_id": 14,
+      "start_index": 577.0,
+      "end_index": 609.0
+    },
+    {
+      "fault_number": 1,
+      "simulation_run": 2,
+      "oscillation_id": 14,
+      "start_index": 557.0,
+      "end_index": 604.0
+    },
+    {
+      "fault_number": 1,
+      "simulation_run": 3,
+      "oscillation_id": 12,
+      "start_index": 596.0,
+      "end_index": 794.0
+    },
+    {
+      "fault_number": 1,
+      "simulation_run": 4,
+      "oscillation_id": 13,
+      "start_index": 542.0,
+      "end_index": 607.0
+    },
+    {
+      "fault_number": 1,
+      "simulation_run": 5,
+      "oscillation_id": 19,
+      "start_index": 547.0,
+      "end_index": 610.0
+    },
+    {
+      "fault_number": 2,
+      "simulation_run": 1,
+      "oscillation_id": 14,
+      "start_index": 594.0,
+      "end_index": 701.0
+    },
+    {
+      "fault_number": 2,
+      "simulation_run": 2,
+      "oscillation_id": 11,
+      "start_index": 587.0,
+      "end_index": 774.0
+    },
+    {
+      "fault_number": 2,
+      "simulation_run": 3,
+      "oscillation_id": 12,
+      "start_index": 578.0,
+      "end_index": 669.0
+    },
+    {
+      "fault_number": 2,
+      "simulation_run": 4,
+      "oscillation_id": 17,
+      "start_index": 549.0,
+      "end_index": 615.0
+    },
+    {
+      "fault_number": 2,
+      "simulation_run": 5,
+      "oscillation_id": 12,
+      "start_index": 583.0,
+      "end_index": 725.0
+    },
+    {
+      "fault_number": 4,
+      "simulation_run": 1,
+      "oscillation_id": 12,
+      "start_index": 594.0,
+      "end_index": 624.0
+    },
+    {
+      "fault_number": 4,
+      "simulation_run": 2,
+      "oscillation_id": 12,
+      "start_index": 563.0,
+      "end_index": 624.0
+    },
+    {
+      "fault_number": 4,
+      "simulation_run": 3,
+      "oscillation_id": 14,
+      "start_index": 577.0,
+      "end_index": 622.0
+    },
+    {
+      "fault_number": 4,
+      "simulation_run": 4,
+      "oscillation_id": 14,
+      "start_index": 596.0,
+      "end_index": 619.0
+    },
+    {
+      "fault_number": 4,
+      "simulation_run": 5,
+      "oscillation_id": 11,
+      "start_index": 556.0,
+      "end_index": 600.0
+    },
+    {
+      "fault_number": 6,
+      "simulation_run": 1,
+      "oscillation_id": 14,
+      "start_index": 517.0,
+      "end_index": 636.0
+    },
+    {
+      "fault_number": 6,
+      "simulation_run": 2,
+      "oscillation_id": 15,
+      "start_index": 596.0,
+      "end_index": 634.0
+    },
+    {
+      "fault_number": 6,
+      "simulation_run": 3,
+      "oscillation_id": 14,
+      "start_index": 534.0,
+      "end_index": 632.0
+    },
+    {
+      "fault_number": 6,
+      "simulation_run": 4,
+      "oscillation_id": 16,
+      "start_index": 519.0,
+      "end_index": 637.0
+    },
+    {
+      "fault_number": 6,
+      "simulation_run": 5,
+      "oscillation_id": 16,
+      "start_index": 587.0,
+      "end_index": 636.0
+    },
+    {
+      "fault_number": 7,
+      "simulation_run": 1,
+      "oscillation_id": 17,
+      "start_index": 563.0,
+      "end_index": 624.0
+    },
+    {
+      "fault_number": 7,
+      "simulation_run": 2,
+      "oscillation_id": 14,
+      "start_index": 595.0,
+      "end_index": 623.0
+    },
+    {
+      "fault_number": 7,
+      "simulation_run": 3,
+      "oscillation_id": 11,
+      "start_index": 543.0,
+      "end_index": 623.0
+    },
+    {
+      "fault_number": 7,
+      "simulation_run": 4,
+      "oscillation_id": 16,
+      "start_index": 593.0,
+      "end_index": 623.0
+    },
+    {
+      "fault_number": 7,
+      "simulation_run": 5,
+      "oscillation_id": 11,
+      "start_index": 585.0,
+      "end_index": 623.0
+    },
+    {
+      "fault_number": 12,
+      "simulation_run": 1,
+      "oscillation_id": 12,
+      "start_index": 547.0,
+      "end_index": 605.0
+    },
+    {
+      "fault_number": 12,
+      "simulation_run": 2,
+      "oscillation_id": 15,
+      "start_index": 570.0,
+      "end_index": 612.0
+    },
+    {
+      "fault_number": 12,
+      "simulation_run": 3,
+      "oscillation_id": 13,
+      "start_index": 560.0,
+      "end_index": 608.0
+    },
+    {
+      "fault_number": 12,
+      "simulation_run": 4,
+      "oscillation_id": 16,
+      "start_index": 584.0,
+      "end_index": 620.0
+    },
+    {
+      "fault_number": 12,
+      "simulation_run": 5,
+      "oscillation_id": 15,
+      "start_index": 578.0,
+      "end_index": 626.0
+    },
+    {
+      "fault_number": 14,
+      "simulation_run": 1,
+      "oscillation_id": 13,
+      "start_index": 578.0,
+      "end_index": 662.0
+    },
+    {
+      "fault_number": 14,
+      "simulation_run": 2,
+      "oscillation_id": 16,
+      "start_index": 587.0,
+      "end_index": 644.0
+    },
+    {
+      "fault_number": 14,
+      "simulation_run": 3,
+      "oscillation_id": 12,
+      "start_index": 590.0,
+      "end_index": 623.0
+    },
+    {
+      "fault_number": 14,
+      "simulation_run": 4,
+      "oscillation_id": 9,
+      "start_index": 560.0,
+      "end_index": 642.0
+    },
+    {
+      "fault_number": 14,
+      "simulation_run": 5,
+      "oscillation_id": 15,
+      "start_index": 575.0,
+      "end_index": 617.0
+    }
+  ],
+  "Q04": [
+    {
+      "fault_number": 1,
+      "regime": "early_response",
+      "object_count": 29
+    },
+    {
+      "fault_number": 1,
+      "regime": "post_response",
+      "object_count": 193
+    },
+    {
+      "fault_number": 1,
+      "regime": "pre_injection",
+      "object_count": 67
+    },
+    {
+      "fault_number": 2,
+      "regime": "early_response",
+      "object_count": 58
+    },
+    {
+      "fault_number": 2,
+      "regime": "post_response",
+      "object_count": 207
+    },
+    {
+      "fault_number": 2,
+      "regime": "pre_injection",
+      "object_count": 61
+    },
+    {
+      "fault_number": 4,
+      "regime": "early_response",
+      "object_count": 79
+    },
+    {
+      "fault_number": 4,
+      "regime": "post_response",
+      "object_count": 194
+    },
+    {
+      "fault_number": 4,
+      "regime": "pre_injection",
+      "object_count": 58
+    },
+    {
+      "fault_number": 6,
+      "regime": "early_response",
+      "object_count": 20
+    },
+    {
+      "fault_number": 6,
+      "regime": "pre_injection",
+      "object_count": 70
+    },
+    {
+      "fault_number": 7,
+      "regime": "early_response",
+      "object_count": 76
+    },
+    {
+      "fault_number": 7,
+      "regime": "post_response",
+      "object_count": 199
+    },
+    {
+      "fault_number": 7,
+      "regime": "pre_injection",
+      "object_count": 64
+    },
+    {
+      "fault_number": 12,
+      "regime": "early_response",
+      "object_count": 82
+    },
+    {
+      "fault_number": 12,
+      "regime": "post_response",
+      "object_count": 199
+    },
+    {
+      "fault_number": 12,
+      "regime": "pre_injection",
+      "object_count": 66
+    },
+    {
+      "fault_number": 14,
+      "regime": "early_response",
+      "object_count": 115
+    },
+    {
+      "fault_number": 14,
+      "regime": "post_response",
+      "object_count": 315
+    },
+    {
+      "fault_number": 14,
+      "regime": "pre_injection",
+      "object_count": 60
+    }
+  ],
+  "Q05": [
+    {
+      "fault_number": 1,
+      "median_difference": 10.583576902351524,
+      "direction_consistency": 0.8
+    }
+  ],
+  "Q06": [
+    {
+      "fault_number": 12,
+      "median_difference": 1.1845852666384642,
+      "direction_consistency": 1.0
+    }
+  ],
+  "Q07": [
+    {
+      "fault_number": 1,
+      "regime": "early_response",
+      "direction_consistency": 1.0,
+      "median_cliffs_delta": 0.6805555555555556
+    },
+    {
+      "fault_number": 6,
+      "regime": "early_response",
+      "direction_consistency": 1.0,
+      "median_cliffs_delta": 0.5384615384615384
+    }
+  ],
+  "Q08": [],
+  "Q09": [
+    {
+      "fault_number": 1,
+      "property": "duration",
+      "dominant_direction": "increase",
+      "behavioral_strength": 0.6923076923076923,
+      "repeatable": true
+    },
+    {
+      "fault_number": 2,
+      "property": "amplitude",
+      "dominant_direction": "increase",
+      "behavioral_strength": 0.325,
+      "repeatable": false
+    },
+    {
+      "fault_number": 4,
+      "property": "period",
+      "dominant_direction": "decrease",
+      "behavioral_strength": 0.24210526315789474,
+      "repeatable": false
+    },
+    {
+      "fault_number": 6,
+      "property": "rising_mean_rate",
+      "dominant_direction": "increase",
+      "behavioral_strength": 0.7307692307692307,
+      "repeatable": true
+    },
+    {
+      "fault_number": 7,
+      "property": "rise_duration",
+      "dominant_direction": "decrease",
+      "behavioral_strength": 0.15,
+      "repeatable": false
+    },
+    {
+      "fault_number": 12,
+      "property": "amplitude",
+      "dominant_direction": "increase",
+      "behavioral_strength": 0.7922077922077922,
+      "repeatable": true
+    },
+    {
+      "fault_number": 14,
+      "property": "period",
+      "dominant_direction": "decrease",
+      "behavioral_strength": 0.5113636363636364,
+      "repeatable": true
+    }
+  ],
+  "Q10": [
+    {
+      "fault_number": 1,
+      "property": "peak_fall_rate",
+      "dominant_direction": "increase",
+      "behavioral_strength": 0.15572232645403378,
+      "repeatable": false
+    },
+    {
+      "fault_number": 2,
+      "property": "falling_mean_rate",
+      "dominant_direction": "increase",
+      "behavioral_strength": 0.18218623481781376,
+      "repeatable": false
+    },
+    {
+      "fault_number": 4,
+      "property": "falling_mean_rate",
+      "dominant_direction": "increase",
+      "behavioral_strength": 0.12571428571428572,
+      "repeatable": false
+    },
+    {
+      "fault_number": 7,
+      "property": "amplitude",
+      "dominant_direction": "decrease",
+      "behavioral_strength": 0.06461538461538462,
+      "repeatable": false
+    },
+    {
+      "fault_number": 12,
+      "property": "peak_fall_rate",
+      "dominant_direction": "increase",
+      "behavioral_strength": 0.7261261261261261,
+      "repeatable": true
+    },
+    {
+      "fault_number": 14,
+      "property": "period",
+      "dominant_direction": "decrease",
+      "behavioral_strength": 0.5296296296296297,
+      "repeatable": true
+    }
+  ]
+}

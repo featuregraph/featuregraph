@@ -1,0 +1,11 @@
+query_id,question,source_table,source_rows,result_rows,answered,empty_result
+Q01,What is the largest-amplitude oscillation for each fault?,objects,2212,7,True,False
+Q02,What is the longest oscillation for each fault?,objects,2212,7,True,False
+Q03,Which object first overlaps the early response in each run?,objects,2212,35,True,False
+Q04,How many complete objects occur in each regime for each fault?,objects,2212,20,True,False
+Q05,Which fault has the greatest early-response amplitude increase?,reproducibility,130,1,True,False
+Q06,Which fault has the greatest sustained amplitude increase?,reproducibility,130,1,True,False
+Q07,Which faults show a repeatable increase in oscillation period?,reproducibility,130,2,True,False
+Q08,Which faults show a repeatable decrease in temporal symmetry?,reproducibility,130,0,True,True
+Q09,What is the strongest early-response signature for each fault?,signatures,39,7,True,False
+Q10,What is the strongest sustained-response signature for each fault?,signatures,39,6,True,False

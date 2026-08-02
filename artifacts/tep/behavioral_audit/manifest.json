@@ -1,0 +1,48 @@
+{
+  "input_objects": "artifacts/tep/fault_comparison/objects.csv",
+  "faults": [
+    1,
+    2,
+    4,
+    6,
+    7,
+    12,
+    14
+  ],
+  "runs": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "baseline_regime": "pre_injection",
+  "comparison_regimes": [
+    "early_response",
+    "post_response"
+  ],
+  "properties": [
+    "rise_duration",
+    "fall_duration",
+    "duration",
+    "period",
+    "amplitude",
+    "rising_mean_rate",
+    "falling_mean_rate",
+    "peak_rise_rate",
+    "peak_fall_rate",
+    "temporal_symmetry"
+  ],
+  "effect_size": "Cliff's delta; positive means regime values exceed baseline",
+  "repeatability_rule": {
+    "minimum_direction_consistency": 0.8,
+    "minimum_absolute_median_cliffs_delta": 0.33
+  },
+  "query_count": 10,
+  "notes": [
+    "No predictive model is fit by this audit.",
+    "Every regime comparison uses the pre-injection objects from the same run.",
+    "Only complete reactor-pressure oscillation objects are audited.",
+    "Object coverage records zero-object fault/run/regime combinations."
+  ]
+}
