@@ -74,6 +74,52 @@ h_{0.95} = 1.96\frac{s}{\sqrt{n}},
 
 where (s) was the sample standard deviation of replicate-level F1 and (n=30). The tuning tables used the same calculation with (n=20). The interval was used to describe variability across generated signals rather than to claim uncertainty over all possible oscillatory processes.
 
+### Tennessee Eastman behavioral audit
+
+A second evaluation examined whether the object representation exposed stable and
+queryable changes in an observed industrial process without treating fault
+classification as the primary criterion. The audit used mode 1 Tennessee Eastman
+reactor-pressure trajectories for faults 1, 2, 4, 6, 7, 12, and 14. Five complete
+simulation runs were evaluated for each fault. The selected faults were not assumed
+to share one pressure response; they supplied heterogeneous cases in which the same
+oscillation construction could succeed, produce weak changes, or cease to produce
+complete objects.
+
+For every run, reactor pressure was smoothed with a 20-sample window. Directional
+states were calculated using a difference lag of 10 samples, and complete
+trough–peak–trough objects were constructed with the alpha oscillation workflow.
+The fault injection index was fixed at sample 600. Objects ending before sample 600
+formed the run-specific pre-injection baseline. Objects overlapping the interval
+from injection through sample 1200 formed the early-response regime. Later objects
+formed the post-response regime. Objects were not divided into arbitrary fixed
+windows: the regime label was attached to each complete behavioral interval.
+
+Ten intrinsic properties were audited: rising duration, falling duration, total
+duration, period, amplitude, rising mean rate, falling mean rate, peak rising rate,
+peak falling rate, and temporal symmetry. Within each fault and complete simulation
+run, the median of each early- and post-response property was compared with the
+median of the same property's pre-injection objects. Signed Cliff's delta measured
+the probability-of-superiority effect size. Positive values indicated that
+post-injection objects tended to have larger property values than baseline objects;
+negative values indicated smaller values.
+
+Cross-run reproducibility was summarized independently for each fault, regime, and
+property. A change was designated repeatable when at least 80% of the five runs
+agreed on its direction and the absolute median Cliff's delta was at least 0.33.
+This was an explicit descriptive reporting rule, not a learned decision boundary,
+a significance test, or an estimate of diagnostic accuracy. The three strongest
+properties per fault and regime were retained as a compact behavioral signature.
+An object-coverage table included every fault–run–regime combination, including
+combinations with zero complete objects.
+
+The audit also executed ten deterministic questions against the resulting object
+and summary tables. These queries retrieved extrema such as the largest-amplitude
+and longest object for each fault, first objects overlapping the response, object
+counts by regime, repeatable period and symmetry changes, and the strongest early
+and sustained signature for each fault. Query execution evaluated whether the
+representation made behavioral questions directly computable; it did not test
+whether those questions were sufficient to identify an unknown fault.
+
 ### Reproducibility and scope
 
 The evaluation emitted replicate-level tables, aggregate summaries, selected operating points, diagnostic results, figures, and a machine-readable manifest. Artifact hashes were recorded after generation so that the reported evaluation state could be checked independently. Tuning and testing used disjoint seed ranges, and the selected operating points were stored explicitly.
