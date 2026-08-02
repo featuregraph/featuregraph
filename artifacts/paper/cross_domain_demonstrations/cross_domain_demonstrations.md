@@ -43,6 +43,32 @@ The shared schema allows downstream software to consume either result using the 
 
 This separation is important. A reactor-temperature oscillation and a respiratory oscillation should not be pooled merely because their tables share column names. Their units, mechanisms, scientific meanings, and appropriate thresholds remain domain dependent. Schema compatibility makes common computational operations possible; it does not establish scientific exchangeability.
 
+### Tennessee Eastman behavioral audit extension
+
+The fixed reactor-temperature example demonstrated schema reuse but did not show
+whether the representation supported comparisons across process conditions. A
+subsequent audit extended the Tennessee Eastman analysis to reactor pressure for
+seven faults and five independent runs per fault. It retained the same complete
+trough–peak–trough object schema and compared early and sustained post-injection
+objects with pre-injection objects from the same run.
+
+The extension demonstrated three outcomes that a single successful trace could not.
+First, several faults produced repeatable but distinct object-level changes: Faults
+1 and 6 had strong early signatures, Fault 12 had a sustained increase in amplitude
+and transition rates, and Fault 14 had sustained decreases in duration, period,
+and amplitude. Second, Faults 2, 4, and 7 had no reactor-pressure property meeting
+the declared repeatability rule. Third, Fault 6 produced no complete
+post-response objects under the selected construction. The representation
+therefore retained not only positive behavioral signatures but also weak evidence
+and missing construction coverage.
+
+This extension remains a behavioral audit rather than a diagnostic model. It shows
+that a common object table can support within-run baseline comparisons,
+cross-run reproducibility summaries, and deterministic fault-regime queries. It
+also shows why schema reuse must be accompanied by signal selection and coverage
+reporting: the same reactor-pressure construction was informative for some fault
+mechanisms and inadequate or inconclusive for others.
+
 ### Demonstrated representational invariants
 
 Across the two domains, four elements remained invariant.
