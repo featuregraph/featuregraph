@@ -1,0 +1,78 @@
+{
+  "source_revision": "309b944f35ac440ff0c70616947ffe723c766e14",
+  "faults": [
+    1,
+    2,
+    4,
+    6,
+    7,
+    12,
+    14
+  ],
+  "signal": "reactor_pressure",
+  "fault_start_index": 600,
+  "early_response_end_index": 1200,
+  "train_runs": [
+    1,
+    2,
+    3
+  ],
+  "test_runs": [
+    4,
+    5
+  ],
+  "smooth_window": 20,
+  "diff_lag": 10,
+  "representations": {
+    "raw_context": [
+      "raw_mean",
+      "raw_std",
+      "raw_min",
+      "raw_max",
+      "raw_range",
+      "raw_start",
+      "raw_end",
+      "raw_delta",
+      "raw_abs_delta"
+    ],
+    "featuregraph": [
+      "rise_duration",
+      "fall_duration",
+      "duration",
+      "period",
+      "amplitude",
+      "rising_mean_rate",
+      "falling_mean_rate",
+      "peak_rise_rate",
+      "peak_fall_rate",
+      "temporal_symmetry"
+    ],
+    "combined": [
+      "raw_mean",
+      "raw_std",
+      "raw_min",
+      "raw_max",
+      "raw_range",
+      "raw_start",
+      "raw_end",
+      "raw_delta",
+      "raw_abs_delta",
+      "rise_duration",
+      "fall_duration",
+      "duration",
+      "period",
+      "amplitude",
+      "rising_mean_rate",
+      "falling_mean_rate",
+      "peak_rise_rate",
+      "peak_fall_rate",
+      "temporal_symmetry"
+    ]
+  },
+  "notes": [
+    "One classifier is fit independently for each fault.",
+    "Raw-context features use FeatureGraph object boundaries.",
+    "The early-response horizon is fixed across faults for comparison.",
+    "The fault-free trajectory is an external negative control."
+  ]
+}
