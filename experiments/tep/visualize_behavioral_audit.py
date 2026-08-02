@@ -223,7 +223,7 @@ def plot_behavioral_signature_heatmap(
         ax.set_title(regime.replace("_", " "))
     _heatmap_axes(axes)
     fig.colorbar(image, ax=axes, label="signed behavioral strength")
-    fig.suptitle("Strongest repeatable behavioral signatures", fontsize=16)
+    fig.suptitle("Strongest behavioral signatures", fontsize=16)
     _save(fig, output_dir, "behavioral_signature_heatmap")
 
 
