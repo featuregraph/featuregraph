@@ -34,3 +34,25 @@ python -m experiments.tep.behavioral_audit \
 The audit is descriptive. Its repeatability threshold is an explicit reporting
 rule rather than a learned decision boundary or claim of statistical
 significance. Only complete reactor-pressure oscillation objects are included.
+
+## Figures
+
+Generate the review figures after constructing the comparison and audit artifacts:
+
+```bash
+python -m experiments.tep.visualize_behavioral_audit
+```
+
+This writes SVG and PNG versions to
+`artifacts/tep/behavioral_audit/figures/`:
+
+- `amplitude_by_regime`: object-amplitude distributions across regimes.
+- `cross_run_effect_sizes`: signed effect sizes and repeatability by fault.
+- `object_boundary_reconstruction`: a FeatureGraph start/peak/end reconstruction
+  around the known injection. It is explicitly not a raw pressure trace.
+- `behavioral_signature_heatmap`: the strongest signed behavioral properties
+  for each fault and regime.
+
+The committed SVG files are lightweight review artifacts. PNG files can be
+regenerated locally when raster output is needed.
+

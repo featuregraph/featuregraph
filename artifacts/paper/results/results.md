@@ -45,3 +45,111 @@ FeatureGraph amplitude MAE remained comparatively small, increasing from 0.020 w
 The synthetic experiments establish two distinct results. First, the alpha implementation can reproduce known oscillation boundaries and properties exactly under clean, construction-aligned conditions. This verifies the deterministic transformation from state evidence to object tables. Second, its directional detector is sensitive to noise and to the smoothing and lag used to stabilize that noise. The selected parameters preserved all low-noise object identities and yielded small conditional errors for duration and amplitude, but higher noise increasingly fragmented the state sequence and reduced precision.
 
 SciPy was the stronger detector for the synthetic sinusoidal benchmark, especially above noise standard deviation 0.10. This is a useful limitation rather than a contradiction of the framework's principal contribution. FeatureGraph does not derive its value from replacing specialized peak detectors in every setting. Its contribution is the explicit behavioral representation built after a construction has been specified: bounded object identity, retained state and event evidence, reproducible properties, completeness, composition, and object-level queryability. The evaluation shows that the reliability of that representation remains conditional on the reliability and semantics of the detector used to construct its boundaries.
+
+### Tennessee Eastman behavioral audit
+
+The Tennessee Eastman audit produced materially different reactor-pressure
+signatures across the seven evaluated faults. Of the 70 early-response
+fault–property combinations, 29 met the repeatability rule. Of the 60 evaluable
+post-response combinations, 12 met the rule. The post-response denominator was
+smaller because Fault 6 produced no complete post-response oscillation objects in
+any of its five runs. Repeatable changes were therefore concentrated in the
+immediate response to injection, but this aggregate pattern concealed important
+fault-level differences.
+
+![Reactor-pressure amplitude distributions before injection, during the early
+response, and after the response](../../tep/behavioral_audit/figures/amplitude_by_regime.svg)
+
+*Reactor-pressure oscillation amplitude by fault and regime. Amplitude is shown on
+a logarithmic scale because the response magnitude differed substantially across
+faults.*
+
+#### Transient signatures
+
+Fault 1 had a strong but predominantly transient signature. Nine of its ten
+properties changed repeatably during the early response, while none met the rule in
+the post-response regime. Its median early-response amplitude was 21.95 times the
+median pre-injection amplitude. The strongest early changes were increased
+duration, peak falling rate, and period, with median Cliff's delta values of 0.69,
+0.69, and 0.68. The result describes an immediate transition to longer,
+larger oscillatory objects with more severe falling transitions, followed by a
+substantial weakening of the object-level effect.
+
+Fault 6 also had nine repeatable early-response changes. Its strongest properties
+were rising mean rate, amplitude, and period, with median Cliff's delta values of
+0.73, 0.62, and 0.54. Median early-response amplitude was 8.20 times baseline.
+However, no complete post-response objects were constructed in any Fault 6 run.
+The absence was retained explicitly in the coverage table. It cannot be interpreted
+as evidence that the later response was normal or uneventful: it indicates that the
+specified trough–peak–trough construction no longer yielded complete objects in
+that regime. Distinguishing a physically non-oscillatory response from a
+construction failure requires inspection of the raw trajectory and partial-object
+evidence.
+
+Faults 2, 4, and 7 produced no property that met the repeatability rule in either
+regime. Fault 2 showed a modest early amplitude increase, with a median ratio of
+1.50, but the effect did not cross the specified repeatability threshold. Fault 4
+tended toward shorter early periods and rising phases, and Fault 7 showed small,
+inconsistent changes. These negative cases show that reactor-pressure oscillation
+objects were not uniformly informative across all fault mechanisms.
+
+#### Persistent signatures
+
+Fault 12 produced the clearest persistent positive signature. Five rate- and
+amplitude-related properties were repeatable in both regimes: amplitude, rising
+mean rate, falling mean rate, peak rising rate, and peak falling rate. Median
+amplitude increased by a factor of 2.37 during the early response and 2.77 after
+the response interval. Its strongest early signature was amplitude
+(δ = 0.79), followed by falling mean rate (δ = 0.78) and rising mean rate
+(δ = 0.69). In the post-response regime, peak falling rate, peak rising rate,
+and amplitude remained strong, with median Cliff's delta values of 0.73, 0.72,
+and 0.71.
+
+Fault 14 supplied a persistent signature in the opposite direction. Six properties
+were repeatable in the early response and seven afterward. Period, duration, and
+falling duration were the three strongest changes in both regimes, and each
+decreased. Median amplitude fell to 0.57 of baseline during the early response and
+0.46 afterward. Thus, the same object schema represented Fault 12 as larger and
+faster oscillations and Fault 14 as shorter and smaller oscillations without
+requiring different downstream table operations.
+
+![Median cross-run effect sizes for ten oscillation
+properties](../../tep/behavioral_audit/figures/cross_run_effect_sizes.svg)
+
+*Median signed Cliff's delta for each fault, regime, and object property. Positive
+cells denote increases from the run-specific baseline, negative cells denote
+decreases, and dots mark changes satisfying the repeatability rule.*
+
+![Strongest behavioral signatures for each fault and
+regime](../../tep/behavioral_audit/figures/behavioral_signature_heatmap.svg)
+
+*The three strongest object-property changes retained for each fault and regime.
+Sparse or weak rows make the absence of a strong reactor-pressure signature
+visible rather than forcing every fault into a diagnostic profile.*
+
+#### Object-level inspection and queryability
+
+The boundary reconstruction made the represented evidence inspectable around the
+known injection. Each triangle encodes one object's start, peak, end, and amplitude.
+It is an object-level reconstruction rather than the raw pressure trace; its
+purpose is to show which bounded behaviors crossed the injection and response
+boundaries and how their geometry changed.
+
+![FeatureGraph object-boundary reconstruction around the Fault 1
+injection](../../tep/behavioral_audit/figures/object_boundary_reconstruction.svg)
+
+*Fault 1, run 1 object boundaries near the known injection. The figure uses
+FeatureGraph landmarks and amplitude and must not be interpreted as a reconstruction
+of the sample-level reactor-pressure waveform.*
+
+All ten deterministic audit questions executed against the object and summary
+tables. Once the construction had been performed, questions about the largest or
+longest oscillation, the first response-overlapping object, counts by regime,
+repeatable period or symmetry changes, and strongest fault signatures required
+ordinary selection and aggregation rather than renewed boundary detection. This is
+the principal positive result of the audit. FeatureGraph exposed stable,
+fault-dependent behavioral records for several faults and exposed weak signatures
+or missing object coverage for others. The experiment does not establish superior
+fault prediction; it establishes interpretable behavioral differentiation,
+cross-run auditability, and explicit failure visibility.
+

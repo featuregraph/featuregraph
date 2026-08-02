@@ -58,11 +58,46 @@ Localization and property errors were calculated only for matched objects. At hi
 
 The confidence intervals summarize variation across finite synthetic noise realizations, not uncertainty across real physical systems. The exact-recovery experiment verifies implementation consistency under construction-aligned clean conditions; it does not imply exact recovery whenever a real signal appears clean.
 
+### Interpretive value of the behavioral audit
+
+The Tennessee Eastman audit clarifies where the alpha representation adds value
+without requiring a prediction claim. Raw samples can be plotted or passed to a
+model, but they do not directly identify which oscillatory occurrence was longest,
+which transition was fastest, whether a change persisted after the response
+interval, or whether the same object property changed in the same direction across
+runs. FeatureGraph externalized those distinctions into bounded records that could
+be compared and queried with ordinary table operations.
+
+The heterogeneous fault results are important. A useful representation should not
+manufacture the same signature for every condition. Faults 1, 6, 12, and 14
+produced distinct repeatable profiles; Faults 2, 4, and 7 did not. Fault 6 exposed a
+different failure mode by producing no complete post-response objects. These
+outcomes suggest that FeatureGraph can function as an audit layer that makes both
+behavioral evidence and representational insufficiency visible.
+
+The audit does not show that FeatureGraph features are sufficient statistics for
+fault identification or that they outperform raw observations in a classifier.
+The fault number and injection time were known, and the analysis asked how object
+properties changed relative to a within-run baseline. This reverses the usual
+prediction question: rather than inferring an unknown label, it tests whether a
+known intervention leaves a stable and interpretable behavioral trace. That design
+is appropriate for evaluating representation, but it does not estimate diagnostic
+sensitivity, specificity, or deployment performance.
+
+The results also make signal and construction selection part of the scientific
+claim. Weak reactor-pressure signatures do not establish that Faults 2, 4, and 7
+lack process effects; another measured variable or behavioral object may represent
+those faults more directly. Likewise, zero complete Fault 6 post-response objects
+may indicate a changed physical regime, an unsuitable trough–peak–trough
+construction, or both. Future evaluation should pair object tables with raw traces,
+partial-object coverage, alternative signals, and domain knowledge before assigning
+mechanistic meaning.
+
 ### Limitations of the demonstrations
 
-The BIDMC and Tennessee Eastman examples lack independently annotated oscillation boundaries for the selected signals. They demonstrate that the pipeline executes, produces inspectable objects, and supports common queries. They do not establish physiological validity, fault-detection performance, or correct physical interpretation of every constructed object.
+The BIDMC and Tennessee Eastman signals lack independently annotated oscillation boundaries. The synthetic experiment evaluates boundary recovery under known ground truth, but the observed-domain demonstrations evaluate construction, inspectability, and behavioral comparison rather than object-detection accuracy. They do not establish physiological validity or correct physical interpretation of every constructed object.
 
-Only one BIDMC subject and one Tennessee Eastman fault run were included in the fixed reproduction path. Counts and distributions may change across subjects, operating modes, faults, simulation runs, preprocessing choices, and sampling regimes. The demonstrations should not be treated as population or process conclusions.
+The fixed BIDMC reproduction still covers only one subject, and the original reactor-temperature demonstration covers one fault run. The reactor-pressure audit broadens process coverage to seven faults and five runs per fault, but it does not cover all Tennessee Eastman faults, operating modes, signals, preprocessing choices, or sampling regimes. Its repeatability summaries describe the selected construction and should not be treated as population-level diagnostic conclusions.
 
 Duration is expressed in sample or index units unless timestamps and sampling intervals are explicitly incorporated. Cross-dataset comparisons of duration, rate, accumulation, or amplitude require compatible units and sampling semantics. The shared table schema does not perform those conversions.
 
