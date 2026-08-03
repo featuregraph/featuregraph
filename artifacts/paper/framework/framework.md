@@ -12,7 +12,7 @@ Each level preserves information required by the next. Observations provide the 
 
 This separation is central to the framework. A duration, amplitude, or accumulation is not treated as an isolated feature calculated directly from an arbitrary window of samples. It is treated as a property of a particular behavioral object. The object establishes which observations belong together and therefore supplies the context in which the property is defined. The resulting representation supports both conventional statistical analysis and object-level questions such as how many behaviors occurred, which were incomplete, which persisted unusually long, and how their properties varied across groups or signals.
 
-***The goal of this project is to implement the requirements rigorously enough and with enough generality that they can be reproduced by non-human computation layers and used for downstream processing.***
+***The goal of this project is to define behavioral objects rigorously enough and with enough generality that they can be reproduced by non-human computation layers and used for downstream processing. The current implementation allows for object-level querying.***
 
 ### Ordered observations
 
