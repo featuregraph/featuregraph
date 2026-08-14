@@ -2,6 +2,19 @@
 
 FeatureGraph turns ordered observations into explicit behavioral objects that software can inspect and query.
 
+
+## Start here
+
+**1. Run the worked example:** [BIDMC respiration behavioral-object notebook](notebooks/bidmc_respiration_pipeline.ipynb)
+
+This clean, executable notebook walks from a raw respiration waveform to explicit transition states, oscillation objects, accumulation objects, validation checks, and a deterministic summary. To run it, clone this branch, install the development environment as shown below, and execute the notebook from top to bottom.
+
+**2. Read the study:** [From LLM-Proposed Analysis to Maintainable Behavioral Objects](artifacts/paper/bidmc_llm_preservation_study/manuscript.md)
+
+The paper draft asks what remains maintainable when an LLM-assisted analysis is converted into an explicit computational representation. It reports what the BIDMC experiment preserved, where the representation transferred, and where the boundary rule failed.
+
+> Short path: **install the alpha → run the notebook → inspect the paper and stored evidence.**
+
 A raw time series contains values. It may also contain oscillations, transitions, and accumulations, but those behaviors remain implicit until their states, boundaries, identities, and properties are constructed. FeatureGraph performs that construction deterministically and returns one row per behavioral object.
 
 ```text
@@ -12,7 +25,7 @@ observations
     → computational queries
 ```
 
-This branch maintains the released FeatureGraph alpha, `v0.1.0a1`. It provides oscillation objects, wave-derived accumulation objects, inspectable construction features, and a small deterministic query interface. Pandas is the reference execution model.
+This branch maintains the released FeatureGraph alpha, `v0.1.0a2`. It provides oscillation objects, wave-derived accumulation objects, inspectable construction features, and a small deterministic query interface. Pandas is the reference execution model.
 
 > The `main` branch contains an unreleased successor architecture and is not API-compatible with this alpha.
 
@@ -21,7 +34,7 @@ This branch maintains the released FeatureGraph alpha, `v0.1.0a1`. It provides o
 Install the immutable release:
 
 ```bash
-python -m pip install "featuregraph @ git+https://github.com/featuregraph/featuregraph.git@v0.1.0a1"
+python -m pip install "featuregraph @ git+https://github.com/featuregraph/featuregraph.git@v0.1.0a2"
 ```
 
 For development against the alpha maintenance branch:
@@ -65,11 +78,11 @@ long_oscillations = (
 - [Quickstart](https://featuregraph.readthedocs.io/en/latest/quickstart.html)
 - [Datasets](https://featuregraph.readthedocs.io/en/latest/datasets.html)
 - [API reference](https://featuregraph.readthedocs.io/en/latest/api/index.html)
-- [Demonstration notebook](https://github.com/featuregraph/featuregraph/blob/v0.1.0a1/notebooks/demo_notebook.ipynb)
+- [Demonstration notebook](https://github.com/featuregraph/featuregraph/blob/v0.1.0a2/notebooks/demo_notebook.ipynb)
 - [Alpha manuscript and evidence](artifacts/paper/README.md)
 - [Reproducibility guide](docs/reproducibility.md)
-- [Release `v0.1.0a1`](https://github.com/featuregraph/featuregraph/releases/tag/v0.1.0a1)
-- [Archived research record](https://doi.org/10.5281/zenodo.21535661)
+- [Release `v0.1.0a2`](https://github.com/featuregraph/featuregraph/releases/tag/v0.1.0a2)
+- [Archived research record](https://doi.org/10.5281/zenodo.21939319)
 - [Project website](https://featuregraph.ai)
 
 ## Reproduce the research artifacts
@@ -99,7 +112,7 @@ Architectural redesign, successor object models, and incompatible API developmen
 
 If you use FeatureGraph in research, cite the archived alpha software record:
 
-> Habib, N. (2026). *FeatureGraph* (v0.1.0a1). Zenodo. https://doi.org/10.5281/zenodo.21535661
+> Habib, N. (2026). *FeatureGraph* (v0.1.0a2). Zenodo. https://doi.org/10.5281/zenodo.21939319
 
 Machine-readable citation metadata is available in [CITATION.cff](CITATION.cff).
 
