@@ -64,10 +64,14 @@ were within 63 samples (0.5 seconds).
 Peak alignment is strong: the median absolute peak error is 10 samples
 (0.080 seconds), and the maximum is 29 samples (0.232 seconds). All 169 LLM
 objects therefore match well inside the declared tolerance. The five unmatched
-FeatureGraph peaks are 7443, 7797, 8296, 8531, and 14354—the same five native
-candidates excluded by both BIDMC human annotation series. The disagreement is
-thus a specific native over-segmentation failure, not cancellation hidden by
-aggregate means.
+FeatureGraph peaks are 7443, 7797, 8296, 8531, and 14354. Both annotation
+series also leave five native candidates unmatched in the same event
+neighborhoods, supporting a localized over-segmentation diagnosis rather than
+cancellation hidden by aggregate means. Exact peak identity inside those
+neighborhoods depends on the one-to-one matching objective when multiple
+native candidates fall within tolerance; the multi-subject record corrects
+the earlier stronger claim that both annotators exclude the exact same five
+indices.
 
 Trough boundaries agree less closely. FeatureGraph starts and ends are a
 median 53 samples (0.424 seconds) from the filtered local troughs selected by
@@ -114,15 +118,21 @@ LLM-selected SciPy pipeline on the other. SciPy remains a conventional
 dependency of the LLM baseline, but it no longer supplies FeatureGraph's
 boundaries.
 
-## Next evaluation
+## Frozen multi-subject evaluation
 
-1. Freeze the FeatureGraph parameters and all measurement contracts before
-   evaluation; separate parameter selection records from evaluation subjects.
-2. Repeat the frozen independent comparison on additional BIDMC subjects.
-3. Report parameter sensitivity and whether the same failure signature—the
-   native detector splitting short secondary rises—recurs.
-4. Decide in advance whether such candidates should be retained as explicit
-   transitions or excluded through another documented selection rule.
+The frozen constructions have now been applied to all 53 BIDMC subjects;
+subjects 2–53 are the held-out transfer cohort. FeatureGraph matches 6,031 of
+6,999 complete baseline objects, but also produces 2,755 unmatched objects and
+misses 968. The median subject-level matched fractions are 78.5% of native
+FeatureGraph objects and 99.1% of baseline objects. Annotation checks confirm
+that the subject 1 absolute threshold does not transfer uniformly: it
+over-segments many records and severely under-detects several others.
+
+See [MULTI_SUBJECT_RESULTS.md](MULTI_SUBJECT_RESULTS.md) for the full transfer
+record, boundary and property errors, annotation comparison, limitations, and
+reproduction command. The next detector study should define a scale-adaptive
+transition contract on a declared development subset and evaluate it once on
+a held-out subset without subject-specific tuning.
 
 ## Capability ledger
 
@@ -138,12 +148,12 @@ boundaries.
 | Preserve the blinded LLM object table and method | Saved experiment results | Yes |
 | Reproduce the blinded LLM detector | Recorded SciPy pipeline | Yes; numerically verified |
 
-The evidence supports deterministic preservation and maintenance of an
-explicitly encoded analysis. It also supports object-level agreement on all
-169 LLM-defined complete cycles while exposing five reproducible FeatureGraph
-extras and a meaningful trough-boundary difference. It does not support
-autonomous semantic recognition by FeatureGraph or perfect equivalence with
-the LLM.
+The evidence supports deterministic preservation, auditability, and
+maintenance of an explicitly encoded analysis. Subject 1 supports strong
+object-level agreement, but the full cohort shows that the current native
+parameterization is not transferable enough to claim general equivalence.
+Determinism preserves an explicit rule; it does not make a subject-specific
+rule general or give FeatureGraph autonomous semantic recognition.
 
 ## Reproducing the object-level pass
 
