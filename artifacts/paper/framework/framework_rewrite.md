@@ -8,3 +8,18 @@ One of the continuing struggles we have in data analysis is having to reproduce 
 
 A reasoning process that had its own form of represenation that it could apply readily to a class of problems would potentially save itself a great deal of repeated computation. If we could embed parts of our reasooning into a graph and embody them through computation, we would not have to keep repeating the same analyses.
 
+Define:
+
+Representation
+
+Preservation vs transfer
+
+Separate:
+
+Durability
+
+Inspectability
+
+Transfer
+
+The BIDMC study succeeded strongly on durability and inspectability but only partially on transfer
