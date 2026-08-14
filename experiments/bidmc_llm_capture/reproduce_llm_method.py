@@ -99,9 +99,8 @@ def object_row(
     }
 
 
-def reproduce(raw: pd.DataFrame) -> pd.DataFrame:
-    """Apply the exact method documented by the blinded LLM run."""
-    signal = raw["respiration"].to_numpy()
+def detect_boundaries(signal: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """Return peaks and troughs from the frozen LLM-selected detector."""
     sos = butter(
         4,
         0.8,
@@ -120,6 +119,13 @@ def reproduce(raw: pd.DataFrame) -> pd.DataFrame:
         distance=188,
         prominence=0.08,
     )
+    return peaks, troughs
+
+
+def reproduce(raw: pd.DataFrame) -> pd.DataFrame:
+    """Apply the exact method documented by the blinded LLM run."""
+    signal = raw["respiration"].to_numpy()
+    peaks, troughs = detect_boundaries(signal)
     return assemble_objects(signal, peaks, troughs)
 
 
