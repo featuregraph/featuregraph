@@ -108,3 +108,18 @@ remains unperformed.
 The evidence currently supports deterministic preservation and maintenance of
 an explicitly encoded analysis. It does not support autonomous semantic
 recognition by FeatureGraph or full object-level equivalence with the LLM.
+
+## Running the final object-level pass
+
+Run `python experiments/bidmc_llm_capture/prepare_blinded_trial.py`. This
+creates the raw input and a hidden FeatureGraph object table under `generated/`.
+In a new context-isolated LLM chat, attach only
+`raw_respiration_subject_01.csv` and `BLINDED_LLM_PROMPT.md`. Do not expose the
+FeatureGraph table, this README, the notebook, or prior aggregate results.
+
+Place the returned `llm_objects_subject_01.csv` in `generated/`, then run
+`python experiments/bidmc_llm_capture/compare_object_tables.py`. The comparison
+writes matched rows, FeatureGraph-only rows, LLM-only rows, and a summary of
+boundary and property errors. Those outputs complete the missing object-level
+evidence; until the isolated LLM table exists, they must not be described as a
+completed blinded comparison.
