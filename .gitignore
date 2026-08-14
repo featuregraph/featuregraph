@@ -6,6 +6,7 @@ __pycache__/
 # Packaging and build artifacts
 build/
 dist/
+build-requirements-*.txt
 docs/_build/
 *.egg-info/
 .eggs/
@@ -20,6 +21,7 @@ ENV/
 
 # Tests, coverage, linting, and type checking
 .pytest_cache/
+pytest-of-root/
 .coverage
 .coverage.*
 htmlcov/

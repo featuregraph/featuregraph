@@ -105,6 +105,15 @@ jobs:
             --output-dir /tmp \
             --ExecutePreprocessor.timeout=900
 
+      - name: Execute BIDMC respiration experiment
+        run: |
+          jupyter nbconvert \
+            --to notebook \
+            --execute notebooks/bidmc_respiration_pipeline.ipynb \
+            --output bidmc-respiration.ipynb \
+            --output-dir /tmp \
+            --ExecutePreprocessor.timeout=900
+
   reproduce:
     name: Regenerate paper artifacts
     if: github.event_name == 'workflow_dispatch' && inputs.reproduce
