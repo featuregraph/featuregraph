@@ -139,6 +139,100 @@ def test_smoothing_works_without_groups() -> None:
     )
 
 
+def test_short_rising_state_gaps_can_be_closed() -> None:
+    df = pd.DataFrame(
+        {
+            "signal": [
+                0.0,
+                1.0,
+                2.0,
+                2.0,
+                2.0,
+                3.0,
+                4.0,
+                3.0,
+            ]
+        }
+    )
+    behavior = Oscillation(
+        "signal",
+        diff_lag=1,
+        max_state_gap=2,
+    )
+
+    result = behavior.fit_transform(df)
+
+    assert result["signal_rising"].tolist() == [
+        False,
+        True,
+        True,
+        True,
+        True,
+        True,
+        True,
+        False,
+    ]
+    assert result["enter_signal_rising"].sum() == 1
+    assert result["exit_signal_rising"].sum() == 1
+    assert not (
+        result["signal_rising"]
+        & result["signal_falling"]
+    ).any()
+
+
+def test_state_gap_closing_does_not_cross_groups() -> None:
+    df = pd.DataFrame(
+        {
+            "subject": [1, 1, 1, 2, 2, 2],
+            "signal": [0.0, 1.0, 1.0, 1.0, 1.0, 2.0],
+        }
+    )
+    behavior = Oscillation(
+        "signal",
+        group="subject",
+        diff_lag=1,
+        max_state_gap=2,
+    )
+
+    result = behavior.fit_transform(df)
+
+    first_rows = result.groupby("subject", sort=False).head(1)
+    assert not first_rows["signal_rising"].any()
+    assert result["enter_signal_rising"].sum() == 2
+
+
+def test_state_gap_parameter_is_validated_and_recorded(
+    triangular_signal: pd.DataFrame,
+) -> None:
+    with pytest.raises(
+        TypeError,
+        match="must be an integer",
+    ):
+        Oscillation("signal", max_state_gap=1.5)
+
+    with pytest.raises(
+        TypeError,
+        match="must be an integer",
+    ):
+        Oscillation("signal", max_state_gap=True)
+
+    with pytest.raises(
+        ValueError,
+        match="cannot be negative",
+    ):
+        Oscillation("signal", max_state_gap=-1)
+
+    behavior = Oscillation(
+        "signal",
+        diff_lag=1,
+        max_state_gap=2,
+    )
+    features = behavior.fit_transform(triangular_signal)
+    objects = behavior.summarize(features, "signal")
+
+    assert objects.construction["max_state_gap"] == 2
+
+
 def test_summary_rejects_unconfigured_signal(
     triangular_signal: pd.DataFrame,
 ) -> None:
