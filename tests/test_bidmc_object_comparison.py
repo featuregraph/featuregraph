@@ -3,6 +3,7 @@ import pandas as pd
 from experiments.bidmc_llm_capture.compare_object_tables import (
     comparison_summary,
     match_ordered_objects,
+    optimal_ordered_pairs,
 )
 
 
@@ -64,3 +65,9 @@ def test_incomplete_objects_are_not_matched() -> None:
     summary = comparison_summary(matched, featuregraph_only, llm_only)
     assert summary["matched_objects"] == 0
     assert pd.isna(summary["median_absolute_peak_index_error"])
+
+
+def test_ordered_matching_minimizes_error_after_maximizing_matches() -> None:
+    pairs = optimal_ordered_pairs([0, 5], [4], tolerance=4)
+
+    assert pairs == [(1, 0)]

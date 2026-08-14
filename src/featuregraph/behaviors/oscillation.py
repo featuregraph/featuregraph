@@ -10,6 +10,7 @@ from featuregraph.operators.events import (
     preceding_sample_event,
 )
 from featuregraph.operators.states import (
+    hysteresis_state,
     negative_state,
     positive_state,
 )
@@ -19,7 +20,10 @@ from featuregraph.preprocessing.smoothing import smooth
 class Oscillation(Behavior):
     """Construct oscillation objects from explicitly configured transitions.
 
-    ``diff_lag`` and ``eps`` define the rising and falling states. When
+    ``diff_lag`` and ``eps`` define entry into rising and falling states.
+    When ``exit_eps`` is lower than ``eps``, a state persists through the
+    neutral band until its directional difference reaches ``exit_eps``.
+    Equal entry and exit thresholds reproduce the original behavior. When
     ``max_state_gap`` is greater than zero, False runs of at most that many
     samples are changed to True only when they are bounded by rising states
     in the same group. This deterministic gap-closing rule can prevent a
@@ -36,6 +40,7 @@ class Oscillation(Behavior):
         smooth_window: int = 20,
         diff_lag: int = 10,
         eps: float = 0.0,
+        exit_eps: float | None = None,
         max_state_gap: int = 0,
     ) -> None:
         super().__init__(
@@ -58,6 +63,19 @@ class Oscillation(Behavior):
                 "eps cannot be negative."
             )
 
+        if exit_eps is None:
+            exit_eps = eps
+
+        if exit_eps < 0:
+            raise ValueError(
+                "exit_eps cannot be negative."
+            )
+
+        if exit_eps > eps:
+            raise ValueError(
+                "exit_eps cannot exceed eps."
+            )
+
         if isinstance(max_state_gap, bool) or not isinstance(
             max_state_gap,
             int,
@@ -75,6 +93,7 @@ class Oscillation(Behavior):
         self.smooth_window = smooth_window
         self.diff_lag = diff_lag
         self.eps = eps
+        self.exit_eps = exit_eps
         self.max_state_gap = max_state_gap
 
     def working_signal(self, signal: str) -> str:
@@ -166,15 +185,31 @@ class Oscillation(Behavior):
                 )
                 event_group = None
 
-            df[rising_col] = positive_state(
-                difference,
-                self.eps,
-            )
+            if self.exit_eps == self.eps:
+                # Preserve the original threshold behavior exactly.
+                df[rising_col] = positive_state(
+                    difference,
+                    self.eps,
+                )
 
-            df[falling_col] = negative_state(
-                difference,
-                self.eps,
-            )
+                df[falling_col] = negative_state(
+                    difference,
+                    self.eps,
+                )
+            else:
+                df[rising_col] = hysteresis_state(
+                    difference,
+                    enter_eps=self.eps,
+                    exit_eps=self.exit_eps,
+                    group=event_group,
+                )
+
+                df[falling_col] = hysteresis_state(
+                    -difference,
+                    enter_eps=self.eps,
+                    exit_eps=self.exit_eps,
+                    group=event_group,
+                )
 
             if self.group_columns:
                 df[rising_col] = (
@@ -559,6 +594,7 @@ class Oscillation(Behavior):
                 "smooth_window": self.smooth_window,
                 "diff_lag": self.diff_lag,
                 "eps": self.eps,
+                "exit_eps": self.exit_eps,
                 "max_state_gap": self.max_state_gap,
                 "include_partial": include_partial,
             },
