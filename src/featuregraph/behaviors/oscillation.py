@@ -17,7 +17,16 @@ from featuregraph.preprocessing.smoothing import smooth
 
 
 class Oscillation(Behavior):
-    """Construct oscillation objects from observed signals."""
+    """Construct oscillation objects from explicitly configured transitions.
+
+    ``diff_lag`` and ``eps`` define the rising and falling states. When
+    ``max_state_gap`` is greater than zero, False runs of at most that many
+    samples are changed to True only when they are bounded by rising states
+    in the same group. This deterministic gap-closing rule can prevent a
+    brief interruption from creating an additional candidate peak; it does
+    not determine whether a signal is an oscillation or whether a candidate
+    peak is meaningful.
+    """
 
     def __init__(
         self,
@@ -27,6 +36,7 @@ class Oscillation(Behavior):
         smooth_window: int = 20,
         diff_lag: int = 10,
         eps: float = 0.0,
+        max_state_gap: int = 0,
     ) -> None:
         super().__init__(
             signals=signals,
@@ -48,10 +58,24 @@ class Oscillation(Behavior):
                 "eps cannot be negative."
             )
 
+        if isinstance(max_state_gap, bool) or not isinstance(
+            max_state_gap,
+            int,
+        ):
+            raise TypeError(
+                "max_state_gap must be an integer."
+            )
+
+        if max_state_gap < 0:
+            raise ValueError(
+                "max_state_gap cannot be negative."
+            )
+
         self.smooth_signal = smooth_signal
         self.smooth_window = smooth_window
         self.diff_lag = diff_lag
         self.eps = eps
+        self.max_state_gap = max_state_gap
 
     def working_signal(self, signal: str) -> str:
         """Return the column used for numerical calculations."""
@@ -77,6 +101,35 @@ class Oscillation(Behavior):
             )
 
         return df
+
+    @staticmethod
+    def _close_short_false_runs(
+        state: pd.Series,
+        max_gap: int,
+    ) -> pd.Series:
+        """Fill short False runs bounded by True states."""
+        if max_gap == 0 or state.empty:
+            return state.astype(bool)
+
+        run_id = state.ne(state.shift()).cumsum()
+        run_value = state.groupby(run_id).first()
+        run_size = state.groupby(run_id).size()
+
+        fill_run = (
+            ~run_value
+            & run_value.shift(fill_value=False)
+            & run_value.shift(-1, fill_value=False)
+            & run_size.le(max_gap)
+        )
+
+        fill_samples = (
+            run_id
+            .map(fill_run)
+            .fillna(False)
+            .astype(bool)
+        )
+
+        return state.astype(bool) | fill_samples
 
     def add_primitives(
         self,
@@ -121,6 +174,35 @@ class Oscillation(Behavior):
             df[falling_col] = negative_state(
                 difference,
                 self.eps,
+            )
+
+            if self.group_columns:
+                df[rising_col] = (
+                    df.groupby(
+                        self.group_columns,
+                        sort=False,
+                    )[rising_col]
+                    .transform(
+                        lambda state:
+                            self._close_short_false_runs(
+                                state,
+                                self.max_state_gap,
+                            )
+                    )
+                )
+            else:
+                df[rising_col] = (
+                    self._close_short_false_runs(
+                        df[rising_col],
+                        self.max_state_gap,
+                    )
+                )
+
+            # A filled rising-state interruption is treated as part of
+            # the same transition, so directional states remain exclusive.
+            df[falling_col] = (
+                df[falling_col]
+                & ~df[rising_col]
             )
 
             df[enter_rising_col] = enter_state(
@@ -477,6 +559,7 @@ class Oscillation(Behavior):
                 "smooth_window": self.smooth_window,
                 "diff_lag": self.diff_lag,
                 "eps": self.eps,
+                "max_state_gap": self.max_state_gap,
                 "include_partial": include_partial,
             },
         )
