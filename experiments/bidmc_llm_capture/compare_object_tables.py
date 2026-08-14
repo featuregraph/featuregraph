@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
 
@@ -13,6 +14,69 @@ PROPERTY_COLUMNS = (
     "full_excursion",
     "temporal_symmetry",
 )
+
+
+def optimal_ordered_pairs(
+    left_values: list[int],
+    right_values: list[int],
+    *,
+    tolerance: int,
+) -> list[tuple[int, int]]:
+    """Maximize ordered matches, then minimize their total absolute error."""
+    left_count = len(left_values)
+    right_count = len(right_values)
+    matched = np.zeros((left_count + 1, right_count + 1), dtype=int)
+    error = np.zeros((left_count + 1, right_count + 1), dtype=float)
+    choice = np.zeros((left_count + 1, right_count + 1), dtype=np.int8)
+
+    for left_index in range(1, left_count + 1):
+        for right_index in range(1, right_count + 1):
+            candidates = [
+                (
+                    matched[left_index - 1, right_index],
+                    error[left_index - 1, right_index],
+                    1,
+                ),
+                (
+                    matched[left_index, right_index - 1],
+                    error[left_index, right_index - 1],
+                    2,
+                ),
+            ]
+            distance = abs(
+                left_values[left_index - 1]
+                - right_values[right_index - 1]
+            )
+            if distance <= tolerance:
+                candidates.append(
+                    (
+                        matched[left_index - 1, right_index - 1] + 1,
+                        error[left_index - 1, right_index - 1] + distance,
+                        3,
+                    )
+                )
+            best = max(
+                candidates,
+                key=lambda item: (item[0], -item[1], item[2]),
+            )
+            matched[left_index, right_index] = best[0]
+            error[left_index, right_index] = best[1]
+            choice[left_index, right_index] = best[2]
+
+    pairs: list[tuple[int, int]] = []
+    left_index = left_count
+    right_index = right_count
+    while left_index and right_index:
+        selected = choice[left_index, right_index]
+        if selected == 3:
+            pairs.append((left_index - 1, right_index - 1))
+            left_index -= 1
+            right_index -= 1
+        elif selected == 1:
+            left_index -= 1
+        else:
+            right_index -= 1
+    return list(reversed(pairs))
 
 
 def match_ordered_objects(
@@ -32,40 +96,31 @@ def match_ordered_objects(
         .sort_values("peak_index")
         .reset_index(drop=True)
     )
-    left_index = right_index = 0
     pairs: list[dict[str, object]] = []
-    matched_left: set[int] = set()
-    matched_right: set[int] = set()
+    index_pairs = optimal_ordered_pairs(
+        left["peak_index"].astype(int).tolist(),
+        right["peak_index"].astype(int).tolist(),
+        tolerance=peak_tolerance_samples,
+    )
+    matched_left = {pair[0] for pair in index_pairs}
+    matched_right = {pair[1] for pair in index_pairs}
 
-    while left_index < len(left) and right_index < len(right):
-        left_peak = int(left.at[left_index, "peak_index"])
-        right_peak = int(right.at[right_index, "peak_index"])
-        offset = left_peak - right_peak
-
-        if abs(offset) <= peak_tolerance_samples:
-            row: dict[str, object] = {
-                "featuregraph_object_id": left.at[
-                    left_index,
-                    "featuregraph_object_id",
-                ],
-                "llm_object_id": right.at[right_index, "llm_object_id"],
-            }
-            for column in (*BOUNDARY_COLUMNS, *PROPERTY_COLUMNS):
-                row[f"featuregraph_{column}"] = left.at[left_index, column]
-                row[f"llm_{column}"] = right.at[right_index, column]
-                row[f"delta_{column}"] = (
-                    left.at[left_index, column]
-                    - right.at[right_index, column]
-                )
-            pairs.append(row)
-            matched_left.add(left_index)
-            matched_right.add(right_index)
-            left_index += 1
-            right_index += 1
-        elif left_peak < right_peak:
-            left_index += 1
-        else:
-            right_index += 1
+    for left_index, right_index in index_pairs:
+        row: dict[str, object] = {
+            "featuregraph_object_id": left.at[
+                left_index,
+                "featuregraph_object_id",
+            ],
+            "llm_object_id": right.at[right_index, "llm_object_id"],
+        }
+        for column in (*BOUNDARY_COLUMNS, *PROPERTY_COLUMNS):
+            row[f"featuregraph_{column}"] = left.at[left_index, column]
+            row[f"llm_{column}"] = right.at[right_index, column]
+            row[f"delta_{column}"] = (
+                left.at[left_index, column]
+                - right.at[right_index, column]
+            )
+        pairs.append(row)
 
     matched = pd.DataFrame(pairs)
     featuregraph_only = left.loc[
