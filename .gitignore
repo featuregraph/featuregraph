@@ -52,6 +52,7 @@ htmlcov/
 # Local datasets and disposable outputs
 data/
 outputs/
+experiments/bidmc_llm_capture/generated/
 *.log
 *.tmp
 *.temp

@@ -25,7 +25,7 @@ window. All parameters are preserved in `BehaviorObjects.construction`.
 | Measure | Native FeatureGraph | Prior SciPy-boundary FeatureGraph | Raw-data LLM run | Interpretation |
 | --- | ---: | ---: | ---: | --- |
 | Coverage | 476.8 s | 479.1 s | 480.0 s | Different coverage definitions |
-| Complete objects | 174 | 170 | 169 | Close aggregate agreement; object matching is pending |
+| Complete objects | 174 | 170 | 169 | Close aggregate agreement; resolved below at object level |
 | Objects/minute | 21.9 | 21.3 | 21.1 | Close aggregate agreement |
 | Mean period | 2.740 s | 2.82 s | 2.818 s | Close aggregate agreement |
 | Mean radius amplitude | 0.443 | 0.452 | — | LLM did not report this convention |
@@ -41,6 +41,42 @@ annotator 1 and 7 for annotator 2; the maxima are 39 and 26 samples,
 respectively. This annotation
 check evaluates the native boundary rule, not agreement with the LLM.
 
+## Blinded object-level comparison
+
+A context-isolated LLM received only the frozen raw waveform and measurement
+contract. It independently selected a fourth-order 0.8 Hz Butterworth filter,
+then SciPy `find_peaks` with 188-sample minimum distance and 0.08 prominence on
+the filtered signal and its negation. It returned 169 complete objects and one
+trailing partial object. No FeatureGraph boundaries, parameters, counts, or
+prior results were available to that run.
+
+Complete objects were matched once each, in temporal order, when peak indices
+were within 63 samples (0.5 seconds).
+
+| Object-level measure | FeatureGraph | Blinded LLM | Comparison |
+| --- | ---: | ---: | --- |
+| Complete objects | 174 | 169 | Five FeatureGraph-only; zero LLM-only |
+| Matched objects | 169 (97.1%) | 169 (100%) | Every LLM object matched |
+| Mean period, matched objects | 2.802 s | 2.821 s | Median absolute error 0.040 s |
+| Mean full excursion, matched objects | 0.896 | 0.903 | Median absolute error 0.00489 |
+| Mean temporal symmetry, matched objects | 0.596 | 0.844 | Median absolute error 0.250 |
+
+Peak alignment is strong: the median absolute peak error is 10 samples
+(0.080 seconds), and the maximum is 29 samples (0.232 seconds). All 169 LLM
+objects therefore match well inside the declared tolerance. The five unmatched
+FeatureGraph peaks are 7443, 7797, 8296, 8531, and 14354—the same five native
+candidates excluded by both BIDMC human annotation series. The disagreement is
+thus a specific native over-segmentation failure, not cancellation hidden by
+aggregate means.
+
+Trough boundaries agree less closely. FeatureGraph starts and ends are a
+median 53 samples (0.424 seconds) from the filtered local troughs selected by
+the LLM, and FeatureGraph boundaries are systematically later. This explains
+the remaining symmetry disagreement even though both paths now use the same
+bounded formula: temporal symmetry is highly sensitive to boundary semantics.
+Typical period and full-excursion measurements agree closely, while their
+largest errors occur near the five additional FeatureGraph transitions.
+
 ## Measurement contracts
 
 - Complete object: strictly ordered trough, peak, and next trough. Partial
@@ -54,9 +90,9 @@ check evaluates the native boundary rule, not agreement with the LLM.
   `1 - abs(rise_duration - fall_duration) / duration`, bounded in `[0, 1]`.
 
 The cycle count, rate, period, and converted amplitude show genuine aggregate
-agreement. Symmetry does not: the historical values use different contracts,
-and the negative SciPy-boundary value cannot have come from the bounded
-formula above.
+and object-level agreement. The historical symmetry values used different
+contracts. After harmonization, symmetry still does not agree because the two
+detectors place trough boundaries differently.
 
 ## Accumulation representation
 
@@ -71,26 +107,22 @@ inhaled or exhaled volume.
 ## Methodological limitation
 
 The earlier corrected comparison used SciPy `find_peaks` to assign boundaries
-before FeatureGraph summarized the objects. It therefore showed agreement
-between a SciPy-boundary-plus-FeatureGraph pipeline and an independently
-designed raw-data LLM analysis. It did not show that FeatureGraph natively
-found the same boundaries. The current notebook removes that SciPy dependency,
-but the raw LLM run preserved only aggregates, so object-level LLM comparison
-remains unperformed.
+before FeatureGraph summarized the objects. It therefore did not show that
+FeatureGraph natively found the same boundaries. The completed comparison now
+uses FeatureGraph's native transition construction on one side and a blinded
+LLM-selected SciPy pipeline on the other. SciPy remains a conventional
+dependency of the LLM baseline, but it no longer supplies FeatureGraph's
+boundaries.
 
-## Next self-implemented detector experiment
+## Next evaluation
 
 1. Freeze the FeatureGraph parameters and all measurement contracts before
    evaluation; separate parameter selection records from evaluation subjects.
-2. Give the same raw record independently to native FeatureGraph and a blinded
-   LLM analysis. Neither path receives the other's boundaries or output.
-3. Require both paths to emit one row per object with start, peak, end,
-   completeness, peak-to-peak period, full excursion, and the bounded symmetry
-   formula.
-4. Match objects one-to-one under a declared boundary tolerance and report
-   matched objects, extras, misses, start/peak/end error, and property error.
-5. Repeat on additional BIDMC subjects and report parameter sensitivity and
-   known failure cases.
+2. Repeat the frozen independent comparison on additional BIDMC subjects.
+3. Report parameter sensitivity and whether the same failure signature—the
+   native detector splitting short secondary rises—recurs.
+4. Decide in advance whether such candidates should be retained as explicit
+   transitions or excluded through another documented selection rule.
 
 ## Capability ledger
 
@@ -103,8 +135,28 @@ remains unperformed.
 | Compute oscillation and accumulation properties | FeatureGraph | Yes |
 | Render the same tables and plots | FeatureGraph/notebook | Yes |
 | Judge whether detected peaks are physiologically meaningful | Human or domain-aware analysis | No |
-| Reproduce the original LLM object table | Raw LLM analysis | Not yet; only aggregates were saved |
+| Preserve the blinded LLM object table and method | Saved experiment results | Yes |
+| Reproduce the blinded LLM detector | Recorded SciPy pipeline | Yes; numerically verified |
 
-The evidence currently supports deterministic preservation and maintenance of
-an explicitly encoded analysis. It does not support autonomous semantic
-recognition by FeatureGraph or full object-level equivalence with the LLM.
+The evidence supports deterministic preservation and maintenance of an
+explicitly encoded analysis. It also supports object-level agreement on all
+169 LLM-defined complete cycles while exposing five reproducible FeatureGraph
+extras and a meaningful trough-boundary difference. It does not support
+autonomous semantic recognition by FeatureGraph or perfect equivalence with
+the LLM.
+
+## Reproducing the object-level pass
+
+Run `python experiments/bidmc_llm_capture/prepare_blinded_trial.py`. This
+creates the raw input and a hidden FeatureGraph object table under `generated/`.
+In a new context-isolated LLM chat, attach only
+`raw_respiration_subject_01.csv` and `BLINDED_LLM_PROMPT.md`. Do not expose the
+FeatureGraph table, this README, the notebook, or prior aggregate results.
+
+The frozen outputs and method are retained under `results/`. To repeat the
+trial, place a returned `llm_objects_subject_01.csv` in `generated/`, then run
+`python experiments/bidmc_llm_capture/compare_object_tables.py`. The comparison
+writes matched rows, FeatureGraph-only rows, LLM-only rows, and a summary of
+boundary and property errors. Run
+`python experiments/bidmc_llm_capture/reproduce_llm_method.py` to reproduce the
+LLM's fully documented detector without further LLM access.
