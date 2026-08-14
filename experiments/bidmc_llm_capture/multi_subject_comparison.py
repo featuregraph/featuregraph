@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 from concurrent.futures import ProcessPoolExecutor, as_completed
+from functools import lru_cache
 from pathlib import Path
 
 import featuregraph as fg
@@ -34,26 +35,75 @@ ANNOTATION_COLUMNS = (
 )
 
 
+def robust_difference_scale(
+    signal: pd.Series,
+    *,
+    lag: int = DIFF_LAG,
+) -> float:
+    """Return the median absolute deviation of a lagged difference."""
+    difference = signal.diff(lag)
+    median = difference.median()
+    return float((difference - median).abs().median())
+
+
+@lru_cache(maxsize=1)
+def normalized_entry_threshold() -> float:
+    """Calibrate the dimensionless threshold once from subject 1."""
+    reference = fg.datasets.bidmc(subject=1)
+    scale = robust_difference_scale(reference["respiration"])
+    if not np.isfinite(scale) or scale <= 0:
+        raise ValueError("Subject 1 difference MAD must be positive.")
+    return EPS / scale
+
+
 def native_featuregraph_objects(
     observations: pd.DataFrame,
+    *,
+    scaling: str = "absolute",
+    normalized_eps: float | None = None,
 ) -> tuple[pd.DataFrame, list[int]]:
     """Apply the frozen native construction and return objects and peaks."""
+    if scaling not in {"absolute", "mad"}:
+        raise ValueError("scaling must be 'absolute' or 'mad'")
+
+    signal = "respiration"
+    eps = EPS
+    amplitude_scale = 1.0
+    if scaling == "mad":
+        amplitude_scale = robust_difference_scale(
+            observations["respiration"]
+        )
+        if not np.isfinite(amplitude_scale) or amplitude_scale <= 0:
+            raise ValueError("Each subject difference MAD must be positive.")
+        observations = observations.copy()
+        signal = "respiration_scaled"
+        observations[signal] = (
+            observations["respiration"] / amplitude_scale
+        )
+        eps = (
+            normalized_entry_threshold()
+            if normalized_eps is None
+            else normalized_eps
+        )
+
     behavior = fg.oscillation.Oscillation(
-        signals="respiration",
+        signals=signal,
         group="subject",
         smooth_signal=False,
         diff_lag=DIFF_LAG,
-        eps=EPS,
+        eps=eps,
         max_state_gap=MAX_STATE_GAP,
     )
     features = behavior.fit_transform(observations)
     objects = behavior.summarize(
         features,
-        signal="respiration",
+        signal=signal,
         include_partial=True,
     ).table.copy()
     objects["period_seconds"] = objects["period"] / SAMPLING_RATE
-    objects["full_excursion"] = 2 * objects["amplitude"]
+    objects["full_excursion"] = (
+        2 * objects["amplitude"] * amplitude_scale
+    )
     objects = objects[
         [
             "oscillation_id",
@@ -67,7 +117,7 @@ def native_featuregraph_objects(
         ]
     ].rename(columns={"oscillation_id": "featuregraph_object_id"})
     detected_peaks = features.index[
-        features["respiration_peak"]
+        features[f"{signal}_peak"]
     ].astype(int).tolist()
     return objects, detected_peaks
 
@@ -157,13 +207,17 @@ def annotation_comparison(
     return summary_rows, unmatched_rows, unmatched_detected
 
 
-def compare_subject(subject: int) -> dict[str, pd.DataFrame | pd.Series]:
+def compare_subject(
+    subject: int,
+    scaling: str = "absolute",
+) -> dict[str, pd.DataFrame | pd.Series]:
     """Run both frozen paths and annotation checks for one subject."""
     observations = fg.datasets.bidmc(subject=subject)
     annotations = fg.datasets.bidmc_breaths(subject=subject)
 
     featuregraph_objects, featuregraph_peaks = native_featuregraph_objects(
-        observations
+        observations,
+        scaling=scaling,
     )
     raw = observations[["respiration"]].copy()
     llm_objects = reproduce(raw)
@@ -177,6 +231,7 @@ def compare_subject(subject: int) -> dict[str, pd.DataFrame | pd.Series]:
     )
     summary = comparison_summary(matched, featuregraph_only, llm_only)
     summary["subject"] = subject
+    summary["featuregraph_scaling"] = scaling
     summary["samples"] = len(observations)
     summary["featuregraph_detected_peaks"] = len(featuregraph_peaks)
     summary["llm_detected_peaks"] = len(llm_peak_list)
@@ -334,26 +389,63 @@ def cohort_summary(
     return pd.DataFrame(rows)
 
 
-def run(subjects: list[int], output_directory: Path, *, jobs: int = 1) -> None:
+def run(
+    subjects: list[int],
+    output_directory: Path,
+    *,
+    jobs: int = 1,
+    scaling: str = "absolute",
+) -> None:
     """Run a declared subject cohort and save all audit tables."""
     output_directory.mkdir(parents=True, exist_ok=True)
+    failures: list[dict[str, object]] = []
     if jobs == 1:
         results = []
         for subject in subjects:
             print(f"Comparing BIDMC subject {subject:02d}...", flush=True)
-            results.append(compare_subject(subject))
+            try:
+                results.append(compare_subject(subject, scaling))
+            except ValueError as error:
+                failures.append(
+                    {"subject": subject, "error": str(error)}
+                )
+                print(
+                    f"Skipped BIDMC subject {subject:02d}: {error}",
+                    flush=True,
+                )
     else:
         result_by_subject = {}
         with ProcessPoolExecutor(max_workers=jobs) as executor:
             futures = {
-                executor.submit(compare_subject, subject): subject
+                executor.submit(compare_subject, subject, scaling): subject
                 for subject in subjects
             }
             for future in as_completed(futures):
                 subject = futures[future]
-                result_by_subject[subject] = future.result()
-                print(f"Completed BIDMC subject {subject:02d}.", flush=True)
-        results = [result_by_subject[subject] for subject in subjects]
+                try:
+                    result_by_subject[subject] = future.result()
+                    print(
+                        f"Completed BIDMC subject {subject:02d}.",
+                        flush=True,
+                    )
+                except ValueError as error:
+                    failures.append(
+                        {"subject": subject, "error": str(error)}
+                    )
+                    print(
+                        f"Skipped BIDMC subject {subject:02d}: {error}",
+                        flush=True,
+                    )
+        results = [
+            result_by_subject[subject]
+            for subject in subjects
+            if subject in result_by_subject
+        ]
+
+    pd.DataFrame(
+        failures,
+        columns=["subject", "error"],
+    ).to_csv(output_directory / "failures.csv", index=False)
 
     summary = pd.DataFrame([result["summary"] for result in results])
     ordered = ["subject"] + [column for column in summary if column != "subject"]
@@ -393,7 +485,10 @@ def run(subjects: list[int], output_directory: Path, *, jobs: int = 1) -> None:
         combined_outputs["annotation_summary"],
     ).to_csv(output_directory / "cohort_summary.csv", index=False)
 
-    print(f"Wrote {len(subjects)} subject comparisons to {output_directory}")
+    print(
+        f"Wrote {len(results)} subject comparisons and "
+        f"{len(failures)} failures to {output_directory}"
+    )
 
 
 def parse_subjects(value: str) -> list[int]:
@@ -415,6 +510,11 @@ if __name__ == "__main__":
     parser.add_argument("--subjects", default="1-53")
     parser.add_argument("--jobs", type=int, default=1)
     parser.add_argument(
+        "--scaling",
+        choices=("absolute", "mad"),
+        default="absolute",
+    )
+    parser.add_argument(
         "--output-directory",
         type=Path,
         default=(Path(__file__).parent / "results" / "multi_subject"),
@@ -424,4 +524,5 @@ if __name__ == "__main__":
         parse_subjects(arguments.subjects),
         arguments.output_directory,
         jobs=arguments.jobs,
+        scaling=arguments.scaling,
     )

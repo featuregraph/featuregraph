@@ -1,5 +1,12 @@
 # BIDMC respiration experiment record
 
+The frozen multi-subject result is recorded in `MULTI_SUBJECT_RESULTS.md`.
+The scale-adaptive subject 5 hysteresis test is recorded in
+`HYSTERESIS_RESULTS.md` and reproduced by `hysteresis_ablation.py`.
+The completed absolute-versus-MAD study and its interpretation are incorporated
+into `artifacts/paper/bidmc_llm_preservation_study/manuscript.md`. Exact paired
+cohort statistics are reproduced by `compare_scaling_runs.py`.
+
 ## Question
 
 If LLM access disappeared, how much of an LLM-proposed time-series analysis

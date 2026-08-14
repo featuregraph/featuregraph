@@ -233,6 +233,52 @@ def test_state_gap_parameter_is_validated_and_recorded(
     assert objects.construction["max_state_gap"] == 2
 
 
+def test_hysteresis_threshold_is_validated_and_recorded(
+    triangular_signal: pd.DataFrame,
+) -> None:
+    with pytest.raises(
+        ValueError,
+        match="cannot be negative",
+    ):
+        Oscillation("signal", eps=0.2, exit_eps=-0.1)
+
+    with pytest.raises(
+        ValueError,
+        match="cannot exceed eps",
+    ):
+        Oscillation("signal", eps=0.2, exit_eps=0.3)
+
+    behavior = Oscillation(
+        "signal",
+        diff_lag=1,
+        eps=0.2,
+        exit_eps=0.1,
+    )
+    features = behavior.fit_transform(triangular_signal)
+    objects = behavior.summarize(features, "signal")
+
+    assert objects.construction["eps"] == 0.2
+    assert objects.construction["exit_eps"] == 0.1
+
+
+def test_equal_hysteresis_threshold_preserves_original_behavior(
+    triangular_signal: pd.DataFrame,
+) -> None:
+    original = Oscillation(
+        "signal",
+        diff_lag=1,
+        eps=0.2,
+    ).fit_transform(triangular_signal)
+    explicit = Oscillation(
+        "signal",
+        diff_lag=1,
+        eps=0.2,
+        exit_eps=0.2,
+    ).fit_transform(triangular_signal)
+
+    assert_frame_equal(explicit, original)
+
+
 def test_summary_rejects_unconfigured_signal(
     triangular_signal: pd.DataFrame,
 ) -> None:

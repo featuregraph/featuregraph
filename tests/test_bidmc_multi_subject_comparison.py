@@ -4,7 +4,9 @@ import pandas as pd
 
 from experiments.bidmc_llm_capture.multi_subject_comparison import (
     annotation_comparison,
+    native_featuregraph_objects,
     parse_subjects,
+    robust_difference_scale,
 )
 
 
@@ -40,6 +42,39 @@ def test_annotation_comparison_retains_unmatched_peaks() -> None:
     assert detector_only["ann1"] == {100}
     assert detector_only["ann2"] == {100, 200}
     assert any(row["kind"] == "reference_only" for row in unmatched)
+
+
+def test_mad_construction_is_invariant_to_signal_scale() -> None:
+    base = pd.DataFrame(
+        {
+            "subject": [1] * 200,
+            "respiration": [
+                float((index * index) % 17)
+                for index in range(200)
+            ],
+        }
+    )
+    scaled = base.copy()
+    scaled["respiration"] *= 10
+
+    base_objects, base_peaks = native_featuregraph_objects(
+        base,
+        scaling="mad",
+        normalized_eps=0.5,
+    )
+    scaled_objects, scaled_peaks = native_featuregraph_objects(
+        scaled,
+        scaling="mad",
+        normalized_eps=0.5,
+    )
+
+    assert base_peaks == scaled_peaks
+    assert base_objects["peak_index"].equals(
+        scaled_objects["peak_index"]
+    )
+    assert robust_difference_scale(scaled["respiration"]) == (
+        10 * robust_difference_scale(base["respiration"])
+    )
 
 
 def test_frozen_multi_subject_results_are_complete_and_accounted() -> None:
