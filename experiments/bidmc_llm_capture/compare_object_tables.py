@@ -87,7 +87,21 @@ def comparison_summary(
         "matched_objects": len(matched),
         "featuregraph_only_objects": len(featuregraph_only),
         "llm_only_objects": len(llm_only),
+        "featuregraph_complete_objects": (
+            len(matched) + len(featuregraph_only)
+        ),
+        "llm_complete_objects": len(matched) + len(llm_only),
     }
+    summary["featuregraph_matched_fraction"] = (
+        len(matched) / summary["featuregraph_complete_objects"]
+        if summary["featuregraph_complete_objects"]
+        else float("nan")
+    )
+    summary["llm_matched_fraction"] = (
+        len(matched) / summary["llm_complete_objects"]
+        if summary["llm_complete_objects"]
+        else float("nan")
+    )
     for column in (*BOUNDARY_COLUMNS, *PROPERTY_COLUMNS):
         delta_column = f"delta_{column}"
         delta = (
@@ -97,6 +111,17 @@ def comparison_summary(
         )
         summary[f"median_absolute_{column}_error"] = delta.median()
         summary[f"maximum_absolute_{column}_error"] = delta.max()
+    for column in PROPERTY_COLUMNS:
+        summary[f"featuregraph_mean_{column}"] = (
+            matched[f"featuregraph_{column}"].mean()
+            if f"featuregraph_{column}" in matched
+            else float("nan")
+        )
+        summary[f"llm_mean_{column}"] = (
+            matched[f"llm_{column}"].mean()
+            if f"llm_{column}" in matched
+            else float("nan")
+        )
     return pd.Series(summary)
 
 
