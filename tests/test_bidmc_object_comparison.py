@@ -39,6 +39,10 @@ def test_ordered_matching_preserves_extras_and_errors() -> None:
     assert featuregraph_only["peak_index"].tolist() == [20]
     assert llm_only["peak_index"].tolist() == [50]
     assert summary["matched_objects"] == 2
+    assert summary["featuregraph_complete_objects"] == 3
+    assert summary["llm_complete_objects"] == 3
+    assert summary["featuregraph_matched_fraction"] == 2 / 3
+    assert summary["llm_matched_fraction"] == 2 / 3
     assert summary["median_absolute_peak_index_error"] == 1
 
 
