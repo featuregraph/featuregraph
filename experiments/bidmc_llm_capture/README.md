@@ -47,6 +47,17 @@ wave_id = peak_candidate.cumsum()
 
 This rule reduced the earlier fragmentation from 553 objects to 176 complete candidate objects. The parameters are a researcher-specified definition of relevant signal change; FeatureGraph does not infer them or decide which candidates are physiologically meaningful.
 
+## Boundary-level validation
+
+The frozen detector was matched one-to-one, in temporal order, against each of the two BIDMC breath-annotation series. The declared tolerance was 0.5 seconds (63 samples at 125 Hz); each detected or annotated boundary could be matched at most once.
+
+| Reference | Matched | Missed | Extra detector boundaries | Median absolute offset | Maximum absolute offset |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| BIDMC annotator 1 | 170 | 0 | 6 | 9 samples (0.072 s) | 40 samples (0.320 s) |
+| BIDMC annotator 2 | 170 | 0 | 6 | 8 samples (0.064 s) | 39 samples (0.312 s) |
+
+This is genuine boundary-level agreement on every annotated breath under the declared contract. It also identifies the remaining error precisely: the self-implemented detector over-segments the record by six candidates. The comparison does not establish that those extra candidates are physiologically valid breaths.
+
 ## Representation
 
 The experiment exercises a transferable construction rather than a respiration-specific semantic primitive:
@@ -73,8 +84,8 @@ The current `diff(45) > 0.15` construction removes the active SciPy detector but
 Before the detector is treated as validated:
 
 - freeze `diff=45` and `eps=0.15`;
-- match self-implemented, SciPy-reference, and BIDMC annotated boundaries one-to-one under a declared timing tolerance;
-- report matched, missed, and extra boundaries plus timing offsets;
+- preserve the completed one-to-one comparison against both BIDMC annotation series;
+- add the corresponding one-to-one comparison with the saved SciPy-reference boundaries;
 - compare complete/incomplete objects, period, and harmonized amplitude object by object;
 - identify whether extra candidates arise from shoulders, small waves, or endpoint conventions;
 - test the fixed construction on held-out BIDMC subjects without record-specific retuning;
