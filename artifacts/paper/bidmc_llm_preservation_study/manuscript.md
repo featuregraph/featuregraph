@@ -691,7 +691,7 @@ undocumented conversation is not conflated with a reproducible method.
 
 1. **Original exploratory interaction.** An earlier LLM conversation helped
    propose and interpret the initial respiration analysis. That conversation
-   was lost. Its transcript, exact model identifier, system configuration, and
+   was not retained. Its transcript, exact model identifier, system configuration, and
    sampling settings are unavailable. It is historical motivation only and is
    not treated as reproducible evidence.
 2. **Context-isolated frozen proposal.** A later LLM session received the
