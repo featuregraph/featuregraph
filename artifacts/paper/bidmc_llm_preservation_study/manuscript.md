@@ -47,9 +47,9 @@ The research question behind this study is: "If large language model (LLM) acces
 
 A researcher using an LLM for data analysis can produce useful results, but an LLM interaction is not a persistent computational representation of that analysis. Much of the output of the work exists in prompts, generated code, ad hoc parameter tuning, and both human and LLM interpretation that cannot be easily recreated to perform the analysis again without LLM assistance.
 
-If the researcher needed to run a similar study, they would need to consult the LLM again, or often design their own bespoke analysis that incorporated their own expertise and that might not be reproducible by others.
+If the researcher needed to run a similar study, they would need to consult the LLM again, or often design their own bespoke analysis that incorporated their own expertise and that might not be reproducible by others. FeatureGraph proposes a framework for deterministic preservation and repeatable execution of LLM-driven analysis. 
 
-The contributions are:
+This preservation study's contributions are:
 
 1. a reproducible handoff from a raw-data LLM analysis to an explicit,
    deterministic behavioral-object representation;
@@ -220,6 +220,13 @@ new peak-detection algorithm: the state rule that creates candidate boundaries
 is supplied by the researcher. The evaluation therefore asks whether this
 object representation preserves and exposes an analysis, and separately
 whether the supplied boundary rule transfers.
+
+## Contruction and measurement contracts
+
+Featuregraph as described provides two contracts:
+
+1. a construction contract that specifies states, transition events, boundaries, and objects. The vocabulary used to define states and transitons is deliberately kept small in order to be transferable
+2. a measurement contract that provides specifications for obtaining amplitude, rates of change, symmetry, accumulation, and other calculated properties of derived objects
 
 ## 4. Data and study scope
 
