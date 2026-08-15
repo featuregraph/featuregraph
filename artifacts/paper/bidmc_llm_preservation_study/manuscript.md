@@ -73,50 +73,64 @@ The contributions are:
 
 ## 2. Representation
 
-An analysis of a sampled timeseries signal can be decomposed into five parts:
+An analysis of a sampled time-series signal can be decomposed into five parts.
 
-1. Observed data
-
-This consists of:
-- sampled values and their ordering
-
-2. Representation frame
-
-This consists of:
-- the physical units a signal is expressed in
-- its sampling interval and temporal resolution
-- recording duration and coverage
-- normalizing and smoothing that have been applied to the signal
-- sensor resolution and preprocessing
-
-Representation frame specifies the context that must be recorded to interpret and compare measurements from the signal while retaining information extraction.
-
-3. Construction contract
-
-This consists of: 
-- rules that identify states, transitions, boundaries, and objects
-
-The FeatureGraph position is: If observed signal morphology can be described in a contract that can then be used to identify corresponding characteristics in multiple signals, the analytical procedure has become durable, inspectable, and testable for transfer.
-
-4. Measurement contract
+### 2.1 Observed data
 
 This consists of:
 
-- how measured characteristics such as amplitude, rate of change, symmetry, and accumulation are calculated
+- sampled values and their ordering.
 
-5. Semantic or physical context
+### 2.2 Representation frame
 
 This consists of:
-- what the signal represents
-- which physical mechanism produced it
-- what domain it belongs to
-- what causal meaning and structure the engineer believes it contains
 
-Semantic context explicitly exists outside the scope of FeatureGraph. It will not be asked to understand what a signal means in the real world to an observer or researcher. FeatureGraph may retain user-supplied labels and metadata, but object construction does not depend on FeatureGraph inferring their physical or domain meaning.
+- the physical units in which a signal is expressed;
+- its sampling interval and temporal resolution;
+- recording duration and coverage;
+- normalization and smoothing applied to the signal; and
+- sensor resolution and preprocessing.
 
-## 2. Related work
+The representation frame specifies the context that must be recorded to
+interpret and compare measurements from the signal while retaining information
+needed for analysis.
 
-### 2.1 Reproducible computational research and provenance
+### 2.3 Construction contract
+
+This consists of:
+
+- rules that identify states, transitions, boundaries, and objects.
+
+The FeatureGraph position is: if observed signal morphology can be described
+in a contract that can then be used to identify corresponding characteristics
+in multiple signals, the analytical procedure has become durable, inspectable,
+and testable for transfer.
+
+### 2.4 Measurement contract
+
+This consists of:
+
+- rules specifying how characteristics such as amplitude, rate of change,
+  symmetry, and accumulation are calculated.
+
+### 2.5 Semantic or physical context
+
+This consists of:
+
+- what the signal represents;
+- which physical mechanism produced it;
+- what domain it belongs to; and
+- what causal meaning and structure the engineer believes it contains.
+
+Semantic context explicitly exists outside the scope of FeatureGraph.
+FeatureGraph is not asked to understand what a signal means in the real world
+to an observer or researcher. It may retain user-supplied labels and metadata,
+but object construction does not depend on FeatureGraph inferring their
+physical or domain meaning.
+
+## 3. Related work
+
+### 3.1 Reproducible computational research and provenance
 
 This study belongs first to the reproducible-computation tradition. Peng
 argues that computational results require a reproducible intermediate standard
@@ -139,7 +153,7 @@ the same script. FeatureGraph is not proposed as a replacement for workflow,
 environment, or provenance tooling; its object tables and construction records
 are intended to compose with them.
 
-### 2.2 LLM-assisted data analysis and human oversight
+### 3.2 LLM-assisted data analysis and human oversight
 
 LLM-based analysis systems demonstrate that models can translate natural
 language goals into executable analytical artifacts. LIDA, for example,
@@ -158,7 +172,7 @@ LLM is neither treated as an oracle nor evaluated as a general-purpose agent;
 it is one source of an analytical proposal that must be converted into a
 reviewable artifact.
 
-### 2.3 Explicit representation and abstraction
+### 3.3 Explicit representation and abstraction
 
 FeatureGraph was also influenced by work that treats representation as central
 to generalization. Chollet's formulation of intelligence and the Abstraction
@@ -177,7 +191,7 @@ that generalizes poorly. FeatureGraph's contribution is the durable,
 auditable representation layer, not evidence of abstract reasoning or an
 autonomous discovery system.
 
-### 2.4 Time-series representations
+### 3.4 Time-series representations
 
 Time-series research contains many alternative representations designed for
 particular downstream tasks. Symbolic Aggregate approXimation (SAX) reduces a
@@ -196,7 +210,7 @@ is supplied by the researcher. The evaluation therefore asks whether this
 object representation preserves and exposes an analysis, and separately
 whether the supplied boundary rule transfers.
 
-## 3. Data and study scope
+## 4. Data and study scope
 
 The [BIDMC PPG and Respiration Dataset](https://physionet.org/content/bidmc/1.0.0/)
 contains 53 recordings extracted from critically ill patients, with
@@ -218,9 +232,9 @@ not as ground truth. The object-level results therefore measure agreement
 among explicit constructions and annotations rather than clinical detection
 accuracy.
 
-## 4. Methods
+## 5. Methods
 
-### 4.1 Development-versus-transfer protocol
+### 5.1 Development-versus-transfer protocol
 
 The study uses phase labels that constrain the claims that can be made from
 each result.
@@ -249,7 +263,7 @@ declare development, optional validation, and untouched test records before
 parameter selection; record every attempted construction; and publish the
 locked contract before computing final test metrics.
 
-### 4.2 Blinded raw-data LLM path
+### 5.2 Blinded raw-data LLM path
 
 A context-isolated LLM received only the subject 1 waveform, its 125 Hz
 sampling rate, a required object schema, and a measurement contract. It was
@@ -274,7 +288,7 @@ in the experiment directory. Consequently, this study claims reproducibility
 of the frozen method and outputs, not reproducibility of the original model's
 decision to select that method.
 
-### 4.3 FeatureGraph object construction
+### 5.3 FeatureGraph object construction
 
 Let `x_t` be the respiration value at sample `t`. The original native
 FeatureGraph construction computes
@@ -300,7 +314,7 @@ These rules do not assert that the signal is truly oscillatory or that every
 candidate event is a breath. They state exactly how the researcher chose to
 partition this waveform into transition-derived objects.
 
-### 4.4 Measurement contracts
+### 5.4 Measurement contracts
 
 For a complete object with start `b`, peak `p`, and end `e`:
 
@@ -321,7 +335,7 @@ using an incompatible definition. These values were not treated as
 disagreements after the contracts were identified. The object-level
 comparison uses the harmonized full-excursion and bounded-symmetry formulas.
 
-### 4.5 Object and annotation matching
+### 5.5 Object and annotation matching
 
 Complete FeatureGraph and LLM objects were sorted by peak index and matched
 one-to-one in temporal order within 63 samples (approximately 0.5 seconds).
@@ -335,14 +349,14 @@ could be used at most once. Annotation agreement was summarized in both
 directions: the fraction of detected peaks matched and the fraction of
 annotated peaks recovered.
 
-### 4.6 Frozen absolute-threshold cohort
+### 5.6 Frozen absolute-threshold cohort
 
 The subject 1 construction—no smoothing, lag 45, threshold 0.15, and maximum
 state gap 7—was applied unchanged to all 53 subjects. The frozen LLM-selected
 SciPy method was also applied unchanged to all records. No subject-specific
 parameters or manual boundary corrections were introduced.
 
-### 4.7 MAD-normalized cohort
+### 5.7 MAD-normalized cohort
 
 The second experiment tested whether subject-level waveform scale explained
 the transfer failures. For each subject,
@@ -373,9 +387,9 @@ exercise. Hysteresis was excluded so that only the normalization changed.
 When MAD equaled zero, the construction was declared undefined; no arbitrary
 fallback scale was substituted.
 
-## 5. Results
+## 6. Results
 
-### 5.1 Development-record agreement
+### 6.1 Development-record agreement
 
 On subject 1, native FeatureGraph produced 174 complete objects and the
 blinded LLM path produced 169. All 169 LLM objects matched FeatureGraph
@@ -396,7 +410,7 @@ transition rule and filtered local-extrema rule place trough boundaries
 differently. This is a boundary-semantics mismatch, not an arithmetic or unit
 mismatch.
 
-### 5.2 Original absolute-threshold transfer
+### 6.2 Original absolute-threshold transfer
 
 Across all 53 subjects, the native absolute rule produced 8,960 complete
 objects and the frozen LLM path produced 7,168. Of these, 6,200 matched.
@@ -419,7 +433,7 @@ Peak placement for matched objects remained close (median absolute difference
 over-segmented, while subjects including 5, 13, 19, 27, and 45 were severely
 under-detected. Thus the absolute threshold did not fail in one uniform way.
 
-### 5.3 MAD normalization versus the original run
+### 6.3 MAD normalization versus the original run
 
 MAD normalization was defined for 51 of 53 records. Subjects 35 and 39 had
 zero 45-sample difference MAD and were excluded from MAD aggregates. The
@@ -471,7 +485,7 @@ baseline, the original FeatureGraph absolute threshold, and MAD-normalized
 FeatureGraph. Missing MAD values at subjects 35 and 39 denote undefined zero
 difference scales, not zero detected objects.
 
-### 5.4 Hysteresis diagnostic
+### 6.4 Hysteresis diagnostic
 
 An exploratory subject 5 ablation retained the MAD-normalized entry threshold
 and lowered the exit threshold from `1.0k` through `0.0k`. Complete candidates
@@ -480,7 +494,7 @@ indicates that most extra candidates result from repeated threshold re-entry,
 not brief flicker within a neutral band. Because this diagnostic did not solve
 the transfer problem, hysteresis was not included in the full MAD cohort.
 
-## 6. Capability and dependency ledger
+## 7. Capability and dependency ledger
 
 | Capability | Source during development | Preserved without live LLM access? |
 | --- | --- | --- |
@@ -502,7 +516,7 @@ maintenance by a human researcher. The study also clarifies what was not
 replaced: the judgment required to decide which observed transitions should
 count as meaningful objects in a new record or domain.
 
-## 7. Discussion
+## 8. Discussion
 
 The subject 1 result alone could have supported an overly optimistic claim.
 Aggregate counts, rates, periods, and excursions were close, and every LLM
@@ -537,9 +551,9 @@ oscillation or respiration cycle could then be supplied by users or other
 systems as compositions over those objects. The failures in this study are
 evidence for that separation.
 
-## 8. Threats to validity
+## 9. Threats to validity
 
-### 8.1 Construct validity
+### 9.1 Construct validity
 
 The primary construct is *preservation of an analysis*, operationalized as the
 ability to rerun explicit construction and measurement contracts, inspect
@@ -558,7 +572,7 @@ diagnostic, not a validated physiological property. Likewise, accumulation is
 area over a normalized waveform baseline and cannot be interpreted as
 calibrated respiratory volume.
 
-### 8.2 Internal validity
+### 9.2 Internal validity
 
 Subject 1 was inspected repeatedly while parameters, endpoint rules, and
 measurement contracts were developed. Its agreement statistics are therefore
@@ -574,7 +588,7 @@ the subject 5 hysteresis test followed inspection of a specific failure. These
 are post hoc diagnostics. They can identify mechanisms and motivate the next
 design, but they cannot provide an unbiased estimate of future transfer.
 
-### 8.3 External validity
+### 9.3 External validity
 
 BIDMC contains 53 short recordings from critically ill patients, all sampled
 at 125 Hz and distributed through one dataset. Results may not generalize to
@@ -591,7 +605,7 @@ and the context-isolated proposal session lacks exact model/session metadata.
 Consequently, the frozen method is reproducible, while the act of proposing it
 is not.
 
-### 8.4 Conclusion and statistical validity
+### 9.4 Conclusion and statistical validity
 
 The object counts are a census of the selected BIDMC records rather than a
 sample used for population inference; no clinical confidence intervals or
@@ -606,7 +620,7 @@ The frozen baseline is a comparator, not a gold standard. Terms such as
 denominator is stated, and annotation matches are described as agreement rather
 than clinical sensitivity or positive predictive value.
 
-### 8.5 Reproducibility and provenance validity
+### 9.5 Reproducibility and provenance validity
 
 The repository preserves prompts, raw inputs, returned object tables, a written
 method, deterministic reproduction code, construction parameters, tests, and
@@ -621,7 +635,7 @@ execution is expected to be cheaper and more stable than repeated LLM analysis,
 but a defensible comparison requires fixed tasks, recorded runtimes, hardware,
 model usage, and contemporaneous pricing or energy measurements.
 
-## 9. AI-use disclosure
+## 10. AI-use disclosure
 
 AI use occurred in three distinct roles and is reported separately so that an
 undocumented conversation is not conflated with a reproducible method.
@@ -655,7 +669,7 @@ provenance remain disclosed rather than reconstructed retrospectively. The
 full experiment-level disclosure is maintained in
 `experiments/bidmc_llm_capture/AI_USE_DISCLOSURE.md`.
 
-## 10. Conclusion
+## 11. Conclusion
 
 This study began with the question of what would remain if LLM access were
 lost. The answer is neither “nothing” nor “the entire analytical capability.”
@@ -678,7 +692,7 @@ better matches what the system can claim: it can represent explicit temporal
 changes faithfully, while leaving higher-order semantic interpretation to a
 declared human or computational layer.
 
-## Reproducibility
+## 12. Reproducibility
 
 The repository stores the blinded prompt, LLM method record, raw and object
 tables, frozen reproduction code, subject-level comparisons, unmatched-object
