@@ -14,7 +14,7 @@ This directory is the canonical manuscript and evidence workspace for the releas
 
 1. [Abstract and conclusion](abstract_and_conclusion/abstract_and_conclusion.md) — the current summary and closing claims; split into separate submission sections when the target venue is selected.
 2. [Introduction](introduction/introduction.md)
-3. [Framework](framework/framework.md)
+3. [Behavioral-object framework](framework/behavioral_object_framework.md)
 4. [Alpha implementation](alpha_implementation/alpha_implementation.md)
 5. [Evaluation methods](evaluation_methods/evaluation_methods.md)
 6. [Results](results/results.md)
