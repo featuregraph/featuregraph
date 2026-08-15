@@ -53,7 +53,7 @@ Semantic context explicitly exists outside the scope of FeatureGraph. It will no
 
 ## Durability, inspectability, and transfer
 
-A representation system can convert analytical decisions that were implicit in an LLM-assisted workflow into an explicit, executable contract. The quality of the representation contract can be measured using the following criteria: 
+A representation system can convert analytical decisions that were implicit in an LLM-assisted workflow into an explicit, executable contract. The quality of the representation can be measured using the following criteria: 
 
 1. Durability
 
