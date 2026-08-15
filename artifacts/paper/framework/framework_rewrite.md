@@ -12,28 +12,31 @@ If the researcher needed to run a similar study, they would need to consult the 
 
 A timeseries signal can be described using this taxonomy:
 
-1. Intrinsic behavior
+1. Observed data
+
+This consists of:
+- sampled values and their ordering
+
+2. Construction contract
 
 This consists of: 
-- the literal raw values that compose the sampled signal
-- the direction and curvature estimated from changes in the signal along its timeseries and value axis
-- its transitions and turning points
+- rules that identify states, transitions, boundaries, and objects
 
 The FeatureGraph position is: If observed signal morphology can be described in a contract that can then be used to identify corresponding characteristics in multiple signals, the analytical procedure has become durable, inspectable, and testable for transfer.
 
-2. Measurement and representation frame
+3. Measurement and representation frame
 
 This consists of:
 - the physical units a signal is expressed in
-- its sampling interval and temporal granularity
+- its sampling interval and temporal scale
 - the duration of each observation
+- measured characteristics such as amplitude, rate of change, symmetry, and accumulation
 - normalizing and smoothing that have been applied to the signal
 - sensor resolution and preprocessing
-- measured characteristics such as amplitude, rate of change, symmetry, and accumulation
 
-Representation frame makes up the second layer of timeseries signal taxonomy. It specifies the context that cannot be removed from the signal while retaining information extraction.
+Representation frame makes up the third layer of timeseries signal taxonomy. It specifies the context that must be recorded to interpret and compare measurements from the signal while retaining information extraction.
 
-3. Semantic or physical context
+4. Semantic or physical context
 
 This consists of:
 - what the signal represents
@@ -45,18 +48,21 @@ Semantic context explicitly exists outside the scope of FeatureGraph. It will no
 
 ## Durability, inspectability, and transfer
 
-A representation system can take explicit information from a timeseries signal and make it explicit. The quality of the representation system can be measured using the following criteria: 
+A representation system can take implicit information from a timeseries signal and make it explicit. The quality of the representation system can be measured using the following criteria: 
 
-Durability
+1. Durability
 
-Can the same declared analysis be executed later without the LLM? The analysis should run and produce coherent behavioral objects of the same structure as the original analysis.
+Can the same declared analysis be executed later without the LLM? The analysis should produce reproducible objects from the constructed contract on frozen inputs.
 
-Inspectability
+2. Inspectability
 
 Can a human see and revise how states, boundaries, objects, and measurements were defined? A human should be able to modify and rerun the code, edit its assumptions and contract, and identify structural limitatons with the representation. 
 
-Transfer
+3. Transfer
 
-Does the same contract produce useful objects on new data without case-specific modification? We can measure this in the correctness of the representation when applied to unobserved test data.
+Does the same contract produce useful objects on new data without case-specific modification? We can measure this in:
+- whether the contract runs unchanged
+- whether it produces structurally valid objects
+- whether those objects agree with an independent reference or annotation
 
 
