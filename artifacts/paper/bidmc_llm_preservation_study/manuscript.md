@@ -164,8 +164,8 @@ Workflow systems such as Nextflow make pipelines portable and repeatable [8],
 while provenance systems such as noWorkflow recover execution history from
 ordinary scripts without requiring a workflow language [9]. Those systems
 primarily preserve *how computations executed*. The present work addresses a
-complementary layer: preserving the analyst's temporal representation—what
-constitutes a state, event, boundary, complete object, and property—so that a
+complementary layer: preserving the analyst's temporal representation (what
+constitutes a state, event, boundary, complete object, and property) so that a
 human can inspect and revise the analytical contract rather than merely rerun
 the same script. FeatureGraph is not proposed as a replacement for workflow,
 environment, or provenance tooling; its object tables and construction records
@@ -382,8 +382,8 @@ annotated peaks recovered.
 
 ### 5.6 Frozen absolute-threshold cohort
 
-The subject 1 construction—no smoothing, lag 45, threshold 0.15, and maximum
-state gap 7—was applied unchanged to all 53 subjects. The frozen LLM-selected
+The subject 1 construction (no smoothing, lag 45, threshold 0.15, and maximum
+state gap 7) was applied unchanged to all 53 subjects. The frozen LLM-selected
 SciPy method was also applied unchanged to all records. No subject-specific
 parameters or manual boundary corrections were introduced.
 
@@ -504,8 +504,8 @@ Annotation comparisons show the same recall–precision tradeoff. On the common
 FeatureGraph detections matched to annotations fell from 67.1% to 54.0% and
 from 68.9% to 56.0%, respectively.
 
-MAD normalization therefore addressed one real weakness—scale-dependent
-under-detection—but did not produce a transferable peak-selection rule. It
+MAD normalization therefore addressed one real weakness, scale-dependent
+under-detection, but did not produce a transferable peak-selection rule. It
 converted a mixed failure pattern into systematic over-segmentation, worsened
 period agreement, and was mathematically undefined on two quantized records.
 
