@@ -219,6 +219,8 @@ and is not an empirical baseline in this study. Its relevance is conceptual:
 successful reasoning depends on constructing useful objects, relations, and
 transformations rather than only reproducing an output.
 
+Chollet's concern that existing definitions of intelligence are not falsifiable suggests that intermediate representational structures can be built so that overly-brittle or specific definitions of parameters will be made to succeed when they apply and fail in related situations when they do not. The connection is methodological and not empirical. FeatureGraph is not an intelligent or abstract reasoning system. The connection is that a durable, falsifiable representation system can be a layer in an intelligence stack.
+
 This study applies that motivation narrowly. Raw samples are converted into
 declared transition states, boundary events, bounded objects, properties, and
 relations. Transfer is then tested rather than assumed. The negative cohort
