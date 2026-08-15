@@ -144,15 +144,15 @@ decision to select that method.
 Let `x_t` be the respiration value at sample `t`. The original native
 FeatureGraph construction computes
 
-\[
+$$
 d_t = x_t - x_{t-45}
-\]
+$$
 
 and defines the rising state as
 
-\[
+$$
 R_t = \mathbf{1}(d_t > 0.15).
-\]
+$$
 
 Internally bounded non-rising gaps of at most seven samples are closed. An
 entry into the rising state creates a candidate trough event; an exit creates
@@ -174,9 +174,9 @@ For a complete object with start `b`, peak `p`, and end `e`:
 - FeatureGraph radius amplitude is half the full excursion; and
 - temporal symmetry is
 
-\[
+$$
 1 - \frac{|(p-b)-(e-p)|}{e-b},
-\]
+$$
 
 which is bounded in `[0,1]`.
 
@@ -212,21 +212,21 @@ parameters or manual boundary corrections were introduced.
 The second experiment tested whether subject-level waveform scale explained
 the transfer failures. For each subject,
 
-\[
+$$
 s = \operatorname{median}(|d_t - \operatorname{median}(d)|)
-\]
+$$
 
 and
 
-\[
+$$
 z_t = d_t / s.
-\]
+$$
 
 Subject 1 supplied the only calibration:
 
-\[
+$$
 k = 0.15 / s_1 = 0.807624.
-\]
+$$
 
 The rising state for every subject was then `z_t > k`. All other boundary,
 gap, completeness, measurement, matching, and annotation rules remained
