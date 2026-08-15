@@ -10,30 +10,30 @@ If the researcher needed to run a similar study, they would need to consult the 
 
 ## Representation
 
-A timeseries signal can be described using this taxonomy:
+An analysis of a sampled timeseries signal can be decomposed into five parts:
 
 1. Observed data
 
 This consists of:
 - sampled values and their ordering
 
-2. Construction contract
+2. Representation frame
+
+This consists of:
+- the physical units a signal is expressed in
+- its sampling interval and temporal resolution
+- recording duration and coverage
+- normalizing and smoothing that have been applied to the signal
+- sensor resolution and preprocessing
+
+Representation frame specifies the context that must be recorded to interpret and compare measurements from the signal while retaining information extraction.
+
+3. Construction contract
 
 This consists of: 
 - rules that identify states, transitions, boundaries, and objects
 
 The FeatureGraph position is: If observed signal morphology can be described in a contract that can then be used to identify corresponding characteristics in multiple signals, the analytical procedure has become durable, inspectable, and testable for transfer.
-
-3. Representation frame
-
-This consists of:
-- the physical units a signal is expressed in
-- its sampling interval and temporal resolution
-- the duration of each observation
-- normalizing and smoothing that have been applied to the signal
-- sensor resolution and preprocessing
-
-Representation frame makes up the third layer of timeseries signal taxonomy. It specifies the context that must be recorded to interpret and compare measurements from the signal while retaining information extraction.
 
 4. Measurement contract
 
