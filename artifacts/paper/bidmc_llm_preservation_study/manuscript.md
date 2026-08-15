@@ -43,9 +43,9 @@ limits.
 
 ## 1. Introduction
 
-The research question behind this study is: "If large language model (LLM) access were gone tomorrow, what could researchers maintain from their LLM-assisted analyses?" 
+The research question behind this study is: "If large language model (LLM) access were gone tomorrow, what could researchers maintain from their LLM-assisted analyses?"
 
-A researcher using an LLM for data analysis can produce useful results, but an LLM interaction is not a persistent computational representation of that analysis. Much of the output of the work exists in prompts, generated code, ad hoc parameter tuning, and both human and LLM interpretation that cannot be easily recreated to perform the analysis again without LLM assistance. If a researcher needed to run a similar study, they would need to consult the LLM again, or often design their own bespoke analysis that incorporated their own expertise and that might not be reproducible by others. 
+A researcher using an LLM for data analysis can produce useful results, but an LLM interaction is not a persistent computational representation of that analysis. Much of the output of the work exists in prompts, generated code, ad hoc parameter tuning, and both human and LLM interpretation that cannot be easily recreated to perform the analysis again without LLM assistance. If a researcher needed to run a similar study, they would need to consult the LLM again, or often design their own bespoke analysis that incorporated their own expertise and that might not be reproducible by others.
 
 FeatureGraph proposes a framework for deterministic preservation and repeatable execution of LLM-driven analysis. This preservation study's contributions are:
 
@@ -107,24 +107,27 @@ This consists of:
 FeatureGraph as described provides two contracts:
 
 1. A construction contract that specifies states, transition events, boundaries, and objects. The vocabulary used to define states and transitions is deliberately kept small. It places defined limits on:
-   
-- the number of possible states that will be identified
-- the number of transition events that will be identified
-- the construction process for measured properties
-  
+
+   - the number of possible states that will be identified
+   - the number of transition events that will be identified
+   - the construction process for measured properties
+
 2. A measurement contract that provides specifications for obtaining amplitude, rates of change, symmetry, accumulation, and other calculated properties of derived objects.
 
 These two contracts preserve two different kinds of analytical decisions. The construction contract determines whether an object exists, its identify, its boudaries, its landmarks, and its membership in the set of objects. The measurement contract operates on the constructed object and determines how its properties are calculated.
 
 The BIDMC study identified several areas where these contracts failed:
 
-Construction contract:
+**Construction contract:**
+
 - disagreements over accepted cycle and object boundaries
 
-Measurement contract:
+**Measurement contract:**
+
 - half-range vs full-excursion amplitude difference, a definition that concerns the measurement contract. Amplitude needs to be defined consistently, which is part of the measurement contract
 
-Both contracts:
+**Both contracts:**
+
 - wave symmetry: its formula is a measurement choice but its value depends on boundary landmarks determined by the construction contract
 
 ### 2.6 Semantic or physical context
@@ -142,9 +145,7 @@ to an observer or researcher. It may retain user-supplied labels and metadata,
 but object construction does not depend on FeatureGraph inferring their
 physical or domain meaning.
 
-## Evaluation criteria
-
-### 2.7 Durability, inspectability, and transfer
+### 2.7 Evaluation criteria: durability, inspectability, and transfer
 
 A representation system can convert analytical decisions that were implicit in an LLM-assisted workflow into an explicit, executable contract. The quality of the representation can be measured using the following criteria:
 
@@ -704,7 +705,6 @@ undocumented conversation is not conflated with a reproducible method.
    method* refers to that code-level reproduction, not regeneration of the
    original LLM response.
 3. **Research and writing assistance.** LLM tools assisted with code development, debugging, experiment orchestration, literature discovery, editorial feedback, formatting, and consistency checking. The author formulated the research question and conceptual framework, made the study-design decisions, selected and approved the construction and measurement contracts and parameters, executed and inspected the analyses, wrote and revised the manuscript’s substantive narrative, verified the reported claims against saved artifacts, determined the interpretation of the results, and accepts responsibility for all claims and conclusions.
-
 
 AI-generated suggestions were not accepted as evidence merely because they
 were produced by a model. Numerical claims are tied to versioned scripts and
