@@ -1,6 +1,6 @@
 # From LLM-Proposed Analysis to Maintainable Behavioral Objects: A BIDMC Respiration Case Study
 
-**Nazia Habib**  
+**Nazia Habib**
 Draft research record, August 2026
 
 ## Abstract
@@ -43,31 +43,24 @@ limits.
 
 ## 1. Introduction
 
-The research question behind this study is: "If large language model (LLM) access were gone tomorrow, what could researchers maintain from their LLM-assisted analyses?" 
+The research question behind this study is: "If large language model (LLM) access were gone tomorrow, what could researchers maintain from their LLM-assisted analyses?"
 
-A researcher using an LLM for data analysis can produce useful results, but an LLM interaction is not a persistent computational representation of that analysis. Much of the output of the work exists in prompts, generated code, ad hoc parameter tuning, and both human and LLM interpretation that cannot be easily recreated to perform the analysis again without LLM assistance. 
+A researcher using an LLM for data analysis can produce useful results, but an LLM interaction is not a persistent computational representation of that analysis. Much of the output of the work exists in prompts, generated code, ad hoc parameter tuning, and both human and LLM interpretation that cannot be easily recreated to perform the analysis again without LLM assistance.
 
 If the researcher needed to run a similar study, they would need to consult the LLM again, or often design their own bespoke analysis that incorporated their own expertise and that might not be reproducible by others.
 
-## Durability, inspectability, and transfer
+The contributions are:
 
-A representation system can convert analytical decisions that were implicit in an LLM-assisted workflow into an explicit, executable contract. The quality of the representation can be measured using the following criteria: 
-
-1. Durability
-
-Can the same declared analysis be executed later without the LLM? The analysis should produce reproducible objects from the constructed contract on frozen inputs.
-
-2. Inspectability
-
-Can a human see and revise how states, boundaries, objects, and measurements were defined? A human should be able to modify and rerun the code, edit its assumptions and contract, and identify structural limitations with the representation. 
-
-3. Transfer
-
-Does the same contract produce useful objects on new data without case-specific modification? We can measure this in:
-- whether the contract runs unchanged
-- whether it produces structurally valid objects
-- whether those objects agree with an independent reference or annotation
-
+1. a reproducible handoff from a raw-data LLM analysis to an explicit,
+   deterministic behavioral-object representation;
+2. an object-level comparison that distinguishes genuine agreement from
+   aggregate cancellation and definition mismatch;
+3. a 53-subject transfer evaluation of the original absolute transition rule;
+4. a second cohort experiment isolating the effect of subject-level MAD
+   normalization; and
+5. a capability ledger separating LLM proposal, researcher judgment,
+   FeatureGraph execution, conventional signal-processing dependencies, and
+   functionality preserved without continued LLM access.
 
 ## 2. Representation
 
@@ -125,6 +118,25 @@ FeatureGraph is not asked to understand what a signal means in the real world
 to an observer or researcher. It may retain user-supplied labels and metadata,
 but object construction does not depend on FeatureGraph inferring their
 physical or domain meaning.
+
+### 2.6 Durability, inspectability, and transfer
+
+A representation system can convert analytical decisions that were implicit in an LLM-assisted workflow into an explicit, executable contract. The quality of the representation can be measured using the following criteria:
+
+#### 2.6.1 Durability
+
+Can the same declared analysis be executed later without the LLM? The analysis should produce reproducible objects from the constructed contract on frozen inputs.
+
+#### 2.6.2 Inspectability
+
+Can a human see and revise how states, boundaries, objects, and measurements were defined? A human should be able to modify and rerun the code, edit its assumptions and contract, and identify structural limitations with the representation.
+
+#### 2.6.3 Transfer
+
+Does the same contract produce useful objects on new data without case-specific modification? We can measure this in:
+- whether the contract runs unchanged
+- whether it produces structurally valid objects
+- whether those objects agree with an independent reference or annotation
 
 ## 3. Related work
 
@@ -210,6 +222,19 @@ whether the supplied boundary rule transfers.
 
 ## 4. Data and study scope
 
+### 4.1 BIDMC study motivation
+
+The BIDMC respiration data were selected because they offer 53 public,
+eight-minute recordings, a fixed 125 Hz sampling rate, visible repeated
+waveform structure, and two independent manual breath-annotation series. The
+researcher did not begin with domain expertise in respiratory physiology.
+This made the dataset appropriate for studying analytical preservation and
+representation, but it also limits the interpretation: this is not a clinical
+validation study and no detected quantity is claimed to measure calibrated
+airflow or volume.
+
+### 4.2 Dataset and evaluation scope
+
 The [BIDMC PPG and Respiration Dataset](https://physionet.org/content/bidmc/1.0.0/)
 contains 53 recordings extracted from critically ill patients, with
 physiological signals sampled at 125 Hz and two sets of manually annotated
@@ -229,30 +254,6 @@ The frozen LLM-selected detector was likewise treated as a comparison path,
 not as ground truth. The object-level results therefore measure agreement
 among explicit constructions and annotations rather than clinical detection
 accuracy.
-
-## BIDMC study motivation
-
-The BIDMC respiration data were selected because they offer 53 public,
-eight-minute recordings, a fixed 125 Hz sampling rate, visible repeated
-waveform structure, and two independent manual breath-annotation series. The
-researcher did not begin with domain expertise in respiratory physiology.
-This made the dataset appropriate for studying analytical preservation and
-representation, but it also limits the interpretation: this is not a clinical
-validation study and no detected quantity is claimed to measure calibrated
-airflow or volume.
-
-The contributions are:
-
-1. a reproducible handoff from a raw-data LLM analysis to an explicit,
-   deterministic behavioral-object representation;
-2. an object-level comparison that distinguishes genuine agreement from
-   aggregate cancellation and definition mismatch;
-3. a 53-subject transfer evaluation of the original absolute transition rule;
-4. a second cohort experiment isolating the effect of subject-level MAD
-   normalization; and
-5. a capability ledger separating LLM proposal, researcher judgment,
-   FeatureGraph execution, conventional signal-processing dependencies, and
-   functionality preserved without continued LLM access.
 
 ## 5. Methods
 
