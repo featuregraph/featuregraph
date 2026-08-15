@@ -213,7 +213,7 @@ The second experiment tested whether subject-level waveform scale explained
 the transfer failures. For each subject,
 
 $$
-s = \operatorname{median}(|d_t - \operatorname{median}(d)|)
+s = \mathrm{median}(|d_t - \mathrm{median}(d)|)
 $$
 
 and
