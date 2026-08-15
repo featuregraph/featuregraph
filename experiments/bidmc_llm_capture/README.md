@@ -7,6 +7,16 @@ The completed absolute-versus-MAD study and its interpretation are incorporated
 into `artifacts/paper/bidmc_llm_preservation_study/manuscript.md`. Exact paired
 cohort statistics are reproduced by `compare_scaling_runs.py`.
 
+Study governance is recorded separately:
+
+- [`AI_USE_DISCLOSURE.md`](AI_USE_DISCLOSURE.md) distinguishes the lost
+  exploratory LLM conversation, the context-isolated proposal, and the
+  deterministic frozen method.
+- [`DEVELOPMENT_TRANSFER_PROTOCOL.md`](DEVELOPMENT_TRANSFER_PROTOCOL.md)
+  defines which records were used for development, frozen transfer, and post
+  hoc diagnosis, and specifies the protocol required for the transition-only
+  successor study.
+
 ## Question
 
 If LLM access disappeared, how much of an LLM-proposed time-series analysis
