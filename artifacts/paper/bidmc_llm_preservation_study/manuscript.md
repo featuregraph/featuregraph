@@ -43,13 +43,13 @@ limits.
 
 ## 1. Introduction
 
-The research question behind this study is: "If large language model (LLM) access were gone tomorrow, what could researchers maintain from their LLM-assisted analyses?"
+The research question behind this study is: "If large language model (LLM) access were gone tomorrow, what could researchers maintain from their LLM-assisted analyses?" 
 
 A researcher using an LLM for data analysis can produce useful results, but an LLM interaction is not a persistent computational representation of that analysis. Much of the output of the work exists in prompts, generated code, ad hoc parameter tuning, and both human and LLM interpretation that cannot be easily recreated to perform the analysis again without LLM assistance.
 
-If the researcher needed to run a similar study, they would need to consult the LLM again, or often design their own bespoke analysis that incorporated their own expertise and that might not be reproducible by others. FeatureGraph proposes a framework for deterministic preservation and repeatable execution of LLM-driven analysis.
+An additional motivation for this study includes numerous lost LLM conversations including analyses that had not been preserved before they were deleted or edited. If a researcher needed to run a similar study, they would need to consult the LLM again, or often design their own bespoke analysis that incorporated their own expertise and that might not be reproducible by others. 
 
-This preservation study's contributions are:
+FeatureGraph proposes a framework for deterministic preservation and repeatable execution of LLM-driven analysis. This preservation study's contributions are:
 
 1. a reproducible handoff from a raw-data LLM analysis to an explicit,
    deterministic behavioral-object representation;
@@ -64,7 +64,7 @@ This preservation study's contributions are:
 
 ## 2. Representation
 
-An analysis of a sampled time-series signal can be decomposed into five parts.
+An analysis of a sampled time-series signal can be decomposed into the following parts.
 
 ### 2.1 Observed data
 
@@ -108,8 +108,26 @@ This consists of:
 
 FeatureGraph as described provides two contracts:
 
-1. A construction contract that specifies states, transition events, boundaries, and objects. The vocabulary used to define states and transitions is deliberately kept small in order to be transferable.
+1. A construction contract that specifies states, transition events, boundaries, and objects. The vocabulary used to define states and transitions is deliberately kept small. It places defined limits on:
+   
+- the number of possible states that will be identified
+- the number of transition events that will be identified
+- the construction process for measured properties
+  
 2. A measurement contract that provides specifications for obtaining amplitude, rates of change, symmetry, accumulation, and other calculated properties of derived objects.
+
+These two contracts preserve two different kinds of analytical decisions. The construction contract determines whether an object exists, its identify, its boudaries, its landmarks, and its membership in the set of objects. The measurement contract operates on the constructed object and determines how its properties are calculated.
+
+The BIDMC study identified several areas where these contracts failed:
+
+Construction contract:
+- disagreements over accepted cycle and object boundaries
+
+Measurement contract:
+- half-range vs full-excursion amplitude difference, a definition that concerns the measurement contract. Amplitude needs to be defined consistently, which is part of the measurement contract
+
+Both contracts:
+- wave symmetry: its formula is a measurement choice but its value depends on boundary landmarks determined by the construction contract
 
 ### 2.6 Semantic or physical context
 
@@ -125,6 +143,8 @@ FeatureGraph is not asked to understand what a signal means in the real world
 to an observer or researcher. It may retain user-supplied labels and metadata,
 but object construction does not depend on FeatureGraph inferring their
 physical or domain meaning.
+
+## Evaluation criteria
 
 ### 2.7 Durability, inspectability, and transfer
 
