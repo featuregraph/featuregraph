@@ -134,6 +134,7 @@ Can a human see and revise how states, boundaries, objects, and measurements wer
 #### 2.6.3 Transfer
 
 Does the same contract produce useful objects on new data without case-specific modification? We can measure this in:
+
 - whether the contract runs unchanged
 - whether it produces structurally valid objects
 - whether those objects agree with an independent reference or annotation
