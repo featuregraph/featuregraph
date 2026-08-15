@@ -47,7 +47,7 @@ The research question behind this study is: "If large language model (LLM) acces
 
 A researcher using an LLM for data analysis can produce useful results, but an LLM interaction is not a persistent computational representation of that analysis. Much of the output of the work exists in prompts, generated code, ad hoc parameter tuning, and both human and LLM interpretation that cannot be easily recreated to perform the analysis again without LLM assistance.
 
-If the researcher needed to run a similar study, they would need to consult the LLM again, or often design their own bespoke analysis that incorporated their own expertise and that might not be reproducible by others. FeatureGraph proposes a framework for deterministic preservation and repeatable execution of LLM-driven analysis. 
+If the researcher needed to run a similar study, they would need to consult the LLM again, or often design their own bespoke analysis that incorporated their own expertise and that might not be reproducible by others. FeatureGraph proposes a framework for deterministic preservation and repeatable execution of LLM-driven analysis.
 
 This preservation study's contributions are:
 
@@ -104,7 +104,14 @@ This consists of:
 - rules specifying how characteristics such as amplitude, rate of change,
   symmetry, and accumulation are calculated.
 
-### 2.5 Semantic or physical context
+### 2.5 Contruction and measurement contracts
+
+Featuregraph as described provides two contracts:
+
+1. a construction contract that specifies states, transition events, boundaries, and objects. The vocabulary used to define states and transitons is deliberately kept small in order to be transferable
+2. a measurement contract that provides specifications for obtaining amplitude, rates of change, symmetry, accumulation, and other calculated properties of derived objects
+
+### 2.6 Semantic or physical context
 
 This consists of:
 
@@ -119,19 +126,19 @@ to an observer or researcher. It may retain user-supplied labels and metadata,
 but object construction does not depend on FeatureGraph inferring their
 physical or domain meaning.
 
-### 2.6 Durability, inspectability, and transfer
+### 2.7 Durability, inspectability, and transfer
 
 A representation system can convert analytical decisions that were implicit in an LLM-assisted workflow into an explicit, executable contract. The quality of the representation can be measured using the following criteria:
 
-#### 2.6.1 Durability
+#### 2.7.1 Durability
 
 Can the same declared analysis be executed later without the LLM? The analysis should produce reproducible objects from the constructed contract on frozen inputs.
 
-#### 2.6.2 Inspectability
+#### 2.7.2 Inspectability
 
 Can a human see and revise how states, boundaries, objects, and measurements were defined? A human should be able to modify and rerun the code, edit its assumptions and contract, and identify structural limitations with the representation.
 
-#### 2.6.3 Transfer
+#### 2.7.3 Transfer
 
 Does the same contract produce useful objects on new data without case-specific modification? We can measure this in:
 
@@ -220,13 +227,6 @@ new peak-detection algorithm: the state rule that creates candidate boundaries
 is supplied by the researcher. The evaluation therefore asks whether this
 object representation preserves and exposes an analysis, and separately
 whether the supplied boundary rule transfers.
-
-## Contruction and measurement contracts
-
-Featuregraph as described provides two contracts:
-
-1. a construction contract that specifies states, transition events, boundaries, and objects. The vocabulary used to define states and transitons is deliberately kept small in order to be transferable
-2. a measurement contract that provides specifications for obtaining amplitude, rates of change, symmetry, accumulation, and other calculated properties of derived objects
 
 ## 4. Data and study scope
 
