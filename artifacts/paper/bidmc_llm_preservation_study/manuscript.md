@@ -43,30 +43,11 @@ limits.
 
 ## 1. Introduction
 
-LLMs increasingly participate in exploratory analysis by selecting
-transformations, proposing algorithms, writing code, and interpreting
-results. These capabilities can accelerate research, but they create a
-continuity problem. A conversational result may depend on model access,
-unstated context, changing model behavior, or code whose conceptual contract
-was never separated from its implementation. Re-running code is not the same
-as preserving the analysis if the meaning of its intermediate states,
-boundaries, exclusions, and measurements remains implicit.
+The research question behind this study is: "If large language model (LLM) access were gone tomorrow, what could researchers maintain from their LLM-assisted analyses?" 
 
-FeatureGraph is a deterministic framework for converting ordered observations
-into explicit states, events, and temporally bounded behavioral objects. Its
-purpose in this study is not to make FeatureGraph recognize respiration. The
-software has no concept of breathing, no learned oscillation classifier, and
-no independent knowledge of which peaks should be accepted. A researcher
-supplies a transition contract; FeatureGraph applies it exactly, exposes its
-sample-level consequences, assigns object identities and completeness, and
-calculates documented object properties.
+A researcher using an LLM for data analysis can produce useful results, but an LLM interaction is not a persistent computational representation of that analysis. Much of the output of the work exists in prompts, generated code, ad hoc parameter tuning, and both human and LLM interpretation that cannot be easily recreated to perform the analysis again without LLM assistance. 
 
-This study asks whether that representation can preserve useful parts of an
-LLM-proposed analysis in a form that remains executable and maintainable
-without an LLM. It also asks a harder question: whether a construction that
-agrees on one record transfers to other subjects. The distinction is
-essential. A deterministic system may preserve a rule perfectly while the
-rule itself generalizes poorly.
+If the researcher needed to run a similar study, they would need to consult the LLM again, or often design their own bespoke analysis that incorporated their own expertise and that might not be reproducible by others.
 
 The BIDMC respiration data were selected because they offer 53 public,
 eight-minute recordings, a fixed 125 Hz sampling rate, visible repeated
@@ -89,6 +70,49 @@ The contributions are:
 5. a capability ledger separating LLM proposal, researcher judgment,
    FeatureGraph execution, conventional signal-processing dependencies, and
    functionality preserved without continued LLM access.
+
+## 2. Representation
+
+An analysis of a sampled timeseries signal can be decomposed into five parts:
+
+1. Observed data
+
+This consists of:
+- sampled values and their ordering
+
+2. Representation frame
+
+This consists of:
+- the physical units a signal is expressed in
+- its sampling interval and temporal resolution
+- recording duration and coverage
+- normalizing and smoothing that have been applied to the signal
+- sensor resolution and preprocessing
+
+Representation frame specifies the context that must be recorded to interpret and compare measurements from the signal while retaining information extraction.
+
+3. Construction contract
+
+This consists of: 
+- rules that identify states, transitions, boundaries, and objects
+
+The FeatureGraph position is: If observed signal morphology can be described in a contract that can then be used to identify corresponding characteristics in multiple signals, the analytical procedure has become durable, inspectable, and testable for transfer.
+
+4. Measurement contract
+
+This consists of:
+
+- how measured characteristics such as amplitude, rate of change, symmetry, and accumulation are calculated
+
+5. Semantic or physical context
+
+This consists of:
+- what the signal represents
+- which physical mechanism produced it
+- what domain it belongs to
+- what causal meaning and structure the engineer believes it contains
+
+Semantic context explicitly exists outside the scope of FeatureGraph. It will not be asked to understand what a signal means in the real world to an observer or researcher. FeatureGraph may retain user-supplied labels and metadata, but object construction does not depend on FeatureGraph inferring their physical or domain meaning.
 
 ## 2. Related work
 
