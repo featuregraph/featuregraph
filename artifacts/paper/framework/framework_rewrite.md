@@ -24,19 +24,24 @@ This consists of:
 
 The FeatureGraph position is: If observed signal morphology can be described in a contract that can then be used to identify corresponding characteristics in multiple signals, the analytical procedure has become durable, inspectable, and testable for transfer.
 
-3. Measurement and representation frame
+3. Representation frame
 
 This consists of:
 - the physical units a signal is expressed in
-- its sampling interval and temporal scale
+- its sampling interval and temporal resolution
 - the duration of each observation
-- measured characteristics such as amplitude, rate of change, symmetry, and accumulation
 - normalizing and smoothing that have been applied to the signal
 - sensor resolution and preprocessing
 
 Representation frame makes up the third layer of timeseries signal taxonomy. It specifies the context that must be recorded to interpret and compare measurements from the signal while retaining information extraction.
 
-4. Semantic or physical context
+4. Measurement contract
+
+This consists of:
+
+- how measured characteristics such as amplitude, rate of change, symmetry, and accumulation are calculated
+
+5. Semantic or physical context
 
 This consists of:
 - what the signal represents
@@ -44,11 +49,11 @@ This consists of:
 - what domain it belongs to
 - what causal meaning and structure the engineer believes it contains
 
-Semantic context explicitly exists outside the scope of FeatureGraph. It will not be asked to understand what a signal means in the real world to an observer or researcher. Its goal is to deliver a representation of the signal that does not include semantic context.
+Semantic context explicitly exists outside the scope of FeatureGraph. It will not be asked to understand what a signal means in the real world to an observer or researcher. FeatureGraph may retain user-supplied labels and metadata, but object construction does not depend on FeatureGraph inferring their physical or domain meaning.
 
 ## Durability, inspectability, and transfer
 
-A representation system can take implicit information from a timeseries signal and make it explicit. The quality of the representation system can be measured using the following criteria: 
+A representation system can convert analytical decisions that were implicit in an LLM-assisted workflow into an explicit, executable contract. The quality of the representation contract can be measured using the following criteria: 
 
 1. Durability
 
@@ -56,7 +61,7 @@ Can the same declared analysis be executed later without the LLM? The analysis s
 
 2. Inspectability
 
-Can a human see and revise how states, boundaries, objects, and measurements were defined? A human should be able to modify and rerun the code, edit its assumptions and contract, and identify structural limitatons with the representation. 
+Can a human see and revise how states, boundaries, objects, and measurements were defined? A human should be able to modify and rerun the code, edit its assumptions and contract, and identify structural limitations with the representation. 
 
 3. Transfer
 
