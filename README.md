@@ -1,6 +1,16 @@
 # FeatureGraph
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21535661.svg)](https://doi.org/10.5281/zenodo.21535661)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21939319.svg)](https://doi.org/10.5281/zenodo.21939319)
+
+> ## Start with the public alpha
+>
+> **The maintained, public-facing project is [`alpha/v0.1.x`](https://github.com/featuregraph/featuregraph/tree/alpha/v0.1.x), not this development branch.**
+>
+> 1. [Open the alpha landing page](https://github.com/featuregraph/featuregraph/tree/alpha/v0.1.x)
+> 2. [Run the BIDMC behavioral-object notebook](https://github.com/featuregraph/featuregraph/blob/alpha/v0.1.x/notebooks/bidmc_respiration_pipeline.ipynb)
+> 3. [Read the current study](https://github.com/featuregraph/featuregraph/blob/alpha/v0.1.x/artifacts/paper/bidmc_llm_preservation_study/manuscript.md)
+>
+> The `main` branch is an unreleased successor architecture and is not the recommended visitor path.
 
 FeatureGraph turns ordered observations into explicit behavioral objects that software can inspect and query.
 
@@ -14,11 +24,11 @@ observations
     → computational queries
 ```
 
-> **Development status:** The `main` branch contains an unreleased architectural redesign and is not API-compatible with FeatureGraph `v0.1.0a1`. To use or reproduce the public alpha, work from [`alpha/v0.1.x`](https://github.com/featuregraph/featuregraph/tree/alpha/v0.1.x) or the immutable [`v0.1.0a1` release](https://github.com/featuregraph/featuregraph/releases/tag/v0.1.0a1). Migration guidance will be published when the replacement API stabilizes.
+> **Development status:** The `main` branch contains an unreleased architectural redesign and is not API-compatible with FeatureGraph `v0.1.0a2`. To use or reproduce the public alpha, work from [`alpha/v0.1.x`](https://github.com/featuregraph/featuregraph/tree/alpha/v0.1.x) or the immutable [`v0.1.0a2` release](https://github.com/featuregraph/featuregraph/releases/tag/v0.1.0a2). Migration guidance will be published when the replacement API stabilizes.
 
 ## Released alpha
 
-FeatureGraph `v0.1.0a1` provides:
+FeatureGraph `v0.1.0a2` provides:
 
 - explicit oscillation objects;
 - wave-derived accumulation objects;
@@ -35,7 +45,7 @@ The release constructs observations into states and events, assigns object ident
 Install the released alpha:
 
 ```bash
-python -m pip install   "featuregraph @ git+https://github.com/featuregraph/featuregraph.git@v0.1.0a1"
+python -m pip install   "featuregraph @ git+https://github.com/featuregraph/featuregraph.git@v0.1.0a2"
 ```
 
 Or clone the maintained alpha line:
@@ -91,13 +101,13 @@ long_oscillations = (
 
 Pandas can filter a table. FeatureGraph constructs the behavioral table that makes the filtering meaningful.
 
-See the [alpha demo notebook](https://github.com/featuregraph/featuregraph/blob/v0.1.0a1/notebooks/demo_notebook.ipynb) for oscillation, accumulation, query, BIDMC, and Tennessee Eastman examples.
+See the [alpha demo notebook](https://github.com/featuregraph/featuregraph/blob/v0.1.0a2/notebooks/demo_notebook.ipynb) for oscillation, accumulation, query, BIDMC, and Tennessee Eastman examples.
 
 ## Alpha research record
 
 The alpha paper, evaluation artifacts, and reproduction tooling live on
 [`alpha/v0.1.x`](https://github.com/featuregraph/featuregraph/tree/alpha/v0.1.x).
-The immutable `v0.1.0a1` release remains the authority for exact published
+The immutable `v0.1.0a2` release remains the authority for exact published
 results.
 
 ## Development line
@@ -114,7 +124,7 @@ The governing version policy is:
 
 | Reference | Purpose |
 | --- | --- |
-| `v0.1.0a1` | Immutable released and citable alpha |
+| `v0.1.0a2` | Immutable released and citable alpha |
 | `alpha/v0.1.x` | Usable maintenance line for the alpha API |
 | `main` | Breaking, unreleased successor architecture |
 
