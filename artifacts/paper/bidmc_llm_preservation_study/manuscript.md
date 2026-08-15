@@ -90,7 +90,89 @@ The contributions are:
    FeatureGraph execution, conventional signal-processing dependencies, and
    functionality preserved without continued LLM access.
 
-## 2. Data and study scope
+## 2. Related work
+
+### 2.1 Reproducible computational research and provenance
+
+This study belongs first to the reproducible-computation tradition. Peng
+argues that computational results require a reproducible intermediate standard
+when full independent replication is unavailable [5]. Sandve et al. turn that
+principle into operational rules: retain how every result was produced, avoid
+unrecorded manual transformations, archive exact software versions, and keep
+the data underlying figures [6]. The FAIR principles broaden the target from
+data alone to the algorithms, tools, and workflows that produce them [7].
+FeatureGraph follows this line by freezing inputs, parameters, code, object
+tables, unmatched cases, and environment metadata.
+
+Workflow systems such as Nextflow make pipelines portable and repeatable [8],
+while provenance systems such as noWorkflow recover execution history from
+ordinary scripts without requiring a workflow language [9]. Those systems
+primarily preserve *how computations executed*. The present work addresses a
+complementary layer: preserving the analyst's temporal representation--what
+constitutes a state, event, boundary, complete object, and property--so that a
+human can inspect and revise the analytical contract rather than merely rerun
+the same script. FeatureGraph is not proposed as a replacement for workflow,
+environment, or provenance tooling; its object tables and construction records
+are intended to compose with them.
+
+### 2.2 LLM-assisted data analysis and human oversight
+
+LLM-based analysis systems demonstrate that models can translate natural
+language goals into executable analytical artifacts. LIDA, for example,
+decomposes visualization generation into data summarization, goal generation,
+code generation, execution, and filtering [10]. WaitGPT exposes generated
+analysis code as an interactive visual representation so users can monitor,
+verify, and steer individual operations [11]. These systems emphasize access,
+generation, and oversight during an active model interaction.
+
+Our question begins after such an interaction: what remains when the model is
+unavailable, its conversational context is gone, or a researcher must maintain
+the analysis without asking the model to reconstruct its reasoning? The unit of
+preservation is therefore not the chat transcript or prose answer. It is a
+versioned contract plus executable construction and object-level evidence. The
+LLM is neither treated as an oracle nor evaluated as a general-purpose agent;
+it is one source of an analytical proposal that must be converted into a
+reviewable artifact.
+
+### 2.3 Explicit representation and abstraction
+
+FeatureGraph was also influenced by work that treats representation as central
+to generalization. Chollet's formulation of intelligence and the Abstraction
+and Reasoning Corpus (ARC) separate task-specific skill from skill-acquisition
+and generalization under declared priors [12]. ARC is not a time-series method
+and is not an empirical baseline in this study. Its relevance is conceptual:
+successful reasoning depends on constructing useful objects, relations, and
+transformations rather than only reproducing an output.
+
+This study applies that motivation narrowly. Raw samples are converted into
+declared transition states, boundary events, bounded objects, properties, and
+relations. Transfer is then tested rather than assumed. The negative cohort
+result is important under this view: an explicit representation can be
+inspectable and reproducible while still encoding a development-record rule
+that generalizes poorly. FeatureGraph's contribution is the durable,
+auditable representation layer, not evidence of abstract reasoning or an
+autonomous discovery system.
+
+### 2.4 Time-series representations
+
+Time-series research contains many alternative representations designed for
+particular downstream tasks. Symbolic Aggregate approXimation (SAX) reduces a
+real-valued sequence to a lower-dimensional symbolic string while preserving a
+lower bound on distance for indexing and mining [13]. Shapelets identify
+discriminative subsequences that can support interpretable classification [14].
+Both demonstrate that the choice of representation determines which operations
+and comparisons become tractable.
+
+FeatureGraph differs in objective. It does not seek a compact global encoding
+or a discriminative subsequence classifier in this experiment. It constructs a
+relational table of temporally bounded candidate objects with explicit starts,
+events, ends, completeness, properties, and parent/child relations. Nor is it a
+new peak-detection algorithm: the state rule that creates candidate boundaries
+is supplied by the researcher. The evaluation therefore asks whether this
+object representation preserves and exposes an analysis, and separately
+whether the supplied boundary rule transfers.
+
+## 3. Data and study scope
 
 The [BIDMC PPG and Respiration Dataset](https://physionet.org/content/bidmc/1.0.0/)
 contains 53 recordings extracted from critically ill patients, with
@@ -112,9 +194,38 @@ not as ground truth. The object-level results therefore measure agreement
 among explicit constructions and annotations rather than clinical detection
 accuracy.
 
-## 3. Methods
+## 4. Methods
 
-### 3.1 Blinded raw-data LLM path
+### 4.1 Development-versus-transfer protocol
+
+The study uses phase labels that constrain the claims that can be made from
+each result.
+
+| Phase | Records | Permitted activity | Evidential status |
+| --- | --- | --- | --- |
+| Exploratory development | Subject 1 | Inspect waveform; choose and revise contracts; harmonize measures; debug boundaries | Generates hypotheses and implementation; no transfer claim |
+| Frozen absolute transfer | Subjects 2–53 | Run the locked LLM baseline and locked FeatureGraph absolute rule; no per-subject tuning or correction | Primary evidence about transfer of the original representation |
+| Post-transfer diagnosis | Subjects 1–53, with paired reporting on the 51 MAD-valid records | Test the single subject-1-calibrated MAD normalization and subject-5 hysteresis diagnostic | Ablation explaining failures; not independent validation |
+| Future confirmatory evaluation | New declared split or external dataset | Freeze the transition-only contract before opening the test outcomes | Required for a confirmatory transfer claim |
+
+The absolute FeatureGraph rule and the frozen LLM/SciPy baseline were locked
+after subject 1. Subjects 2–53 were processed without subject-specific
+parameters, manual boundary changes, or annotation-guided corrections.
+Annotations were used only after construction for diagnosis. The MAD rule was
+conceived after the absolute transfer failures had been observed. Although its
+threshold was calibrated only from subject 1 and then shared, its evaluation
+uses previously examined records; it is therefore explicitly post hoc. The
+subject 5 hysteresis pass is an even narrower diagnostic and is not a cohort
+result.
+
+This protocol prevents three invalid substitutions: development agreement is
+not transfer, agreement with the frozen baseline is not clinical accuracy, and
+post hoc improvement is not independent confirmation. A future study should
+declare development, optional validation, and untouched test records before
+parameter selection; record every attempted construction; and publish the
+locked contract before computing final test metrics.
+
+### 4.2 Blinded raw-data LLM path
 
 A context-isolated LLM received only the subject 1 waveform, its 125 Hz
 sampling rate, a required object schema, and a measurement contract. It was
@@ -139,7 +250,7 @@ in the experiment directory. Consequently, this study claims reproducibility
 of the frozen method and outputs, not reproducibility of the original model's
 decision to select that method.
 
-### 3.2 FeatureGraph object construction
+### 4.3 FeatureGraph object construction
 
 Let `x_t` be the respiration value at sample `t`. The original native
 FeatureGraph construction computes
@@ -165,7 +276,7 @@ These rules do not assert that the signal is truly oscillatory or that every
 candidate event is a breath. They state exactly how the researcher chose to
 partition this waveform into transition-derived objects.
 
-### 3.3 Measurement contracts
+### 4.4 Measurement contracts
 
 For a complete object with start `b`, peak `p`, and end `e`:
 
@@ -186,7 +297,7 @@ using an incompatible definition. These values were not treated as
 disagreements after the contracts were identified. The object-level
 comparison uses the harmonized full-excursion and bounded-symmetry formulas.
 
-### 3.4 Object and annotation matching
+### 4.5 Object and annotation matching
 
 Complete FeatureGraph and LLM objects were sorted by peak index and matched
 one-to-one in temporal order within 63 samples (approximately 0.5 seconds).
@@ -200,14 +311,14 @@ could be used at most once. Annotation agreement was summarized in both
 directions: the fraction of detected peaks matched and the fraction of
 annotated peaks recovered.
 
-### 3.5 Frozen absolute-threshold cohort
+### 4.6 Frozen absolute-threshold cohort
 
 The subject 1 construction—no smoothing, lag 45, threshold 0.15, and maximum
 state gap 7—was applied unchanged to all 53 subjects. The frozen LLM-selected
 SciPy method was also applied unchanged to all records. No subject-specific
 parameters or manual boundary corrections were introduced.
 
-### 3.6 MAD-normalized cohort
+### 4.7 MAD-normalized cohort
 
 The second experiment tested whether subject-level waveform scale explained
 the transfer failures. For each subject,
@@ -238,9 +349,9 @@ exercise. Hysteresis was excluded so that only the normalization changed.
 When MAD equaled zero, the construction was declared undefined; no arbitrary
 fallback scale was substituted.
 
-## 4. Results
+## 5. Results
 
-### 4.1 Development-record agreement
+### 5.1 Development-record agreement
 
 On subject 1, native FeatureGraph produced 174 complete objects and the
 blinded LLM path produced 169. All 169 LLM objects matched FeatureGraph
@@ -261,7 +372,7 @@ transition rule and filtered local-extrema rule place trough boundaries
 differently. This is a boundary-semantics mismatch, not an arithmetic or unit
 mismatch.
 
-### 4.2 Original absolute-threshold transfer
+### 5.2 Original absolute-threshold transfer
 
 Across all 53 subjects, the native absolute rule produced 8,960 complete
 objects and the frozen LLM path produced 7,168. Of these, 6,200 matched.
@@ -284,7 +395,7 @@ Peak placement for matched objects remained close (median absolute difference
 over-segmented, while subjects including 5, 13, 19, 27, and 45 were severely
 under-detected. Thus the absolute threshold did not fail in one uniform way.
 
-### 4.3 MAD normalization versus the original run
+### 5.3 MAD normalization versus the original run
 
 MAD normalization was defined for 51 of 53 records. Subjects 35 and 39 had
 zero 45-sample difference MAD and were excluded from MAD aggregates. The
@@ -336,7 +447,7 @@ baseline, the original FeatureGraph absolute threshold, and MAD-normalized
 FeatureGraph. Missing MAD values at subjects 35 and 39 denote undefined zero
 difference scales, not zero detected objects.
 
-### 4.4 Hysteresis diagnostic
+### 5.4 Hysteresis diagnostic
 
 An exploratory subject 5 ablation retained the MAD-normalized entry threshold
 and lowered the exit threshold from `1.0k` through `0.0k`. Complete candidates
@@ -345,7 +456,7 @@ indicates that most extra candidates result from repeated threshold re-entry,
 not brief flicker within a neutral band. Because this diagnostic did not solve
 the transfer problem, hysteresis was not included in the full MAD cohort.
 
-## 5. Capability and dependency ledger
+## 6. Capability and dependency ledger
 
 | Capability | Source during development | Preserved without live LLM access? |
 | --- | --- | --- |
@@ -367,7 +478,7 @@ maintenance by a human researcher. The study also clarifies what was not
 replaced: the judgment required to decide which observed transitions should
 count as meaningful objects in a new record or domain.
 
-## 6. Discussion
+## 7. Discussion
 
 The subject 1 result alone could have supported an overly optimistic claim.
 Aggregate counts, rates, periods, and excursions were close, and every LLM
@@ -402,34 +513,125 @@ oscillation or respiration cycle could then be supplied by users or other
 systems as compositions over those objects. The failures in this study are
 evidence for that separation.
 
-## 7. Limitations
+## 8. Threats to validity
 
-First, the LLM proposal was produced for one development record. Although its
-method and outputs are frozen, the missing model/session metadata prevents an
-exact replication of the proposal process. Second, the LLM-selected SciPy
-path is not ground truth; it is another deterministic detector selected by an
-LLM. Manual annotations provide an external check but also differ between
-annotators and do not necessarily encode the same peak semantics.
+### 8.1 Construct validity
 
-Third, the researcher lacked respiration-domain expertise. This reduced the
-risk of silently importing specialist heuristics into the representation, but
-it also precludes physiological or clinical claims. The BIDMC signal is
-normalized, and accumulation or excursion values must not be interpreted as
+The primary construct is *preservation of an analysis*, operationalized as the
+ability to rerun explicit construction and measurement contracts, inspect
+object boundaries, and reproduce saved tables without live LLM access. This
+does not measure preservation of the LLM's latent reasoning, autonomous
+semantic understanding, or ability to invent a new detector. Agreement with
+the frozen LLM/SciPy path is also not respiratory ground truth. The two manual
+annotation series provide an external diagnostic, but annotators differ and
+may encode peak semantics that differ from either constructed object type.
+
+Period and full excursion have harmonized contracts; trough-sensitive symmetry
+does not have equivalent boundary semantics across detectors. Reporting that
+quantity alongside period risks overstating disagreement in the summarized
+object itself. We therefore interpret symmetry as a boundary-semantic
+diagnostic, not a validated physiological property. Likewise, accumulation is
+area over a normalized waveform baseline and cannot be interpreted as
 calibrated respiratory volume.
 
-Fourth, subject 1 was used for development and threshold calibration. The
-absolute cohort results on subjects 2–53 are the primary transfer evidence.
-The MAD experiment was motivated after observing the absolute failures and is
-therefore a second development-stage ablation, not a preregistered independent
-validation. Its negative result should guide a future held-out design rather
-than be treated as final detector optimization.
+### 8.2 Internal validity
 
-Finally, this study does not yet quantify computational cost savings. Frozen
-deterministic execution should be cheaper and more stable than repeated LLM
-analysis, but a defensible cost comparison requires recorded runtimes, compute
-environments, model pricing or resource use, and a fixed task definition.
+Subject 1 was inspected repeatedly while parameters, endpoint rules, and
+measurement contracts were developed. Its agreement statistics are therefore
+development results and are vulnerable to researcher degrees of freedom. The
+absolute transfer pass reduces this threat by locking both paths before
+subjects 2–53 and prohibiting per-subject correction. The matching tolerance
+and dynamic-programming objective were also declared in code, but alternative
+tolerances or matching objectives could change unmatched counts; saved audit
+tables make that sensitivity testable.
 
-## 8. Conclusion
+The MAD construction was proposed after observing absolute-rule failures, and
+the subject 5 hysteresis test followed inspection of a specific failure. These
+are post hoc diagnostics. They can identify mechanisms and motivate the next
+design, but they cannot provide an unbiased estimate of future transfer.
+
+### 8.3 External validity
+
+BIDMC contains 53 short recordings from critically ill patients, all sampled
+at 125 Hz and distributed through one dataset. Results may not generalize to
+other sensors, sampling rates, preprocessing conventions, populations, or
+longer recordings. The researcher lacked respiration-domain expertise, which
+helped expose how much semantic judgment the representation required but
+precludes clinical or physiological claims. A new dataset and domain review
+are required before using these objects as breath measurements.
+
+The study evaluates one LLM-proposed SciPy method and one FeatureGraph
+representation. It does not estimate variation across models, prompts,
+sessions, or human implementers. The original exploratory chat is unavailable,
+and the context-isolated proposal session lacks exact model/session metadata.
+Consequently, the frozen method is reproducible, while the act of proposing it
+is not.
+
+### 8.4 Conclusion and statistical validity
+
+The object counts are a census of the selected BIDMC records rather than a
+sample used for population inference; no clinical confidence intervals or
+hypothesis tests are claimed. Aggregate agreement can conceal offsetting
+errors, so the study reports one-to-one matches, unmatched objects, per-subject
+counts, boundary errors, and annotation agreement in both directions. The MAD
+comparison is restricted to the same 51 valid records; subjects 35 and 39 are
+reported separately rather than silently dropped.
+
+The frozen baseline is a comparator, not a gold standard. Terms such as
+"recall" and "precision" are avoided for baseline matching unless the
+denominator is stated, and annotation matches are described as agreement rather
+than clinical sensitivity or positive predictive value.
+
+### 8.5 Reproducibility and provenance validity
+
+The repository preserves prompts, raw inputs, returned object tables, a written
+method, deterministic reproduction code, construction parameters, tests, and
+generated comparisons. This supports computational reproduction of the frozen
+method and all reported tables. It does not recover the undocumented original
+conversation or prove that another model would choose the same analysis.
+Software and data services may also change; the tagged release, Zenodo archive,
+checksums, and environment records reduce but do not eliminate that risk.
+
+Finally, computational cost savings are not yet quantified. Deterministic
+execution is expected to be cheaper and more stable than repeated LLM analysis,
+but a defensible comparison requires fixed tasks, recorded runtimes, hardware,
+model usage, and contemporaneous pricing or energy measurements.
+
+## 9. AI-use disclosure
+
+AI use occurred in three distinct roles and is reported separately so that an
+undocumented conversation is not conflated with a reproducible method.
+
+1. **Original exploratory interaction.** An earlier LLM conversation helped
+   propose and interpret the initial respiration analysis. That conversation
+   was lost. Its transcript, exact model identifier, system configuration, and
+   sampling settings are unavailable. It is historical motivation only and is
+   not treated as reproducible evidence.
+2. **Context-isolated frozen proposal.** A later LLM session received the
+   archived subject 1 waveform, sampling rate, object schema, and frozen prompt,
+   without FeatureGraph outputs. Its returned object table and written SciPy
+   method were archived. Exact model/session metadata were not retained, so the
+   model's choice of method cannot be replayed exactly. However, the selected
+   method was translated into deterministic Python, and its saved outputs are
+   reproduced and tested without an LLM. In this paper, *reproducible frozen
+   method* refers to that code-level reproduction, not regeneration of the
+   original LLM response.
+3. **Research and writing assistance.** LLM tools assisted with code drafting,
+   debugging, experiment orchestration, prose revision, and identification of
+   issues for human review. The named researcher selected the research
+   question, approved contracts and parameters, executed and inspected the
+   analyses, checked claims against saved artifacts, determined the
+   interpretation, and accepts responsibility for the manuscript. LLMs are not
+   listed as authors.
+
+AI-generated suggestions were not accepted as evidence merely because they
+were produced by a model. Numerical claims are tied to versioned scripts and
+tables; literature claims are tied to cited sources; and known gaps in AI
+provenance remain disclosed rather than reconstructed retrospectively. The
+full experiment-level disclosure is maintained in
+`experiments/bidmc_llm_capture/AI_USE_DISCLOSURE.md`.
+
+## 10. Conclusion
 
 This study began with the question of what would remain if LLM access were
 lost. The answer is neither “nothing” nor “the entire analytical capability.”
@@ -484,5 +686,39 @@ PYTHONPATH=. python \
 3. Virtanen, P. et al. “SciPy 1.0: Fundamental Algorithms for Scientific
    Computing in Python.” *Nature Methods* 17, 261–272, 2020.
    [https://doi.org/10.1038/s41592-019-0686-2](https://doi.org/10.1038/s41592-019-0686-2).
-4. Habib, N. *FeatureGraph*, version 0.1.0a1, 2026.
-   [https://doi.org/10.5281/zenodo.21535661](https://doi.org/10.5281/zenodo.21535661).
+4. Habib, N. *FeatureGraph*, version 0.1.0a2, 2026.
+   [https://doi.org/10.5281/zenodo.21939319](https://doi.org/10.5281/zenodo.21939319).
+5. Peng, R. D. “Reproducible Research in Computational Science.” *Science*
+   334(6060), 1226–1227, 2011.
+   [https://doi.org/10.1126/science.1213847](https://doi.org/10.1126/science.1213847).
+6. Sandve, G. K., Nekrutenko, A., Taylor, J., and Hovig, E. “Ten Simple
+   Rules for Reproducible Computational Research.” *PLOS Computational
+   Biology* 9(10), e1003285, 2013.
+   [https://doi.org/10.1371/journal.pcbi.1003285](https://doi.org/10.1371/journal.pcbi.1003285).
+7. Wilkinson, M. D. et al. “The FAIR Guiding Principles for Scientific Data
+   Management and Stewardship.” *Scientific Data* 3, 160018, 2016.
+   [https://doi.org/10.1038/sdata.2016.18](https://doi.org/10.1038/sdata.2016.18).
+8. Di Tommaso, P. et al. “Nextflow Enables Reproducible Computational
+   Workflows.” *Nature Biotechnology* 35, 316–319, 2017.
+   [https://doi.org/10.1038/nbt.3820](https://doi.org/10.1038/nbt.3820).
+9. Murta, L., Braganholo, V., Chirigati, F., Koop, D., and Freire, J.
+   “noWorkflow: Capturing and Analyzing Provenance of Scripts.” In
+   *Provenance and Annotation of Data and Processes*, 71–83, 2014.
+   [https://doi.org/10.1007/978-3-319-16462-5_6](https://doi.org/10.1007/978-3-319-16462-5_6).
+10. Dibia, V. “LIDA: A Tool for Automatic Generation of Grammar-Agnostic
+    Visualizations and Infographics Using Large Language Models.” In
+    *Proceedings of ACL 2023: System Demonstrations*, 113–126, 2023.
+    [https://doi.org/10.18653/v1/2023.acl-demo.11](https://doi.org/10.18653/v1/2023.acl-demo.11).
+11. Xie, L., Zheng, C., Xia, H., Qu, H., and Zhu-Tian, C. “WaitGPT:
+    Monitoring and Steering Conversational LLM Agent in Data Analysis with
+    On-the-Fly Code Visualization.” In *UIST 2024*, 2024.
+    [https://doi.org/10.1145/3654777.3676374](https://doi.org/10.1145/3654777.3676374).
+12. Chollet, F. “On the Measure of Intelligence.” arXiv:1911.01547, 2019.
+    [https://doi.org/10.48550/arXiv.1911.01547](https://doi.org/10.48550/arXiv.1911.01547).
+13. Lin, J., Keogh, E., Wei, L., and Lonardi, S. “Experiencing SAX: A Novel
+    Symbolic Representation of Time Series.” *Data Mining and Knowledge
+    Discovery* 15, 107–144, 2007.
+    [https://doi.org/10.1007/s10618-007-0064-z](https://doi.org/10.1007/s10618-007-0064-z).
+14. Ye, L. and Keogh, E. “Time Series Shapelets: A New Primitive for Data
+    Mining.” In *KDD 2009*, 947–956, 2009.
+    [https://doi.org/10.1145/1557019.1557122](https://doi.org/10.1145/1557019.1557122).
