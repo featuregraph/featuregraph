@@ -104,12 +104,12 @@ This consists of:
 - rules specifying how characteristics such as amplitude, rate of change,
   symmetry, and accumulation are calculated.
 
-### 2.5 Contruction and measurement contracts
+### 2.5 Construction and measurement contracts
 
-Featuregraph as described provides two contracts:
+FeatureGraph as described provides two contracts:
 
-1. a construction contract that specifies states, transition events, boundaries, and objects. The vocabulary used to define states and transitons is deliberately kept small in order to be transferable
-2. a measurement contract that provides specifications for obtaining amplitude, rates of change, symmetry, accumulation, and other calculated properties of derived objects
+1. A construction contract that specifies states, transition events, boundaries, and objects. The vocabulary used to define states and transitions is deliberately kept small in order to be transferable.
+2. A measurement contract that provides specifications for obtaining amplitude, rates of change, symmetry, accumulation, and other calculated properties of derived objects.
 
 ### 2.6 Semantic or physical context
 
@@ -142,9 +142,9 @@ Can a human see and revise how states, boundaries, objects, and measurements wer
 
 Does the same contract produce useful objects on new data without case-specific modification? We can measure this in:
 
-- whether the contract runs unchanged
-- whether it produces structurally valid objects
-- whether those objects agree with an independent reference or annotation
+- whether the contract runs unchanged;
+- whether it produces structurally valid objects; and
+- whether those objects agree with an independent reference or annotation.
 
 ## 3. Related work
 
@@ -164,8 +164,8 @@ Workflow systems such as Nextflow make pipelines portable and repeatable [8],
 while provenance systems such as noWorkflow recover execution history from
 ordinary scripts without requiring a workflow language [9]. Those systems
 primarily preserve *how computations executed*. The present work addresses a
-complementary layer: preserving the analyst's temporal representation--what
-constitutes a state, event, boundary, complete object, and property--so that a
+complementary layer: preserving the analyst's temporal representation—what
+constitutes a state, event, boundary, complete object, and property—so that a
 human can inspect and revise the analytical contract rather than merely rerun
 the same script. FeatureGraph is not proposed as a replacement for workflow,
 environment, or provenance tooling; its object tables and construction records
