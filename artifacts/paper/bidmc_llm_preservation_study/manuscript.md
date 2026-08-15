@@ -685,13 +685,8 @@ undocumented conversation is not conflated with a reproducible method.
    reproduced and tested without an LLM. In this paper, *reproducible frozen
    method* refers to that code-level reproduction, not regeneration of the
    original LLM response.
-3. **Research and writing assistance.** LLM tools assisted with code drafting,
-   debugging, experiment orchestration, prose revision, and identification of
-   issues for human review. The named researcher selected the research
-   question, approved contracts and parameters, executed and inspected the
-   analyses, checked claims against saved artifacts, determined the
-   interpretation, and accepts responsibility for the manuscript. LLMs are not
-   listed as authors.
+3. **Research and writing assistance.** LLM tools assisted with code development, debugging, experiment orchestration, literature discovery, editorial feedback, formatting, and consistency checking. The author formulated the research question and conceptual framework, made the study-design decisions, selected and approved the construction and measurement contracts and parameters, executed and inspected the analyses, wrote and revised the manuscript’s substantive narrative, verified the reported claims against saved artifacts, determined the interpretation of the results, and accepts responsibility for all claims and conclusions.
+
 
 AI-generated suggestions were not accepted as evidence merely because they
 were produced by a model. Numerical claims are tied to versioned scripts and
