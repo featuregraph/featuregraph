@@ -49,27 +49,25 @@ A researcher using an LLM for data analysis can produce useful results, but an L
 
 If the researcher needed to run a similar study, they would need to consult the LLM again, or often design their own bespoke analysis that incorporated their own expertise and that might not be reproducible by others.
 
-The BIDMC respiration data were selected because they offer 53 public,
-eight-minute recordings, a fixed 125 Hz sampling rate, visible repeated
-waveform structure, and two independent manual breath-annotation series. The
-researcher did not begin with domain expertise in respiratory physiology.
-This made the dataset appropriate for studying analytical preservation and
-representation, but it also limits the interpretation: this is not a clinical
-validation study and no detected quantity is claimed to measure calibrated
-airflow or volume.
+## Durability, inspectability, and transfer
 
-The contributions are:
+A representation system can convert analytical decisions that were implicit in an LLM-assisted workflow into an explicit, executable contract. The quality of the representation can be measured using the following criteria: 
 
-1. a reproducible handoff from a raw-data LLM analysis to an explicit,
-   deterministic behavioral-object representation;
-2. an object-level comparison that distinguishes genuine agreement from
-   aggregate cancellation and definition mismatch;
-3. a 53-subject transfer evaluation of the original absolute transition rule;
-4. a second cohort experiment isolating the effect of subject-level MAD
-   normalization; and
-5. a capability ledger separating LLM proposal, researcher judgment,
-   FeatureGraph execution, conventional signal-processing dependencies, and
-   functionality preserved without continued LLM access.
+1. Durability
+
+Can the same declared analysis be executed later without the LLM? The analysis should produce reproducible objects from the constructed contract on frozen inputs.
+
+2. Inspectability
+
+Can a human see and revise how states, boundaries, objects, and measurements were defined? A human should be able to modify and rerun the code, edit its assumptions and contract, and identify structural limitations with the representation. 
+
+3. Transfer
+
+Does the same contract produce useful objects on new data without case-specific modification? We can measure this in:
+- whether the contract runs unchanged
+- whether it produces structurally valid objects
+- whether those objects agree with an independent reference or annotation
+
 
 ## 2. Representation
 
@@ -231,6 +229,30 @@ The frozen LLM-selected detector was likewise treated as a comparison path,
 not as ground truth. The object-level results therefore measure agreement
 among explicit constructions and annotations rather than clinical detection
 accuracy.
+
+## BIDMC study motivation
+
+The BIDMC respiration data were selected because they offer 53 public,
+eight-minute recordings, a fixed 125 Hz sampling rate, visible repeated
+waveform structure, and two independent manual breath-annotation series. The
+researcher did not begin with domain expertise in respiratory physiology.
+This made the dataset appropriate for studying analytical preservation and
+representation, but it also limits the interpretation: this is not a clinical
+validation study and no detected quantity is claimed to measure calibrated
+airflow or volume.
+
+The contributions are:
+
+1. a reproducible handoff from a raw-data LLM analysis to an explicit,
+   deterministic behavioral-object representation;
+2. an object-level comparison that distinguishes genuine agreement from
+   aggregate cancellation and definition mismatch;
+3. a 53-subject transfer evaluation of the original absolute transition rule;
+4. a second cohort experiment isolating the effect of subject-level MAD
+   normalization; and
+5. a capability ledger separating LLM proposal, researcher judgment,
+   FeatureGraph execution, conventional signal-processing dependencies, and
+   functionality preserved without continued LLM access.
 
 ## 5. Methods
 
