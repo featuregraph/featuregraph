@@ -4,6 +4,9 @@ The standalone BIDMC analysis-preservation study is maintained in
 [`bidmc_llm_preservation_study/manuscript.md`](bidmc_llm_preservation_study/manuscript.md).
 It records the blinded LLM comparison, the original absolute-threshold cohort,
 and the subsequent MAD-normalized cohort as a separate research paper draft.
+The draft now also contains a primary-source related-work section, a formal
+development-versus-transfer protocol, categorized threats to validity, and an
+AI-use disclosure linked to the experiment-level provenance record.
 
 This directory is the canonical manuscript and evidence workspace for the released FeatureGraph alpha. Paper-specific edits belong on `alpha/v0.1.x`, not on `main`.
 
@@ -50,4 +53,9 @@ When changing a manuscript claim:
 4. keep limitations visible where the corresponding result is interpreted;
 5. record substantive changes in a focused `paper:` commit.
 
-The immutable software authority is [`v0.1.0a1`](https://github.com/featuregraph/featuregraph/tree/v0.1.0a1). This branch may extend the paper with new datasets and evaluations that use the existing oscillation/accumulation workflow. Architectural redesign and successor-only claims belong on `main`.
+The frozen study authority is
+[`v0.1.0a2`](https://github.com/featuregraph/featuregraph/tree/v0.1.0a2),
+archived at [Zenodo](https://doi.org/10.5281/zenodo.21939319). This branch may
+extend the paper and research record without moving the tag. Architectural
+redesign and transition-only successor claims belong on `main` or a new alpha
+line rather than being retroactively attributed to the frozen release.
