@@ -1,36 +1,44 @@
-## Framework
+# Framework
 
-The research question behind this study is: "If LLM access were gone tomorrow, what could researchers maintain from their LLM-assisted analyses? An LLM conversation can produce a useful analysis, but a conversation is not a durable computational representation of the analysis. 
+## Motivation
 
-We can split the success of a representation into two parts: whether it is durable, and whether it generalizes. A representation that does not generalize is not useful. We want to be able to reproduce the results of an analysis not only in our own work, but in other domains as well.
+The research question behind this study is: "If large language model (LLM) access were gone tomorrow, what could researchers maintain from their LLM-assisted analyses? An LLM conversation can produce a useful analysis, but a conversation is not a durable computational representation of the analysis. 
 
-One of the continuing struggles we have in data analysis is having to reproduce the same takss over and over without being able to store our reasoning process and repeat it in ways that will give us solutions with similar levels of rigor and precision each time. 
+A researcher using an LLM for data analysis can produce useful results, but an LLM interaction is not a persistent computational representation of that analysis. If the researcher needed to run a similar study, they would need to consult the LLM again, or often design their own bespoke analysis that incorporated their own expertise and that might not be reproducible by others.
 
-A reasoning process that had its own form of represenation that it could apply readily to a class of problems would potentially save itself a great deal of repeated computation. If we could embed parts of our reasooning into a graph and embody them through computation, we would not have to keep repeating the same analyses.
+## Representation
 
-Define:
+A timeseries signal can be described using this taxonomy:
 
-Representation
+1. Intrinsic behavior
 
-Preservation vs transfer
+This consists of: 
+- the literal raw values that compose the signal
+- the direction and curvature of the visual representation of the signal along its timeseries and value axis
+- its transitions and turning points
+- measured characteristics such as amplitude, rate of change, symmetry, and accumulation
 
-Separate:
+The FeatureGraph position is: If intrinsic signal behaviors can be defined in a contract that can then be used to identify corresponding characteristics in unrelated signals, this suggests an constructable durability of physical signal definition and encourages generalization about physical signals by exposing their commonalities. 
 
-Durability
+2. Measurement and representation frame
 
-Inspectability
+This consists of:
+- the physical units a signal is expressed in
+- its sampling interval and temporal granularity
+- the duration of each observation
+- normalizing and smoothing that have been applied to the signal
+- sensor resolution and preprocessing
 
-Transfer
+Representation frame makes up the second layer of timeseries signal taxonomy. It specifies the non-visual context that cannot be removed from the signal while retaining information extraction.
 
-The BIDMC study succeeded strongly on durability and inspectability but only partially on transfer
+3. Semantic or physical context
 
-A representation system can take implicit information from a timeseries signal and make it explicit. A reasoning system faced with timeseries data and asked to discover patterns and relationships within it can be aided greatly by having some of the relationships within the data made explicit.
+This consists of:
+- what the signal represents
+- which physical mechanism produced it
+- what domain it belongs to
+- what causal meaning and structure the engineer believes it contains
 
-Among domain practitioners this is often an ad-hoc, individual process of a knowledgeable expert encoding relationships between parts of the data they already know well. Much of their work is not immediately applicable to similar problems or accessible to other experts with different views of the data available to them. If I cannot understand or recreate your code, I often cannot reproduce your work and the conclusions you have reached will often be frustratingly inaccessible to me.
+Semantic context explicitly exists outside the scope of FeatureGraph. It will not be asked to understand what a signal means in the real world to an observer or researcher. Its goal is to deliver a representation of the signal that does not include semantic context.
 
-As researchers we have a few options available to us. We can make the intermediate results of our analyses available to others. I can take your timeseries data, give you back a list of aggregations, and make them queryable to you, so that you never need to carry out that process yourself.
-
-(Next thought: I can create a representational system for your data that will also apply to other people’s data…)
-
-The primary complaint is that what disappears when an analysis is complete is much of the representation we would like to be able to recreate for that problem or similar problems. If you’ve already modeled a signal as a collection of states, boundaries, and behaviors, others would like to be able to use your representation of that signal without having to reproduce it. If you’ve already derived properties from the signal such as how much it’s physically accumulated over a time period, others would like that representation available to them. 
 
