@@ -60,21 +60,21 @@ FeatureGraph proposes a framework for deterministic preservation and repeatable 
    FeatureGraph execution, conventional signal-processing dependencies, and
    functionality preserved without continued LLM access.
 
-### 1.1 Execution succcess, empirical adequacy, and transfer
+### 1.1 Execution success, empirical adequacy, and transfer
 
-A representation can be evaluated on three criteria:
+A representation can be evaluated using three criteria:
 
-- Execution success: does FeatureGraph apply the declared contracts deterministically and reproduce the saved representation?
-- Empirical adequacy: Does the saved representation satisfy the evaluation criteria on the data for which it was developed?
-- Transfer: can the same saved representation produce adequate objects and measurements on related data?
+- Execution success: does FeatureGraph apply the declared contracts deterministically and reproduce the saved outputs?
+- Empirical adequacy: does the resulting representation satisfy the evaluation criteria on the data for which it was developed?
+- Transfer: can the same frozen representation produce adequate objects and measurements on new records?
 
-The BIDMC study instantiated the following results:
-- Execution: the frozen contract ran deterministically on all valid records.
-- Development adequacy: Subject 1 produced strong object-level agreement with the LLM baseline.
-- Transfer: The same absolute contract produced substantial unmatched objects across subjects 2 through 53.
-- Diagnostic modification: MAD normalization improved baseline coverage but increased over-segmentation and was undefined for two records.
+The BIDMC study produced the following results under these criteria:
 
-We can therefore identify where disagreement in object boundaries resulted in over-segmentation. It happened as a result of setting our instantiation parameters too specifically to a single sample. 
+- Execution success: the frozen contract ran deterministically on all valid records.
+- Development-record adequacy: subject 1 produced strong object-level agreement with the LLM baseline.
+- Transfer: the same absolute contract produced substantial unmatched objects across subjects 2 through 53.
+
+As a diagnostic modification, MAD normalization improved baseline coverage but increased over-segmentation and was undefined for two records. These results localize one source of over-segmentation to construction parameters calibrated too specifically to a single development record.
 
 ## 2. Representation
 
