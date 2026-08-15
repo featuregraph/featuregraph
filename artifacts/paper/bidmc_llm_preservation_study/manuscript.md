@@ -60,12 +60,12 @@ FeatureGraph proposes a framework for deterministic preservation and repeatable 
    FeatureGraph execution, conventional signal-processing dependencies, and
    functionality preserved without continued LLM access.
 
-## Empirical success and transfer
+### 1.1 Empirical success and transfer
 
-The success of a representation can be measured in two ways:
+A representation can be evaluated in two ways:
 
-- Empirical success: does the representation correctly answer questions about the question being asked?
-- Transfer: can the system answer related questions equally well?
+- Empirical success: does the representation produce the intended objects and measurements for the question being asked?
+- Transfer: can the same representation produce adequate objects and measurements on related data?
 
 ## 2. Representation
 
