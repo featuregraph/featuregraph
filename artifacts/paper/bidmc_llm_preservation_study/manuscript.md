@@ -60,6 +60,13 @@ FeatureGraph proposes a framework for deterministic preservation and repeatable 
    FeatureGraph execution, conventional signal-processing dependencies, and
    functionality preserved without continued LLM access.
 
+## Empirical success and transfer
+
+The success of a representation can be measured in two ways:
+
+- Empirical success: does the representation correctly answer questions about the question being asked?
+- Transfer: can the system answer related questions equally well?
+
 ## 2. Representation
 
 An analysis of a sampled time-series signal can be decomposed into the following parts.
@@ -219,16 +226,9 @@ and is not an empirical baseline in this study. Its relevance is conceptual:
 successful reasoning depends on constructing useful objects, relations, and
 transformations rather than only reproducing an output.
 
-Chollet's concern that existing definitions of intelligence are not falsifiable suggests that intermediate representational structures can be built so that overly-brittle or specific definitions of parameters will be made to succeed when they apply and fail in related situations when they do not. The connection is methodological and not empirical. FeatureGraph is not an intelligent or abstract reasoning system. The connection is that a durable, falsifiable representation system can be a layer in an intelligence stack.
+Chollet argues that useful definitions of intelligence must be actionable, explanatory, and measurable, and that task-specific performance must be distinguished from generalization under declared priors and experience [12]. This study adopts only the evaluation discipline implied by that distinction. FeatureGraph is not an intelligent or abstract-reasoning system, and the BIDMC study is not an intelligence benchmark.
 
-This study applies that motivation narrowly. Raw samples are converted into
-declared transition states, boundary events, bounded objects, properties, and
-relations. Transfer is then tested rather than assumed. The negative cohort
-result is important under this view: an explicit representation can be
-inspectable and reproducible while still encoding a development-record rule
-that generalizes poorly. FeatureGraph's contribution is the durable,
-auditable representation layer, not evidence of abstract reasoning or an
-autonomous discovery system.
+Instead, FeatureGraph converts researcher-supplied assumptions into explicit construction and measurement contracts, creating conditions in which performance on a development record can be distinguished from transfer of the same contracts to other records. FeatureGraph’s contribution is a durable, auditable representation layer. When the researcher’s assumptions about the observed data are adequate for constructing the intended objects, the representation succeeds empirically. When those assumptions do not remain adequate on new data, the representation fails to transfer.
 
 ### 3.4 Time-series representations
 
