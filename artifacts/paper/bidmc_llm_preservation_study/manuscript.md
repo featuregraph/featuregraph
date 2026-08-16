@@ -709,8 +709,7 @@ undocumented conversation is not conflated with a reproducible method.
 2. **Context-isolated frozen proposal.** A later LLM session received the
    archived subject 1 waveform, sampling rate, object schema, and frozen prompt,
    without FeatureGraph outputs. Its returned object table and written SciPy
-   method were archived. Exact model/session metadata were not retained, so the
-   model's choice of method cannot be replayed exactly. However, the selected
+   method were archived. The selected
    method was translated into deterministic Python, and its saved outputs are
    reproduced and tested without an LLM. In this paper, *reproducible frozen
    method* refers to that code-level reproduction, not regeneration of the
