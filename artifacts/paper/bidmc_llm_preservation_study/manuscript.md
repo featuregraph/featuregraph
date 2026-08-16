@@ -9,7 +9,9 @@ Large language models (LLMs) can propose useful data analyses, but an LLM
 interaction is not itself a durable computational representation. We study a
 practical question: if LLM access disappeared, how much of an LLM-proposed
 time-series analysis could a researcher continue to run, inspect, validate,
-and maintain? A context-isolated LLM received one raw respiration record from
+and maintain? 
+
+A context-isolated LLM received one raw respiration record from
 the BIDMC PPG and Respiration Dataset and produced a documented SciPy pipeline
 and an object table of trough–peak–trough cycles. The researcher then encoded
 an independently specified, deterministic transition representation in
@@ -25,9 +27,7 @@ FeatureGraph objects and the frozen LLM-selected baseline produced 7,168;
 6,200 objects matched, leaving 2,760 FeatureGraph-only and 968 baseline-only
 objects. A second experiment normalized the directional difference by a
 subject-level median absolute deviation (MAD), retaining a threshold
-calibrated only on subject 1. MAD normalization increased baseline coverage on
-the 51 records for which it was defined: matched objects increased from 6,030
-to 6,850 and baseline-only objects fell from 963 to 143. This apparent recall
+calibrated only on subject 1. MAD normalization increased baseline coverage on the 51 records for which it was defined: matched objects increased from 6,030 to 6,850 and baseline-only objects fell from 963 to 143. This apparent recall
 gain came with severe over-segmentation: FeatureGraph-only objects increased
 from 2,671 to 5,553, and the normalized construction was undefined for two
 records with zero difference MAD.
