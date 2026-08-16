@@ -6,7 +6,7 @@ Draft research record, August 2026
 ## Abstract
 
 Large language models (LLMs) can propose and orchestrate useful data analyses, but an LLM
-interaction is not itself a durable computational representation. This study asks: if LLM access disappeared, how much of an LLM-assisted
+interaction is not itself a durable computational representation of a data analysis. This study asks: if LLM access disappeared, how much of an LLM-assisted
 time-series analysis could a researcher continue to run, inspect, validate,
 and maintain? It proposes FeatureGraph, a framework for deterministic preservation and repeatable execution of LLM-driven analysis.
 
