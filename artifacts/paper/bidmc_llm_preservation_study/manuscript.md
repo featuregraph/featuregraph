@@ -1,4 +1,4 @@
-# FeatureGraph: From LLM-Proposed Analysis to Maintainable Behavioral Objects: A BIDMC Respiration Case Study
+# FeatureGraph and the Preservation of LLM-Proposed Analysis as Maintainable Behavioral Objects: A BIDMC Respiration Case Study
 
 **Nazia Habib**
 Draft research record, August 2026
