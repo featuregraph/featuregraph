@@ -228,14 +228,9 @@ reviewable artifact.
 FeatureGraph was also influenced by work that treats representation as central
 to generalization. Chollet's formulation of intelligence and the Abstraction
 and Reasoning Corpus (ARC) separate task-specific skill from skill-acquisition
-and generalization under declared priors [12]. ARC is not a time-series method
-and is not an empirical baseline in this study. Its relevance is conceptual:
-successful reasoning depends on constructing useful objects, relations, and
-transformations rather than only reproducing an output.
+and generalization under declared priors [12]. Chollet argues that useful definitions of intelligence must be actionable, explanatory, and measurable, and that task-specific performance must be distinguished from generalization under declared priors and experience. 
 
-Chollet argues that useful definitions of intelligence must be actionable, explanatory, and measurable, and that task-specific performance must be distinguished from generalization under declared priors and experience [12]. This study adopts only the evaluation discipline implied by that distinction. FeatureGraph is not an intelligent or abstract-reasoning system, and the BIDMC study is not an intelligence benchmark.
-
-Instead, FeatureGraph converts researcher-supplied assumptions into explicit construction and measurement contracts, creating conditions in which performance on a development record can be distinguished from transfer of the same contracts to other records. FeatureGraph’s contribution is a durable, auditable representation layer. When the researcher’s assumptions about the observed data are adequate for constructing the intended objects, the representation succeeds empirically. When those assumptions do not remain adequate on new data, the representation fails to transfer.
+This study adopts the evaluation discipline implied by that distinction. FeatureGraph converts researcher-supplied assumptions into explicit construction and measurement contracts, creating conditions in which performance on a development record can be distinguished from transfer of the same contracts to other records. FeatureGraph’s contribution is a durable, auditable representation layer. When the researcher’s assumptions about the observed data are adequate for constructing the intended objects, the representation succeeds empirically. When those assumptions do not remain adequate on new data, the representation fails to transfer.
 
 ### 3.4 Time-series representations
 
