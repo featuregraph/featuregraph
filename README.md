@@ -12,7 +12,7 @@
 >
 > The `main` branch is an unreleased successor architecture and is not the recommended visitor path.
 
-FeatureGraph studies how an LLM-assisted analysis can become a durable, inspectable computational record, so the code, method, assumptions, and evidence remain available after the conversation is gone.
+FeatureGraph studies how an LLM-assisted analysis can become a deterministic, inspectable computational record, so the code, method, assumptions, and evidence remain available after the conversation is gone.
 
 ```text
 observations
