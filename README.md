@@ -12,9 +12,7 @@
 >
 > The `main` branch is an unreleased successor architecture and is not the recommended visitor path.
 
-FeatureGraph turns ordered observations into explicit behavioral objects that software can inspect and query.
-
-A time series contains values, but behaviors such as oscillations and accumulations remain implicit until their states, boundaries, identities, and properties are constructed. FeatureGraph performs that construction deterministically and returns inspectable object tables.
+FeatureGraph studies how an LLM-assisted analysis can become a durable, inspectable computational record, so the code, method, assumptions, and evidence remain available after the conversation is gone.
 
 ```text
 observations
