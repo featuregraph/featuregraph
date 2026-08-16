@@ -8,7 +8,7 @@ Draft research record, August 2026
 Large language models (LLMs) can propose useful data analyses, but an LLM
 interaction is not itself a durable computational representation. This study asks: if LLM access disappeared, how much of an LLM-assisted
 time-series analysis could a researcher continue to run, inspect, validate,
-and maintain? 
+and maintain? It proposes FeatureGraph, a framework for deterministic preservation and repeatable execution of LLM-driven analysis.
 
 A context-isolated LLM received one raw respiration record from
 the BIDMC PPG and Respiration Dataset and produced a documented SciPy pipeline
