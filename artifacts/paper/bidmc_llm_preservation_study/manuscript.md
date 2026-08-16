@@ -32,8 +32,7 @@ from 2,671 to 5,553, and the normalized construction was undefined for two
 records with zero difference MAD.
 
 The study demonstrates successful preservation, deterministic execution,
-object-level auditability, and explicit failure localization. It does not
-demonstrate a generally transferable respiration detector. Determinism
+object-level auditability, and explicit failure localization. Determinism
 preserved the researcher-specified representation; it did not supply the
 missing judgment about which transitions constitute meaningful breaths. This
 distinction motivates a transition-only next phase of FeatureGraph and
