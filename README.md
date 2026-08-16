@@ -4,7 +4,7 @@
 
 > ## Start with the public alpha
 >
-> **The maintained, public-facing project is [`alpha/v0.1.x`](https://github.com/featuregraph/featuregraph/tree/alpha/v0.1.x), not this development branch.**
+> **The maintained, public-facing project is [`alpha/v0.1.x`](https://github.com/featuregraph/featuregraph/tree/alpha/v0.1.x).**
 >
 > 1. [Open the alpha landing page](https://github.com/featuregraph/featuregraph/tree/alpha/v0.1.x)
 > 2. [Run the BIDMC behavioral-object notebook](https://github.com/featuregraph/featuregraph/blob/alpha/v0.1.x/notebooks/bidmc_respiration_pipeline.ipynb)
