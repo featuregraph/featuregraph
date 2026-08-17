@@ -1,7 +1,7 @@
 # FeatureGraph and the Preservation of LLM-Proposed Analysis: A BIDMC Respiration Case Study
 
 **Nazia Habib**  
-Draft research record, August 2026
+Working draft, August 2026
 
 ## Abstract
 
@@ -653,7 +653,7 @@ midpoint projection substantially corrects extremum timing and period while
 leaving unresolved disagreement about how entire rising, stable, and falling
 phases should contribute to trough–peak–trough symmetry.
 
-### 6.6 Localization of detector-discordant episodes
+### 6.6 Localization of detector-discordant candidate episodes
 
 The 1,047 complete FeatureGraph objects without a matched baseline object are
 not distributed uniformly across the 52 transfer records. Seven subjects
@@ -683,7 +683,7 @@ in one consecutive run. Subjects 5 and 19 contain several local bursts, while
 subjects 13, 33, and 39 distribute their unmatched objects across many parts
 of the record.
 
-These rows are therefore retained as *detector-discordant respiratory
+These rows are therefore retained as *detector-discordant candidate
 episodes*: temporally bounded candidate cycles for which the deterministic
 FeatureGraph and frozen SciPy constructions disagree. The term is a
 computational comparison label, not a clinical diagnosis. Of the 1,047
@@ -709,7 +709,7 @@ wholesale as false detections.
 | Summarize period, excursion, symmetry | Frozen measurement contracts | Yes |
 | Match and audit individual objects | Deterministic comparison code | Yes |
 | Diagnose transfer failures across subjects | Saved object and annotation tables | Yes |
-| Localize detector-discordant episodes and bursts | Saved bounded object tables | Yes |
+| Localize detector-discordant candidate episodes and bursts | Saved bounded object tables | Yes |
 | Invent a transferable detector automatically | Not achieved | No |
 | Establish clinical validity | Requires domain expertise and clinical protocol | No |
 
@@ -835,7 +835,7 @@ helped expose how much semantic judgment the representation required but
 precludes clinical or physiological claims. A new dataset and domain review
 are required before using these objects as breath measurements.
 
-For the same reason, a detector-discordant episode must not be interpreted as
+For the same reason, a detector-discordant candidate episode must not be interpreted as
 an abnormal breath. It may reflect physiological morphology, sensor artifact,
 annotation convention, baseline suppression, FeatureGraph over-segmentation,
 or some combination of these mechanisms. The current contribution is exact
@@ -941,6 +941,19 @@ tables, frozen reproduction code, subject-level comparisons, unmatched-object
 audits, annotation comparisons, MAD failures, paired scaling deltas, plateau
 intervals, and explicit boundary-ambiguity rows.
 
+### 12.1 Code and data availability
+
+The exact computational artifact used for this study is FeatureGraph
+version 0.1.0b1, archived on Zenodo at
+[https://doi.org/10.5281/zenodo.21984186](https://doi.org/10.5281/zenodo.21984186)
+and released from Git commit
+[`e6df4d0a309bffdf36c4f2e3dbcf3ee29f9f9c4b`](https://github.com/featuregraph/featuregraph/tree/e6df4d0a309bffdf36c4f2e3dbcf3ee29f9f9c4b).
+The public release includes the frozen comparator, FeatureGraph constructions,
+tests, subject-level summaries, object-level audit tables, and verification
+manifest. The source recordings and manual breath annotations are available
+from the BIDMC PPG and Respiration Dataset, version 1.0.0, under its PhysioNet
+terms at [https://doi.org/10.13026/C2208R](https://doi.org/10.13026/C2208R).
+
 ```bash
 PYTHONPATH=. python experiments/bidmc_llm_capture/multi_subject_comparison.py \
   --subjects 1-53 --jobs 4 --scaling absolute \
@@ -973,8 +986,8 @@ PYTHONPATH=src:. python \
 3. Virtanen, P. et al. “SciPy 1.0: Fundamental Algorithms for Scientific
    Computing in Python.” *Nature Methods* 17, 261–272, 2020.
    [https://doi.org/10.1038/s41592-019-0686-2](https://doi.org/10.1038/s41592-019-0686-2).
-4. Habib, N. *FeatureGraph*, version 0.1.0a2, 2026.
-   [https://doi.org/10.5281/zenodo.21939319](https://doi.org/10.5281/zenodo.21939319).
+4. Habib, N. *FeatureGraph*, version 0.1.0b1, 2026.
+   [https://doi.org/10.5281/zenodo.21984186](https://doi.org/10.5281/zenodo.21984186).
 5. Peng, R. D. “Reproducible Research in Computational Science.” *Science*
    334(6060), 1226–1227, 2011.
    [https://doi.org/10.1126/science.1213847](https://doi.org/10.1126/science.1213847).
