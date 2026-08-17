@@ -1,14 +1,15 @@
-# FeatureGraph alpha paper
+# FeatureGraph beta research record
 
 The standalone BIDMC analysis-preservation study is maintained in
-[the preservation study manuscript](https://github.com/featuregraph/featuregraph/blob/alpha/v0.1.x/artifacts/paper/bidmc_llm_preservation_study/manuscript.md).
-It records the blinded LLM comparison, the original absolute-threshold cohort,
-and the subsequent MAD-normalized cohort as a separate research paper draft.
+[the beta preservation study manuscript](https://github.com/featuregraph/featuregraph/blob/v0.1.0b1/artifacts/paper/bidmc_llm_preservation_study/manuscript.md).
+It records the blinded LLM comparison, the original absolute-threshold and
+MAD-normalized cohorts, and the beta envelope/plateau construction with its
+detector-discordant handoff table.
 The draft now also contains a primary-source related-work section, a formal
 development-versus-transfer protocol, categorized threats to validity, and an
 AI-use disclosure linked to the experiment-level provenance record.
 
-This directory is the canonical manuscript and evidence workspace for the released FeatureGraph alpha. Paper-specific edits belong on `alpha/v0.1.x`, not on `main`.
+This directory is the canonical manuscript and evidence workspace for the released FeatureGraph beta. Compatible paper-specific edits belong on `beta/v0.1.x`, not on `main`.
 
 ## Manuscript order
 
@@ -25,7 +26,7 @@ The numbered list records reading order. The files remain separate so each secti
 
 ## Evidence and generated artifacts
 
-- `tables/` contains generated object tables used to inspect and report alpha behavior.
+- `tables/` contains generated object tables used to inspect and report the released behavior.
 - `figures/` contains generated and evaluation figures.
 - `environment.json` records the software and hardware environment used for a reproduction run.
 - `run_metadata.json` records dataset selections, execution metadata, and artifact checksums.
@@ -54,8 +55,8 @@ When changing a manuscript claim:
 5. record substantive changes in a focused `paper:` commit.
 
 The frozen study authority is
-[`v0.1.0a2`](https://github.com/featuregraph/featuregraph/tree/v0.1.0a2),
-archived at [Zenodo](https://doi.org/10.5281/zenodo.21939319). This branch may
+[`v0.1.0b1`](https://github.com/featuregraph/featuregraph/tree/v0.1.0b1),
+archived at [Zenodo](https://doi.org/10.5281/zenodo.21984186). This branch may
 extend the paper and research record without moving the tag. Architectural
-redesign and transition-only successor claims belong on `main` or a new alpha
-line rather than being retroactively attributed to the frozen release.
+redesign and transition-only successor claims belong on `main` rather than
+being retroactively attributed to the frozen release.

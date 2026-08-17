@@ -9,7 +9,7 @@ FeatureGraph turns ordered observations into explicit behavioral objects that so
 
 This clean, executable notebook walks from a raw respiration waveform to explicit transition states, oscillation objects, accumulation objects, validation checks, and a deterministic summary. To run it, clone this branch, install the development environment as shown below, and execute the notebook from top to bottom.
 
-**2. Read the study:** [From LLM-Proposed Analysis to Maintainable Behavioral Objects](https://github.com/featuregraph/featuregraph/blob/alpha/v0.1.x/artifacts/paper/bidmc_llm_preservation_study/manuscript.md)
+**2. Read the study:** [From LLM-Proposed Analysis to Maintainable Behavioral Objects](https://github.com/featuregraph/featuregraph/blob/v0.1.0b1/artifacts/paper/bidmc_llm_preservation_study/manuscript.md)
 
 The paper draft asks what remains maintainable when an LLM-assisted analysis is converted into an explicit computational representation. It reports what the BIDMC experiment preserved, where the representation transferred, and where the boundary rule failed.
 
@@ -44,7 +44,7 @@ python -m pip install "featuregraph @ git+https://github.com/featuregraph/featur
 For development against the maintained oscillation/accumulation branch:
 
 ```bash
-git clone --branch alpha/v0.1.x --single-branch \
+git clone --branch beta/v0.1.x --single-branch \
   https://github.com/featuregraph/featuregraph.git
 cd featuregraph
 python -m pip install -e ".[dev]"
@@ -86,7 +86,7 @@ long_oscillations = (
 - [Manuscript and evidence](artifacts/paper/README.md)
 - [Reproducibility guide](docs/reproducibility.md)
 - [Beta release `v0.1.0b1`](https://github.com/featuregraph/featuregraph/releases/tag/v0.1.0b1)
-- [Frozen alpha research record](https://doi.org/10.5281/zenodo.21939319)
+- [Beta research record](https://doi.org/10.5281/zenodo.21984186)
 - [Project website](https://featuregraph.ai)
 
 ## Reproduce the research artifacts
@@ -103,7 +103,7 @@ The beta is the maintained research line for asking how well the existing
 oscillation and accumulation workflow transfers to additional datasets and
 physical domains. The frozen alpha tags remain unchanged.
 
-Work on `alpha/v0.1.x` may:
+Work on `beta/v0.1.x` may:
 
 - add stable datasets and cross-domain demonstrations;
 - evaluate oscillation and accumulation behavior under new conditions;
@@ -112,16 +112,16 @@ Work on `alpha/v0.1.x` may:
 - correct defects without silently changing released semantics;
 - extend the manuscript with evidence from this line of research.
 
-Architectural redesign, successor object models, and incompatible API development belong on `main`. The distinction is between extending the alpha's empirical reach and extending its architecture.
+Architectural redesign, successor object models, and incompatible API development belong on `main`. The distinction is between extending the beta's empirical reach and extending its architecture.
 
 ## Citation
 
-For the frozen BIDMC preservation record, cite the archived alpha artifact:
+For the frozen BIDMC preservation record, cite the archived beta artifact:
 
-> Habib, N. (2026). *FeatureGraph* (v0.1.0a2). Zenodo. https://doi.org/10.5281/zenodo.21939319
+> Habib, N. (2026). *FeatureGraph* (v0.1.0b1). Zenodo. https://doi.org/10.5281/zenodo.21984186
 
-For the beta implementation, identify `v0.1.0b1` and its exact Git commit in
-addition to any archived study record.
+The immutable tag identifies the exact released source. Use the concept DOI
+`10.5281/zenodo.21939317` only when referring to FeatureGraph across versions.
 
 Machine-readable citation metadata is available in [CITATION.cff](CITATION.cff).
 
