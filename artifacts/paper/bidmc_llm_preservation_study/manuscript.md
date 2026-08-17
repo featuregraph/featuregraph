@@ -653,6 +653,46 @@ midpoint projection substantially corrects extremum timing and period while
 leaving unresolved disagreement about how entire rising, stable, and falling
 phases should contribute to trough–peak–trough symmetry.
 
+### 6.6 Localization of detector-discordant episodes
+
+The 1,047 complete FeatureGraph objects without a matched baseline object are
+not distributed uniformly across the 52 transfer records. Seven subjects
+(5, 13, 14, 19, 27, 33, and 39) account for 555 objects, or 53.0% of the
+total; the ten highest-count subjects account for 678, or 64.8%. At the other
+end of the distribution, six subjects have no FeatureGraph-only objects and
+23 have five or fewer. Those 23 subjects contribute only 50 objects, or 4.8%
+of the total. The descriptive Gini coefficient of the per-subject counts is
+0.64.
+
+| Subject | FeatureGraph-only objects | Share of transfer total |
+| ---: | ---: | ---: |
+| 13 | 136 | 13.0% |
+| 19 | 92 | 8.8% |
+| 5 | 89 | 8.5% |
+| 14 | 63 | 6.0% |
+| 33 | 61 | 5.8% |
+| 39 | 60 | 5.7% |
+| 27 | 54 | 5.2% |
+
+The objects are not concentrated at one normalized time across the cohort.
+Counts in successive tenths of the records range from 79 to 127, providing no
+evidence that a common beginning- or end-of-record artifact explains the
+result. Within individual subjects, however, the temporal patterns differ.
+Subject 25 has 30 of its 32 unmatched objects in one tenth of the record and
+in one consecutive run. Subjects 5 and 19 contain several local bursts, while
+subjects 13, 33, and 39 distribute their unmatched objects across many parts
+of the record.
+
+These rows are therefore retained as *detector-discordant respiratory
+episodes*: temporally bounded candidate cycles for which the deterministic
+FeatureGraph and frozen SciPy constructions disagree. The term is a
+computational comparison label, not a clinical diagnosis. Of the 1,047
+episodes, 680 (64.9%) are excluded by both BIDMC annotation series and 367 are
+not. Subject 39 is particularly informative: none of its 60 unmatched objects
+is jointly excluded by the annotators. This does not establish that they are
+valid breaths, but it prevents the unmatched set from being interpreted
+wholesale as false detections.
+
 ## 7. Capability and dependency ledger
 
 | Capability | Source during development | Preserved without live LLM access? |
@@ -669,6 +709,7 @@ phases should contribute to trough–peak–trough symmetry.
 | Summarize period, excursion, symmetry | Frozen measurement contracts | Yes |
 | Match and audit individual objects | Deterministic comparison code | Yes |
 | Diagnose transfer failures across subjects | Saved object and annotation tables | Yes |
+| Localize detector-discordant episodes and bursts | Saved bounded object tables | Yes |
 | Invent a transferable detector automatically | Not achieved | No |
 | Establish clinical validity | Requires domain expertise and clinical protocol | No |
 
@@ -705,13 +746,27 @@ aligned with nearly all baseline objects and manual annotations. This is a
 representation correction rather than evidence that FeatureGraph inferred
 respiratory semantics.
 
-The remaining 1,047 FeatureGraph-only complete objects, concentrated in cases
-such as subject 5, prevent a general equivalence claim. Interval projection
-improves compatibility with point-based evaluators; it does not determine
-which candidate cycles are physiologically meaningful. Likewise, unchanged
-full-excursion agreement and slightly worse symmetry agreement show that
-correcting peak projection does not harmonize every boundary-sensitive
-property.
+The remaining 1,047 FeatureGraph-only complete objects prevent a general
+equivalence claim, but their localization is itself an achieved capability.
+The unmatched set is concentrated in a limited group of subjects and contains
+both isolated objects and temporally contiguous bursts. FeatureGraph preserves
+the subject, boundaries, component extrema, measurements, neighborhood, and
+annotation agreement of each episode even when the current representation
+cannot classify its morphology. This converts aggregate transfer failure into
+an inspectable object set that can support later signal-quality analysis,
+domain review, or comparison with clinical events.
+
+The localization result also changes the interpretation of transfer failure.
+The data are short recordings from critically ill patients, so heterogeneous
+respiratory morphology, physiological irregularity, and measurement artifact
+are all plausible sources of detector disagreement. The present study cannot
+distinguish among them. It can show where the expected cycle representation
+becomes unstable and whether that instability is persistent, isolated, or
+bursty. Interval projection improves compatibility with point-based
+evaluators; it does not determine which candidate cycles are physiologically
+meaningful. Likewise, unchanged full-excursion agreement and slightly worse
+symmetry agreement show that correcting peak projection does not harmonize
+every boundary-sensitive property.
 
 The study therefore supports a narrower but defensible claim: an
 LLM-assisted analysis can be converted into a durable computational artifact
@@ -779,6 +834,13 @@ longer recordings. The researcher lacked respiration-domain expertise, which
 helped expose how much semantic judgment the representation required but
 precludes clinical or physiological claims. A new dataset and domain review
 are required before using these objects as breath measurements.
+
+For the same reason, a detector-discordant episode must not be interpreted as
+an abnormal breath. It may reflect physiological morphology, sensor artifact,
+annotation convention, baseline suppression, FeatureGraph over-segmentation,
+or some combination of these mechanisms. The current contribution is exact
+localization and preservation of the disagreement, not determination of its
+clinical cause.
 
 The study evaluates one LLM-proposed SciPy method and one FeatureGraph
 representation. It does not estimate variation across models, prompts,
