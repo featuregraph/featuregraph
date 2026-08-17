@@ -8,8 +8,17 @@ import numpy as np
 import pandas as pd
 from scipy.signal import butter, find_peaks, sosfiltfilt
 
-
 SAMPLING_RATE = 125
+OBJECT_DTYPES = {
+    "llm_object_id": "int64",
+    "start_index": "int64",
+    "peak_index": "int64",
+    "end_index": "int64",
+    "is_complete": "bool",
+    "period_seconds": "float64",
+    "full_excursion": "float64",
+    "temporal_symmetry": "float64",
+}
 
 
 def assemble_objects(
@@ -22,7 +31,7 @@ def assemble_objects(
     """Build trough–peak–trough objects from documented LLM boundaries."""
     rows: list[dict[str, object]] = []
 
-    for start, end in zip(troughs[:-1], troughs[1:]):
+    for start, end in zip(troughs[:-1], troughs[1:], strict=True):
         candidates = peaks[(peaks > start) & (peaks < end)]
         if len(candidates) != 1:
             continue
@@ -62,7 +71,14 @@ def assemble_objects(
                 )
             )
 
-    return pd.DataFrame.from_records(rows)
+    if not rows:
+        return pd.DataFrame(
+            {
+                column: pd.Series(dtype=dtype)
+                for column, dtype in OBJECT_DTYPES.items()
+            }
+        )
+    return pd.DataFrame.from_records(rows).astype(OBJECT_DTYPES)
 
 
 def object_row(
