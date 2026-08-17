@@ -26,11 +26,13 @@ class Transition():
         enter_state_col = f'enter_{signal}_{direction}' 
         exit_state_col = f'exit_{signal}_{direction}' 
         id_col = f'{signal}_id'
+        rate_of_change_col = f'{signal}_rate_of_change'
 
         df[state_col] = op(df[signal], eps=0)
         df[enter_state_col] = enter_state(df[f'{signal}_{direction}'])
         df[exit_state_col] = exit_state(df[f'{signal}_{direction}'])
         df[id_col] = event_id(df, enter_state_col, group)
+        # df[rate_of_change_col] = rate_of_change(df[f'{signal}_{direction}'])
 
         self.df = df
         self.group = group
@@ -55,7 +57,7 @@ class Transition():
             duration=(self.state_col, 'sum'),
             start_value=(self.signal, 'first'),
             end_value=(self.signal, 'last'),
-            peak_rate_of_change=(self.rate_of_change_col, 'max')
+            # peak_rate_of_change=(self.rate_of_change_col, 'max')
         )
 
         summarydf['net_change'] = summarydf['end_value'] - summarydf['start_value']
