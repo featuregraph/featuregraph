@@ -26,3 +26,24 @@ def test_assemble_objects_applies_complete_and_partial_contracts() -> None:
     assert result.loc[1, "period_seconds"] == 1.5
     assert result.loc[0, "full_excursion"] == 2
     assert result.loc[0, "temporal_symmetry"] == pytest.approx(2 / 3)
+
+
+def test_assemble_objects_preserves_schema_when_no_objects_exist() -> None:
+    result = assemble_objects(
+        np.zeros(100),
+        np.array([], dtype=int),
+        np.array([], dtype=int),
+    )
+
+    assert result.empty
+    assert result.columns.tolist() == [
+        "llm_object_id",
+        "start_index",
+        "peak_index",
+        "end_index",
+        "is_complete",
+        "period_seconds",
+        "full_excursion",
+        "temporal_symmetry",
+    ]
+    assert result["is_complete"].dtype == bool
