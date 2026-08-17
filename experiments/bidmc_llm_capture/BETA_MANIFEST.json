@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "release_version": "0.1.0b1",
+  "dataset": {
+    "name": "BIDMC PPG and Respiration Dataset",
+    "version": "1.0.0",
+    "subjects": "1-53",
+    "sampling_rate_hz": 125
+  },
+  "construction": {
+    "name": "envelope_plateau",
+    "version": "envelope_plateau_v1",
+    "envelope_window_samples": 100,
+    "envelope_shift_samples": 100,
+    "extremum_projection": "floor midpoint of exact flat run",
+    "clinical_interpretation": "unassigned"
+  },
+  "command": "PYTHONPATH=. python experiments/bidmc_llm_capture/multi_subject_comparison.py --subjects 1-53 --jobs 4 --construction envelope_plateau --output-directory experiments/bidmc_llm_capture/results/envelope_plateau_multi_subject",
+  "verification_command": "PYTHONPATH=. python experiments/bidmc_llm_capture/verify_beta_release.py",
+  "expected": {
+    "subjects": 53,
+    "failures": 0,
+    "detected_peak_events": 8205,
+    "featuregraph_complete_objects": 8133,
+    "baseline_complete_objects": 7168,
+    "matched_objects": 7086,
+    "featuregraph_only_objects": 1047,
+    "baseline_only_objects": 82,
+    "featuregraph_ambiguous_objects": 100,
+    "featuregraph_invalidated_complete_objects": 47,
+    "excluded_by_both_annotators": 680,
+    "not_excluded_by_both_annotators": 367
+  },
+  "outputs": [
+    "annotation_summary.csv",
+    "annotation_unmatched_peaks.csv",
+    "cohort_summary.csv",
+    "detector_discordant_episodes.csv",
+    "failures.csv",
+    "featuregraph_only_objects.csv",
+    "llm_only_objects.csv",
+    "matched_objects_subjects_01_27.csv",
+    "matched_objects_subjects_28_53.csv",
+    "plateau_ambiguous_objects.csv",
+    "subject_summary.csv"
+  ]
+}

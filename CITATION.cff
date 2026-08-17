@@ -6,9 +6,8 @@ type: software
 authors:
   - family-names: "Habib"
     given-names: "Nazia"
-version: "0.1.0a1"
-date-released: "2026-07-24"
-doi: "10.5281/zenodo.21535661"
+version: "0.1.0b1"
+date-released: "2026-08-17"
 license: MIT
 repository-code: "https://github.com/featuregraph/featuregraph"
 url: "https://featuregraph.ai"

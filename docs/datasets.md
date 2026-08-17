@@ -53,9 +53,8 @@ The default dataset is cached outside the repository. Use `refresh=True` to
 regenerate it from the same seed and equations.
 
 ```{note}
-The CartPole loader was added to `alpha/v0.1.x` after the immutable
-`v0.1.0a1` tag. Install the maintenance branch to use it until the next
-alpha-line release is published.
+The CartPole loader is included in `v0.1.0b1`. Install the maintained branch
+to use subsequent compatible research-line changes before another release.
 ```
 
 ### Construct behavioral objects
