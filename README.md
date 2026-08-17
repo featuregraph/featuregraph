@@ -97,8 +97,6 @@ long_oscillations = (
 )
 ```
 
-Pandas can filter a table. FeatureGraph constructs the behavioral table that makes the filtering meaningful.
-
 See the [alpha demo notebook](https://github.com/featuregraph/featuregraph/blob/v0.1.0a2/notebooks/demo_notebook.ipynb) for oscillation, accumulation, query, BIDMC, and Tennessee Eastman examples.
 
 ## Alpha research record
