@@ -1,6 +1,6 @@
 # Alpha quickstart
 
-This example uses the immutable `v0.1.0a1` API.
+This example uses the `v0.1.0b1` beta API.
 
 ```python
 import featuregraph as fg
@@ -47,4 +47,4 @@ Pandas can filter a table. FeatureGraph constructs the behavioral table that
 makes the filtering meaningful.
 
 For the full example, see the
-[alpha demonstration notebook](https://github.com/featuregraph/featuregraph/blob/v0.1.0a1/notebooks/demo_notebook.ipynb).
+[beta demonstration notebook](https://github.com/featuregraph/featuregraph/blob/v0.1.0b1/notebooks/demo_notebook.ipynb).

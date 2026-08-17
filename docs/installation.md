@@ -1,18 +1,18 @@
 # Installation
 
-## Released alpha
+## Beta release
 
-The released alpha is the supported choice for demonstrations, reproduction,
+The beta is the supported choice for demonstrations, reproduction,
 and evaluation:
 
 ```bash
 python -m pip install \
-  "featuregraph @ git+https://github.com/featuregraph/featuregraph.git@v0.1.0a1"
+  "featuregraph @ git+https://github.com/featuregraph/featuregraph.git@v0.1.0b1"
 ```
 
 FeatureGraph supports Python 3.10 through 3.13.
 
-## Editable alpha checkout
+## Editable beta checkout
 
 To modify or inspect the released implementation:
 

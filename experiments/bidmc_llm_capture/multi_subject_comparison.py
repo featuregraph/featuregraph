@@ -35,6 +35,7 @@ ANNOTATION_COLUMNS = (
     "breaths ann1 [signal sample no]",
     "breaths ann2 [signal sample no]",
 )
+CONSTRUCTION_VERSION = "envelope_plateau_v1"
 
 
 def robust_difference_scale(
@@ -66,11 +67,15 @@ def native_featuregraph_objects(
     normalized_eps: float | None = None,
 ) -> tuple[pd.DataFrame, list[int]]:
     """Apply a native construction and return objects and detected peaks."""
-    if construction == "envelope":
-        return native_envelope_objects(observations)
+    if construction in {"envelope", "envelope_plateau"}:
+        return native_envelope_objects(
+            observations,
+            plateau_midpoints=construction == "envelope_plateau",
+        )
     if construction != "difference":
         raise ValueError(
-            "construction must be 'difference' or 'envelope'"
+            "construction must be 'difference', 'envelope', or "
+            "'envelope_plateau'"
         )
     if scaling not in {"absolute", "mad"}:
         raise ValueError("scaling must be 'absolute' or 'mad'")
@@ -230,6 +235,12 @@ def compare_subject(
         construction=construction,
         scaling=scaling,
     )
+    if "plateau_boundary_ambiguous" in featuregraph_objects:
+        featuregraph_ambiguous = featuregraph_objects.loc[
+            featuregraph_objects["plateau_boundary_ambiguous"]
+        ].copy()
+    else:
+        featuregraph_ambiguous = pd.DataFrame()
     raw = observations[["respiration"]].copy()
     llm_objects = reproduce(raw)
     llm_peaks, _ = detect_boundaries(raw["respiration"].to_numpy())
@@ -249,6 +260,15 @@ def compare_subject(
     summary["llm_detected_peaks"] = len(llm_peak_list)
     summary["featuregraph_partial_objects"] = int(
         (~featuregraph_objects["is_complete"]).sum()
+    )
+    summary["featuregraph_ambiguous_objects"] = len(
+        featuregraph_ambiguous
+    )
+    summary["featuregraph_invalidated_complete_objects"] = int(
+        featuregraph_ambiguous.get(
+            "plateau_invalidated_complete",
+            pd.Series(dtype=bool),
+        ).sum()
     )
     summary["llm_partial_objects"] = int(
         (~llm_objects["is_complete"]).sum()
@@ -301,13 +321,19 @@ def compare_subject(
     else:
         summary["featuregraph_only_excluded_by_both_annotators"] = 0
 
-    for table in (matched, featuregraph_only, llm_only):
+    for table in (
+        matched,
+        featuregraph_only,
+        llm_only,
+        featuregraph_ambiguous,
+    ):
         table.insert(0, "subject", subject)
 
     return {
         "summary": summary,
         "matched": matched,
         "featuregraph_only": featuregraph_only,
+        "featuregraph_ambiguous": featuregraph_ambiguous,
         "llm_only": llm_only,
         "annotation_summary": pd.DataFrame(annotation_rows),
         "annotation_unmatched": pd.DataFrame(annotation_unmatched),
@@ -360,6 +386,14 @@ def cohort_summary(
             "baseline_only_objects": int(
                 subjects["llm_only_objects"].sum()
             ),
+            "featuregraph_ambiguous_objects": int(
+                subjects["featuregraph_ambiguous_objects"].sum()
+            ),
+            "featuregraph_invalidated_complete_objects": int(
+                subjects[
+                    "featuregraph_invalidated_complete_objects"
+                ].sum()
+            ),
             "median_subject_featuregraph_matched_fraction": subjects[
                 "featuregraph_matched_fraction"
             ].median(),
@@ -404,6 +438,118 @@ def cohort_summary(
                 )
         rows.append(row)
     return pd.DataFrame(rows)
+
+
+def detector_discordant_episodes(
+    featuregraph_only: pd.DataFrame,
+) -> pd.DataFrame:
+    """Build the stable handoff table for unmatched FeatureGraph objects.
+
+    Labels in this table describe computational disagreement and temporal
+    organization only. ``clinical_interpretation`` is deliberately left
+    unassigned for downstream domain review.
+    """
+    episodes = featuregraph_only.copy()
+    if episodes.empty:
+        return episodes
+
+    episodes = episodes.sort_values(
+        ["subject", "featuregraph_object_id"],
+        kind="stable",
+    ).reset_index(drop=True)
+    subject = episodes["subject"].astype(int)
+    object_id = episodes["featuregraph_object_id"].astype(int)
+    new_run = subject.ne(subject.shift()) | object_id.diff().ne(1)
+    episodes["burst_number"] = (
+        new_run.groupby(subject, sort=False).cumsum().astype(int)
+    )
+    group_columns = ["subject", "burst_number"]
+    episodes["burst_size"] = episodes.groupby(
+        group_columns,
+        sort=False,
+    )["featuregraph_object_id"].transform("size")
+    episodes["temporal_pattern"] = np.where(
+        episodes["burst_size"].gt(1),
+        "burst",
+        "isolated",
+    )
+    episodes["episode_id"] = [
+        f"bidmc-{subject_id:02d}-fg-{candidate_id:04d}"
+        for subject_id, candidate_id in zip(subject, object_id, strict=True)
+    ]
+    episodes["burst_id"] = [
+        f"bidmc-{subject_id:02d}-burst-{burst_id:03d}"
+        for subject_id, burst_id in zip(
+            subject,
+            episodes["burst_number"],
+            strict=True,
+        )
+    ]
+    episodes["previous_featuregraph_object_id"] = object_id - 1
+    episodes["next_featuregraph_object_id"] = object_id + 1
+
+    episodes["discordance_type"] = "featuregraph_only"
+    ann1 = episodes["excluded_by_ann1"].astype(bool)
+    ann2 = episodes["excluded_by_ann2"].astype(bool)
+    episodes["annotation_status"] = np.select(
+        [ann1 & ann2, ann1 & ~ann2, ~ann1 & ann2],
+        ["excluded_by_both", "excluded_by_ann1", "excluded_by_ann2"],
+        default="retained_by_both",
+    )
+    episodes["retained_by_one_or_both_annotators"] = ~(ann1 & ann2)
+    episodes["clinical_interpretation"] = "unassigned"
+
+    for boundary in ("start", "peak", "end"):
+        episodes[f"{boundary}_time_seconds"] = (
+            episodes[f"{boundary}_index"] / SAMPLING_RATE
+        )
+    episodes["peak_detection_time_seconds"] = (
+        episodes["peak_detection_index"] / SAMPLING_RATE
+    )
+    episodes["sampling_rate_hz"] = SAMPLING_RATE
+    episodes["construction"] = "envelope_plateau"
+    episodes["construction_version"] = CONSTRUCTION_VERSION
+    episodes["comparator"] = "frozen_llm_scipy_find_peaks"
+
+    leading_columns = [
+        "episode_id",
+        "subject",
+        "featuregraph_object_id",
+        "discordance_type",
+        "temporal_pattern",
+        "burst_id",
+        "burst_size",
+        "previous_featuregraph_object_id",
+        "next_featuregraph_object_id",
+        "start_index",
+        "start_time_seconds",
+        "peak_index",
+        "peak_time_seconds",
+        "end_index",
+        "end_time_seconds",
+        "peak_detection_index",
+        "peak_detection_time_seconds",
+        "peak_detection_latency_samples",
+        "peak_detection_latency_seconds",
+        "period_seconds",
+        "full_excursion",
+        "temporal_symmetry",
+        "annotation_status",
+        "excluded_by_ann1",
+        "excluded_by_ann2",
+        "excluded_by_both_annotators",
+        "retained_by_one_or_both_annotators",
+        "plateau_boundary_ambiguous",
+        "clinical_interpretation",
+        "sampling_rate_hz",
+        "construction",
+        "construction_version",
+        "comparator",
+    ]
+    remaining_columns = [
+        column for column in episodes if column not in leading_columns
+    ]
+    return episodes[leading_columns + remaining_columns]
 
 
 def run(
@@ -483,6 +629,7 @@ def run(
 
     outputs = {
         "featuregraph_only_objects.csv": "featuregraph_only",
+        "plateau_ambiguous_objects.csv": "featuregraph_ambiguous",
         "llm_only_objects.csv": "llm_only",
         "annotation_summary.csv": "annotation_summary",
         "annotation_unmatched_peaks.csv": "annotation_unmatched",
@@ -506,6 +653,13 @@ def run(
             index=False,
         )
     combined_outputs["matched"] = matched_objects
+
+    detector_discordant_episodes(
+        combined_outputs["featuregraph_only"]
+    ).to_csv(
+        output_directory / "detector_discordant_episodes.csv",
+        index=False,
+    )
 
     cohort_summary(
         summary,
@@ -545,7 +699,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--construction",
-        choices=("difference", "envelope"),
+        choices=("difference", "envelope", "envelope_plateau"),
         default="difference",
     )
     parser.add_argument(

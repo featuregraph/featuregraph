@@ -13,7 +13,7 @@ This clean, executable notebook walks from a raw respiration waveform to explici
 
 The paper draft asks what remains maintainable when an LLM-assisted analysis is converted into an explicit computational representation. It reports what the BIDMC experiment preserved, where the representation transferred, and where the boundary rule failed.
 
-> Short path: **install the alpha → run the notebook → inspect the paper and stored evidence.**
+> Short path: **install the beta → run the notebook → inspect the paper and stored evidence.**
 
 A raw time series contains values. It may also contain oscillations, transitions, and accumulations, but those behaviors remain implicit until their states, boundaries, identities, and properties are constructed. FeatureGraph performs that construction deterministically and returns one row per behavioral object.
 
@@ -25,19 +25,23 @@ observations
     → computational queries
 ```
 
-This branch maintains the released FeatureGraph alpha, `v0.1.0a2`. It provides oscillation objects, wave-derived accumulation objects, inspectable construction features, and a small deterministic query interface. Pandas is the reference execution model.
+This branch maintains the FeatureGraph beta, `v0.1.0b1`. It provides
+oscillation objects, wave-derived accumulation objects, inspectable
+construction features, and a small deterministic query interface. The beta
+adds the validated BIDMC envelope/interval construction and a stable handoff
+for detector-discordant episodes. Pandas is the reference execution model.
 
-> The `main` branch contains an unreleased successor architecture and is not API-compatible with this alpha.
+> The `main` branch contains an unreleased successor architecture and is not API-compatible with this beta.
 
-## Install the alpha
+## Install the beta
 
 Install the immutable release:
 
 ```bash
-python -m pip install "featuregraph @ git+https://github.com/featuregraph/featuregraph.git@v0.1.0a2"
+python -m pip install "featuregraph @ git+https://github.com/featuregraph/featuregraph.git@v0.1.0b1"
 ```
 
-For development against the alpha maintenance branch:
+For development against the maintained oscillation/accumulation branch:
 
 ```bash
 git clone --branch alpha/v0.1.x --single-branch \
@@ -74,15 +78,15 @@ long_oscillations = (
 
 ## Documentation and research record
 
-- [Alpha documentation](https://featuregraph.readthedocs.io/)
+- [Beta documentation](https://featuregraph.readthedocs.io/)
 - [Quickstart](https://featuregraph.readthedocs.io/en/latest/quickstart.html)
 - [Datasets](https://featuregraph.readthedocs.io/en/latest/datasets.html)
 - [API reference](https://featuregraph.readthedocs.io/en/latest/api/index.html)
-- [Demonstration notebook](https://github.com/featuregraph/featuregraph/blob/v0.1.0a2/notebooks/demo_notebook.ipynb)
-- [Alpha manuscript and evidence](artifacts/paper/README.md)
+- [Demonstration notebook](https://github.com/featuregraph/featuregraph/blob/v0.1.0b1/notebooks/demo_notebook.ipynb)
+- [Manuscript and evidence](artifacts/paper/README.md)
 - [Reproducibility guide](docs/reproducibility.md)
-- [Release `v0.1.0a2`](https://github.com/featuregraph/featuregraph/releases/tag/v0.1.0a2)
-- [Archived research record](https://doi.org/10.5281/zenodo.21939319)
+- [Beta release `v0.1.0b1`](https://github.com/featuregraph/featuregraph/releases/tag/v0.1.0b1)
+- [Frozen alpha research record](https://doi.org/10.5281/zenodo.21939319)
 - [Project website](https://featuregraph.ai)
 
 ## Reproduce the research artifacts
@@ -93,9 +97,11 @@ python scripts/reproduce.py
 
 The command reads the versioned reproduction manifest, downloads the fixed BIDMC and Tennessee Eastman selections, reconstructs object tables, generates annotated figures, and records environment and checksum metadata. See the [reproducibility guide](docs/reproducibility.md) for details.
 
-## Living alpha research line
+## Beta research line
 
-The alpha is not frozen. It remains an active research line for asking how well the existing oscillation and accumulation workflow transfers to additional datasets and physical domains.
+The beta is the maintained research line for asking how well the existing
+oscillation and accumulation workflow transfers to additional datasets and
+physical domains. The frozen alpha tags remain unchanged.
 
 Work on `alpha/v0.1.x` may:
 
@@ -104,15 +110,18 @@ Work on `alpha/v0.1.x` may:
 - compare object schemas, measurements, robustness, and failure modes;
 - strengthen tests, provenance, and reproducibility;
 - correct defects without silently changing released semantics;
-- extend the alpha manuscript with evidence from this line of research.
+- extend the manuscript with evidence from this line of research.
 
 Architectural redesign, successor object models, and incompatible API development belong on `main`. The distinction is between extending the alpha's empirical reach and extending its architecture.
 
 ## Citation
 
-If you use FeatureGraph in research, cite the archived alpha software record:
+For the frozen BIDMC preservation record, cite the archived alpha artifact:
 
 > Habib, N. (2026). *FeatureGraph* (v0.1.0a2). Zenodo. https://doi.org/10.5281/zenodo.21939319
+
+For the beta implementation, identify `v0.1.0b1` and its exact Git commit in
+addition to any archived study record.
 
 Machine-readable citation metadata is available in [CITATION.cff](CITATION.cff).
 

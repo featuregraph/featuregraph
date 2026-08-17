@@ -4,11 +4,11 @@ import pandas as pd
 
 from experiments.bidmc_llm_capture.multi_subject_comparison import (
     annotation_comparison,
+    detector_discordant_episodes,
     native_featuregraph_objects,
     parse_subjects,
     robust_difference_scale,
 )
-
 
 RESULTS = (
     Path(__file__).parents[1]
@@ -17,6 +17,7 @@ RESULTS = (
     / "results"
     / "multi_subject"
 )
+PLATEAU_RESULTS = RESULTS.parent / "envelope_plateau_multi_subject"
 
 
 def test_parse_subjects_supports_ranges_and_preserves_order() -> None:
@@ -98,3 +99,59 @@ def test_frozen_multi_subject_results_are_complete_and_accounted() -> None:
         summary["matched_objects"] + summary["llm_only_objects"]
         == summary["llm_complete_objects"]
     ).all()
+
+
+def test_detector_discordant_handoff_labels_runs_without_clinical_claims() -> None:
+    objects = pd.DataFrame(
+        {
+            "subject": [2, 2, 2],
+            "featuregraph_object_id": [10, 11, 14],
+            "start_index": [100, 200, 400],
+            "peak_index": [125, 225, 425],
+            "end_index": [150, 250, 450],
+            "peak_detection_index": [225, 325, 525],
+            "peak_detection_latency_samples": [100, 100, 100],
+            "peak_detection_latency_seconds": [0.8, 0.8, 0.8],
+            "period_seconds": [1.0, 1.0, 2.0],
+            "full_excursion": [0.5, 0.6, 0.7],
+            "temporal_symmetry": [1.0, 1.0, 1.0],
+            "excluded_by_ann1": [True, False, False],
+            "excluded_by_ann2": [True, False, True],
+            "excluded_by_both_annotators": [True, False, False],
+            "plateau_boundary_ambiguous": [False, False, False],
+        }
+    )
+
+    episodes = detector_discordant_episodes(objects)
+
+    assert episodes["temporal_pattern"].tolist() == [
+        "burst",
+        "burst",
+        "isolated",
+    ]
+    assert episodes["burst_size"].tolist() == [2, 2, 1]
+    assert episodes["annotation_status"].tolist() == [
+        "excluded_by_both",
+        "retained_by_both",
+        "excluded_by_ann2",
+    ]
+    assert episodes["clinical_interpretation"].eq("unassigned").all()
+
+
+def test_plateau_beta_results_are_complete_and_accounted() -> None:
+    cohort = pd.read_csv(PLATEAU_RESULTS / "cohort_summary.csv")
+    handoff = pd.read_csv(
+        PLATEAU_RESULTS / "detector_discordant_episodes.csv"
+    )
+    all_subjects = cohort.loc[cohort["cohort"].eq("all_subjects")].iloc[0]
+
+    assert int(all_subjects["featuregraph_complete_objects"]) == 8133
+    assert int(all_subjects["matched_objects"]) == 7086
+    assert int(all_subjects["featuregraph_only_objects"]) == 1047
+    assert int(all_subjects["baseline_only_objects"]) == 82
+    assert int(all_subjects["featuregraph_ambiguous_objects"]) == 100
+    assert int(
+        all_subjects["featuregraph_invalidated_complete_objects"]
+    ) == 47
+    assert len(handoff) == 1047
+    assert handoff["clinical_interpretation"].eq("unassigned").all()

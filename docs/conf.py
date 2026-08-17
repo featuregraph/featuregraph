@@ -7,7 +7,7 @@ import os
 project = "FeatureGraph"
 author = "Nazia Habib"
 copyright = "2026, Nazia Habib"
-release = "0.1.0a1"
+release = "0.1.0b1"
 
 extensions = [
     "myst_parser",

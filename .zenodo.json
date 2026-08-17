@@ -6,7 +6,7 @@
       "name": "Habib, Nazia"
     }
   ],
-  "version": "0.1.0a1",
+  "version": "0.1.0b1",
   "upload_type": "software",
   "access_right": "open",
   "license": "mit",
@@ -24,8 +24,8 @@
       "scheme": "url"
     },
     {
-      "identifier": "10.5281/zenodo.21535661",
-      "relation": "isIdenticalTo",
+      "identifier": "10.5281/zenodo.21939319",
+      "relation": "isNewVersionOf",
       "scheme": "doi"
     }
   ]

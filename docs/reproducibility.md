@@ -98,4 +98,9 @@ New datasets, evaluations, and compatible corrections are in scope. Redesigning 
 
 ## Archived release
 
-The immutable software release is [`v0.1.0a1`](https://github.com/featuregraph/featuregraph/releases/tag/v0.1.0a1). Its archived research record is [10.5281/zenodo.21535661](https://doi.org/10.5281/zenodo.21535661). The maintenance branch may extend the research record, but results must continue to identify the exact code revision and dataset manifest used.
+The current immutable software release is
+[`v0.1.0b1`](https://github.com/featuregraph/featuregraph/releases/tag/v0.1.0b1).
+The frozen alpha preservation record remains archived at
+[10.5281/zenodo.21939319](https://doi.org/10.5281/zenodo.21939319). The
+maintenance branch may extend the research record, but results must continue
+to identify the exact code revision and dataset manifest used.

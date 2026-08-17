@@ -1,52 +1,77 @@
-# Alpha release record
+# Beta release record
 
-This file records the completed FeatureGraph alpha release and the checks that should remain true while its maintenance branch evolves.
+This record promotes the maintained FeatureGraph oscillation/accumulation
+research line to beta after the full BIDMC envelope and interval-extremum
+audit. The immutable alpha releases remain unchanged.
 
 ## Released artifact
 
 | Field | Value |
 | --- | --- |
-| Package version | `0.1.0a1` |
-| Git tag | [`v0.1.0a1`](https://github.com/featuregraph/featuregraph/releases/tag/v0.1.0a1) |
-| Release date | 2026-07-24 |
-| Maintenance branch | `alpha/v0.1.x` |
-| Zenodo DOI | [10.5281/zenodo.21535661](https://doi.org/10.5281/zenodo.21535661) |
+| Package version | `0.1.0b1` |
+| Git tag | [`v0.1.0b1`](https://github.com/featuregraph/featuregraph/releases/tag/v0.1.0b1) |
+| Release date | 2026-08-17 |
+| Source branch | `alpha/v0.1.x` |
+| Frozen predecessor | [`v0.1.0a2`](https://github.com/featuregraph/featuregraph/releases/tag/v0.1.0a2) |
+| Frozen alpha archive | [10.5281/zenodo.21939319](https://doi.org/10.5281/zenodo.21939319) |
 | Supported Python | 3.10–3.13 |
 
-The tag is the immutable software release. The maintenance branch contains its living oscillation/accumulation research line, documentation, and compatible corrections. The `main` branch contains unreleased successor architecture work.
+The beta tag is the immutable source release. The branch name is retained to
+preserve existing links and the historical separation from the incompatible
+successor architecture on `main`.
 
-## Release contents
+## Beta scope
 
-- explicit oscillation objects;
-- wave-derived accumulation objects;
-- inspectable construction features and object tables;
-- deterministic object queries;
-- BIDMC and Tennessee Eastman dataset loaders;
-- a versioned reproduction manifest and artifact generator;
-- environment, timing, and checksum metadata;
-- tests across Python 3.10 through 3.13;
-- source and wheel build checks;
-- citation and archival metadata.
+The beta supports deterministic offline construction, measurement, ambiguity
+detection, comparison, and handoff of explicit behavioral objects. The BIDMC
+adapter preserves raw observations, grouped smoothing, transition anchors,
+interval-valued extrema, midpoint projections, causal detection latency, and
+detector-discordant episodes.
 
-## Research-line scope
+The beta does not claim:
 
-The alpha branch may add datasets, cross-domain demonstrations, evaluation methods, generated evidence, and compatible corrections that exercise the existing oscillation/accumulation workflow. Architectural redesign and incompatible APIs belong on `main`.
+- clinical interpretation or abnormality diagnosis;
+- automatic respiratory morphology classification;
+- universal detector equivalence;
+- real-time operation of the offline-aligned envelope;
+- compatibility with the transition-only successor on `main`.
 
-## Maintenance verification
+## BIDMC beta evidence
 
-Before merging a change into `alpha/v0.1.x`:
+- 53 subjects processed with no failures;
+- 8,205 detected FeatureGraph peak events;
+- 8,133 complete FeatureGraph objects;
+- 7,086 matches to 7,168 frozen comparator objects;
+- 1,047 FeatureGraph-only and 82 comparator-only objects;
+- 100 explicitly ambiguous rows, including 47 formerly complete objects;
+- stable `detector_discordant_episodes.csv` handoff with clinical
+  interpretation explicitly unassigned;
+- 119 tests passed before the beta release candidate was assembled.
 
-- [ ] Confirm the change preserves alpha scope and does not import successor-only behavior from `main`.
-- [ ] Run `python -m pytest`.
-- [ ] Run `python -m build`.
-- [ ] Confirm the clean wheel imports as version `0.1.0a1`.
-- [ ] Execute the demonstration notebook when public API examples change.
-- [ ] Run `python scripts/reproduce.py --refresh` when datasets, constructors, measurements, or paper evidence change.
-- [ ] Compare regenerated tables and figures with the manuscript claims.
-- [ ] Review `environment.json` and `run_metadata.json`.
-- [ ] Confirm documentation builds without warnings.
-- [ ] Update `CHANGELOG.md` when a user-visible correction is introduced.
+## Release verification
 
-## Research record
+- [x] Confirm the diff remains compatible with the oscillation/accumulation
+  research line and contains no successor-only API.
+- [x] Run `python -m pytest` (119 passed).
+- [x] Run targeted Ruff checks on changed Python files.
+- [x] Run `python -m build`.
+- [x] Confirm the clean wheel metadata reports version `0.1.0b1` without SciPy
+  installed as a core dependency.
+- [ ] Execute both public notebooks from the repository root.
+- [x] Regenerate the 53-subject envelope/plateau result directory.
+- [x] Run `experiments/bidmc_llm_capture/verify_beta_release.py`.
+- [x] Compare regenerated tables with the manuscript claims.
+- [ ] Confirm GitHub Actions passes on Python 3.10–3.13, notebook execution,
+  and distribution builds.
+- [ ] Create and verify the immutable `v0.1.0b1` prerelease.
 
-The alpha manuscript and supporting evidence live under [`artifacts/paper/`](artifacts/paper/README.md). The reproduction inputs and expected outputs are defined in [`reproducibility/manifest.json`](reproducibility/manifest.json). Instructions are in [`docs/reproducibility.md`](docs/reproducibility.md).
+## Reproduction
+
+The beta-specific contract is recorded in
+`experiments/bidmc_llm_capture/BETA_MANIFEST.json`. The existing general paper
+artifacts remain governed by `reproducibility/manifest.json` and
+`docs/reproducibility.md`.
+
+SciPy is not a core package dependency in the beta. It remains an optional
+development/notebook dependency solely for reproducing the frozen LLM-selected
+comparison path.

@@ -3,11 +3,29 @@
 The frozen multi-subject result is recorded in `MULTI_SUBJECT_RESULTS.md`.
 The subsequent rolling-envelope construction and its 53-subject rerun are
 recorded in `ENVELOPE_RESULTS.md`.
+The post hoc exact-plateau midpoint experiment is recorded in
+`PLATEAU_RESULTS.md`.
+Its stable downstream handoff is
+`results/envelope_plateau_multi_subject/detector_discordant_episodes.csv`.
+Every row is a bounded computational disagreement with an isolated/burst
+label, annotation status, construction provenance, and
+`clinical_interpretation=unassigned`.
 The scale-adaptive subject 5 hysteresis test is recorded in
 `HYSTERESIS_RESULTS.md` and reproduced by `hysteresis_ablation.py`.
 The completed absolute-versus-MAD study and its interpretation are incorporated
 into `artifacts/paper/bidmc_llm_preservation_study/manuscript.md`. Exact paired
 cohort statistics are reproduced by `compare_scaling_runs.py`.
+
+The beta cohort and handoff tables are regenerated with:
+
+```bash
+PYTHONPATH=. python experiments/bidmc_llm_capture/multi_subject_comparison.py \
+  --subjects 1-53 --jobs 4 --construction envelope_plateau \
+  --output-directory \
+  experiments/bidmc_llm_capture/results/envelope_plateau_multi_subject
+PYTHONPATH=. python \
+  experiments/bidmc_llm_capture/verify_beta_release.py
+```
 
 Study governance is recorded separately:
 
