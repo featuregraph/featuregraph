@@ -31,6 +31,16 @@ gain came with severe over-segmentation: FeatureGraph-only objects increased
 from 2,671 to 5,553, and the normalized construction was undefined for two
 records with zero difference MAD.
 
+A subsequent post hoc audit constructed boundaries from a grouped
+rolling-maximum/rolling-mean envelope and represented exact flat extrema as
+bounded intervals with midpoint projections. Midpoint projection preserved all
+8,205 detected peak events but increased baseline matches from 6,513 to 7,086
+of 7,168 complete baseline objects. Median absolute peak error fell from 16 to
+6.5 samples and median period error from 0.080 to 0.056 seconds; full-excursion
+error was unchanged, while symmetry error did not improve. The audit showed
+that subjects 35, 38, and 39 were primarily failures of point-peak semantics,
+whereas subject 5 retained substantial over-segmentation.
+
 The study demonstrates successful preservation, deterministic execution,
 object-level auditability, and explicit failure localization. Determinism
 preserved the researcher-specified representation; it did not supply the
@@ -54,7 +64,9 @@ FeatureGraph proposes a framework for deterministic preservation and repeatable 
 3. a 53-subject transfer evaluation of the original absolute transition rule;
 4. a second cohort experiment isolating the effect of subject-level MAD
    normalization; and
-5. a capability ledger separating LLM proposal, researcher judgment,
+5. a post hoc representation audit distinguishing transition boundaries from
+   interval-valued extrema; and
+6. a capability ledger separating LLM proposal, researcher judgment,
    FeatureGraph execution, conventional signal-processing dependencies, and
    functionality preserved without continued LLM access.
 
@@ -73,6 +85,14 @@ The BIDMC study produced the following results under these criteria:
 - Transfer: the same absolute contract produced substantial unmatched objects across subjects 2 through 53.
 
 As a diagnostic modification, MAD normalization improved baseline coverage but increased over-segmentation and was undefined for two records. These results localize one source of over-segmentation to construction parameters calibrated too specifically to a single development record.
+
+A later envelope and plateau audit localized a second failure mechanism. For
+flat-topped signals, exiting the rising state marks the beginning of a maximum
+interval, whereas SciPy and the BIDMC annotations may associate the same cycle
+with a point near the interval midpoint. Correcting that projection recovered
+substantial agreement without adding or deleting detected peak events. Because
+the audit was developed after inspecting transfer failures, it is explanatory
+rather than confirmatory.
 
 ## 2. Representation
 
@@ -143,6 +163,9 @@ The BIDMC study identified several areas where these contracts failed:
 **Both contracts:**
 
 - wave symmetry: its formula is a measurement choice but its value depends on boundary landmarks determined by the construction contract
+- a transition boundary can mark the start or end of an extremum interval,
+  while a conventional comparison may require a projected point such as the
+  interval midpoint
 
 ### 2.6 Semantic or physical context
 
@@ -297,7 +320,7 @@ each result.
 | --- | --- | --- | --- |
 | Exploratory development | Subject 1 | Inspect waveform; choose and revise contracts; harmonize measures; debug boundaries | Generates hypotheses and implementation; no transfer claim |
 | Frozen absolute transfer | Subjects 2–53 | Run the locked LLM baseline and locked FeatureGraph absolute rule; no per-subject tuning or correction | Primary evidence about transfer of the original representation |
-| Post-transfer diagnosis | Subjects 1–53, with paired reporting on the 51 MAD-valid records | Test the single subject-1-calibrated MAD normalization and subject-5 hysteresis diagnostic | Ablation explaining failures; not independent validation |
+| Post-transfer diagnosis | Subjects 1–53, with paired reporting on the 51 MAD-valid records | Test MAD normalization, subject-5 hysteresis, the rolling-envelope construction, and exact-plateau midpoint projection | Ablations and representation audits explaining failures; not independent validation |
 | Future confirmatory evaluation | New declared split or external dataset | Freeze the transition-only contract before opening the test outcomes | Required for a confirmatory transfer claim |
 
 The absolute FeatureGraph rule and the frozen LLM/SciPy baseline were locked
@@ -308,7 +331,10 @@ conceived after the absolute transfer failures had been observed. Although its
 threshold was calibrated only from subject 1 and then shared, its evaluation
 uses previously examined records; it is therefore explicitly post hoc. The
 subject 5 hysteresis pass is an even narrower diagnostic and is not a cohort
-result.
+result. The envelope and plateau rules were developed after examining subject
+1 and the severe cohort failures, including subjects 5, 35, 38, and 39. Their
+53-subject reruns therefore remain post hoc even though one fixed rule was
+applied to every record.
 
 This protocol prevents three invalid substitutions: development agreement is
 not transfer, agreement with the frozen baseline is not clinical accuracy, and
@@ -441,6 +467,39 @@ exercise. Hysteresis was excluded so that only the normalization changed.
 When MAD equaled zero, the construction was declared undefined; no arbitrary
 fallback scale was substituted.
 
+### 5.8 Rolling-envelope and interval-extremum audit
+
+The post hoc envelope construction preserves the raw respiration observation
+for measurement and adds a separate construction signal. Within each subject,
+it applies a 100-sample rolling maximum followed by a 100-sample rolling mean
+and shifts the result backward by 100 samples for offline alignment. Invalid
+endpoint rows are excluded, and no operation crosses subject boundaries.
+Rising is defined as a positive one-sample difference of the aligned envelope;
+exiting rising creates the original transition-derived peak anchor.
+
+The plateau adapter changes representation rather than event detection. Every
+exact constant-valued run containing an already detected peak or trough is
+stored as an interval `[l,r]`. Its canonical comparison point is
+
+$$
+l + \left\lfloor\frac{r-l}{2}\right\rfloor,
+$$
+
+which follows
+[`scipy.signal.find_peaks`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.find_peaks.html)'s
+floor-midpoint convention for even-length flat peaks.
+Original transition anchors are retained alongside interval edges. For a
+causal implementation, the peak detection index is the upper-plateau end plus
+the 100-sample alignment delay; it is therefore distinct from the
+offline-aligned midpoint event index. If midpointed extremum intervals overlap
+or fail strict trough–peak–trough order, the object is retained with
+`plateau_boundary_ambiguous=True` and excluded from complete-object metrics.
+
+The envelope-leading-edge and plateau-midpoint constructions use identical
+envelope samples and detected transition events. Raw within-object extrema
+remain the source of full excursion. This isolates the effect of representing
+an extended extremum and projecting it to a comparison timestamp.
+
 ## 6. Results
 
 ### 6.1 Development-record agreement
@@ -548,6 +607,52 @@ indicates that most extra candidates result from repeated threshold re-entry,
 not brief flicker within a neutral band. Because this diagnostic did not solve
 the transfer problem, hysteresis was not included in the full MAD cohort.
 
+### 6.5 Rolling envelope and plateau midpoint
+
+The rolling-envelope construction produced 8,205 peak events across all 53
+subjects. Replacing each leading-edge extremum anchor with an exact-plateau
+interval and midpoint projection preserved the same 8,205 events. Forty-seven
+formerly complete candidates became explicitly boundary-ambiguous because a
+peak and neighboring trough projected from the same or overlapping flat run.
+The saved ambiguity table contains 100 rows in total: 53 were already partial
+endpoint fragments, and 47 were newly excluded from complete-object metrics.
+
+| Measure, all 53 subjects | Envelope leading edge | Plateau midpoint |
+| --- | ---: | ---: |
+| Detected peak events | 8,205 | 8,205 |
+| Complete FeatureGraph objects | 8,180 | 8,133 |
+| LLM-baseline complete objects | 7,168 | 7,168 |
+| Matched objects | 6,513 | 7,086 |
+| FeatureGraph-only objects | 1,667 | 1,047 |
+| Baseline-only objects | 655 | 82 |
+| Median subject FeatureGraph matched fraction | 88.80% | 94.44% |
+| Median subject baseline matched fraction | 100% | 100% |
+| Median absolute peak error | 16 samples | 6.5 samples |
+| 90th-percentile absolute peak error | 45 samples | 24 samples |
+| Median absolute period error | 0.080 s | 0.056 s |
+| Median absolute full-excursion error | 0 | 0 |
+| Median absolute temporal-symmetry error | 0.0943 | 0.0967 |
+
+Object matches increased on 21 subjects, were unchanged on 31, and decreased
+by one on subject 36. Annotation agreement improved in both directions. The
+fraction of detected FeatureGraph peaks matched increased from 76.03% to
+85.36% for annotator 1 and from 79.74% to 88.62% for annotator 2. The fraction
+of annotated peaks recovered increased from 85.59% to 96.10% and from 88.65%
+to 98.51%, respectively.
+
+The severe plateau-shaped cases changed most. Subject 35 increased from 22 to
+119 baseline matches, subject 38 from 44 to 125, and subject 39 from zero to
+52. Their post-projection median peak errors were 1, 7, and 7.5 samples.
+Subject 5 increased from 30 to 74 matches but still retained 89 unmatched
+complete FeatureGraph objects. Thus subjects 35, 38, and 39 were primarily
+point-anchor failures; subject 5 remains a distinct over-segmentation and
+signal-quality problem.
+
+The small cohort-level increase in symmetry error is also informative. The
+midpoint projection substantially corrects extremum timing and period while
+leaving unresolved disagreement about how entire rising, stable, and falling
+phases should contribute to trough–peak–trough symmetry.
+
 ## 7. Capability and dependency ledger
 
 | Capability | Source during development | Preserved without live LLM access? |
@@ -557,6 +662,9 @@ the transfer problem, hysteresis was not included in the full MAD cohort.
 | Execute LLM-selected baseline | NumPy, pandas, SciPy | Yes |
 | Construct rising/falling states | FeatureGraph from researcher parameters | Yes |
 | Expose trough/peak events and wave IDs | FeatureGraph | Yes |
+| Retain extremum intervals, transition anchors, and midpoint projections | FeatureGraph post hoc adapter | Yes |
+| Distinguish offline event time from causal detection time | FeatureGraph post hoc adapter | Yes |
+| Flag overlapping or degenerate extremum intervals | FeatureGraph post hoc adapter | Yes |
 | Retain incomplete endpoint objects | FeatureGraph | Yes |
 | Summarize period, excursion, symmetry | Frozen measurement contracts | Yes |
 | Match and audit individual objects | Deterministic comparison code | Yes |
@@ -587,6 +695,23 @@ the failure from under-detection to over-segmentation, that tradeoff was
 measurable rather than hidden in a narrative summary. When normalization was
 undefined, the pipeline rejected the records instead of silently inventing a
 scale.
+
+The plateau audit demonstrates a second form of inspectability. Three of the
+four most severe envelope comparison failures did not require new thresholds
+or subject-specific detector rules. They required separating an observed
+transition boundary from the conventional point used to summarize an extended
+maximum. Once extrema were represented as intervals, the same detected events
+aligned with nearly all baseline objects and manual annotations. This is a
+representation correction rather than evidence that FeatureGraph inferred
+respiratory semantics.
+
+The remaining 1,047 FeatureGraph-only complete objects, concentrated in cases
+such as subject 5, prevent a general equivalence claim. Interval projection
+improves compatibility with point-based evaluators; it does not determine
+which candidate cycles are physiologically meaningful. Likewise, unchanged
+full-excursion agreement and slightly worse symmetry agreement show that
+correcting peak projection does not harmonize every boundary-sensitive
+property.
 
 The study therefore supports a narrower but defensible claim: an
 LLM-assisted analysis can be converted into a durable computational artifact
@@ -638,9 +763,12 @@ tolerances or matching objectives could change unmatched counts; saved audit
 tables make that sensitivity testable.
 
 The MAD construction was proposed after observing absolute-rule failures, and
-the subject 5 hysteresis test followed inspection of a specific failure. These
-are post hoc diagnostics. They can identify mechanisms and motivate the next
-design, but they cannot provide an unbiased estimate of future transfer.
+the subject 5 hysteresis test followed inspection of a specific failure. The
+rolling envelope and plateau midpoint were likewise developed after inspecting
+subject 1 and cohort failures. These are post hoc diagnostics. They can
+identify mechanisms and motivate the next design, but they cannot provide an
+unbiased estimate of future transfer. The plateau interval and ambiguity rules
+must be frozen before evaluation on a new cohort or external dataset.
 
 ### 9.3 External validity
 
@@ -729,9 +857,14 @@ What did not transfer was the rule for deciding which candidate transitions
 should be treated as meaningful breaths. The absolute threshold failed
 unevenly across subjects. MAD normalization recovered most baseline objects
 but produced severe systematic over-segmentation and failed mathematically on
-two records. Hysteresis did not repair the problem. These are not incidental
-exceptions to conceal; they are the main scientific result about the boundary
-between deterministic preservation and analytical judgment.
+two records. Hysteresis did not repair the problem. A post hoc rolling-envelope
+construction improved the candidate set, and interval-valued extrema showed
+that subjects 35, 38, and 39 were largely peak-projection failures rather than
+missed-cycle failures. Subject 5 and the remaining unmatched candidates still
+demonstrate that peak projection cannot replace signal-quality and semantic
+selection rules. These are not incidental exceptions to conceal; they are the
+main scientific result about the boundary between deterministic preservation
+and analytical judgment.
 
 The next phase will therefore retain this study as a completed research
 record and move FeatureGraph toward transition-only objects. That architecture
@@ -743,7 +876,8 @@ declared human or computational layer.
 
 The repository stores the blinded prompt, LLM method record, raw and object
 tables, frozen reproduction code, subject-level comparisons, unmatched-object
-audits, annotation comparisons, MAD failures, and paired scaling deltas.
+audits, annotation comparisons, MAD failures, paired scaling deltas, plateau
+intervals, and explicit boundary-ambiguity rows.
 
 ```bash
 PYTHONPATH=. python experiments/bidmc_llm_capture/multi_subject_comparison.py \
@@ -756,6 +890,12 @@ PYTHONPATH=. python experiments/bidmc_llm_capture/multi_subject_comparison.py \
 
 PYTHONPATH=. python \
   experiments/bidmc_llm_capture/compare_scaling_runs.py
+
+PYTHONPATH=src:. python \
+  experiments/bidmc_llm_capture/multi_subject_comparison.py \
+  --subjects 1-53 --jobs 4 --construction envelope_plateau \
+  --output-directory \
+    experiments/bidmc_llm_capture/results/envelope_plateau_multi_subject
 ```
 
 ## References
