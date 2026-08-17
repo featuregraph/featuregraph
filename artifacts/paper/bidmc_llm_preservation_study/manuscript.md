@@ -1,98 +1,119 @@
-# FeatureGraph and the Preservation of LLM-Proposed Analysis: A BIDMC Respiration Case Study
+# Representing Respiration Cycles as Explicit Temporal Objects: A FeatureGraph Representation and Transfer Study
 
 **Nazia Habib**  
-Draft research record, August 2026
+Working draft, August 2026
 
 ## Abstract
 
-Large language models (LLMs) can propose and orchestrate useful data analyses, but an LLM
-interaction is not itself a durable computational representation of a data analysis. This study asks: if LLM access disappeared, how much of an LLM-assisted
-time-series analysis could a researcher continue to run, inspect, validate,
-and maintain? It proposes FeatureGraph, a framework for deterministic preservation and repeatable execution of LLM-driven analysis.
+Sample-level peak procedures compress several analytical choices into one
+operation: which changes constitute events, how extended extrema are located,
+where object boundaries fall, and how properties are measured. This study
+evaluates whether FeatureGraph can make those choices explicit as durable,
+inspectable temporal objects and whether the resulting representation
+transfers beyond the record on which it was developed.
 
-A context-isolated LLM received one raw respiration record from
-the BIDMC PPG and Respiration Dataset and produced a documented SciPy pipeline
-and an object table of trough–peak–trough cycles. The human researcher then encoded
-an independently specified, deterministic transition representation in
-FeatureGraph. On the development record, 169 of 169 complete LLM objects
-matched FeatureGraph objects within 0.5 seconds; FeatureGraph produced five
-additional complete candidates. Typical period and full-excursion
-measurements agreed closely, while temporal symmetry remained sensitive to
-different trough semantics.
+The final FeatureGraph construction retains the raw respiration signal for
+measurement, constructs candidate-cycle boundaries from a grouped
+rolling-maximum/rolling-mean envelope, and represents exact flat extrema as
+bounded intervals with deterministic midpoint projections. A frozen SciPy
+pipeline originally proposed in a context-isolated large-language-model (LLM)
+session serves as an independent point-detector comparator, not as ground
+truth. Across all 53 records in the BIDMC PPG and Respiration Dataset, the
+plateau-aware construction detected 8,205 peak events and produced 8,133
+complete objects. Of 7,168 complete comparator objects, 7,086 matched within
+0.5 seconds; 1,047 FeatureGraph-only and 82 comparator-only objects remained.
+Median absolute matched-peak error was 6.5 samples, median period error was
+0.056 seconds, and median full-excursion error was zero. Forty-seven objects
+that point-only logic would have treated as complete were instead retained and
+flagged as boundary-ambiguous.
 
-We then froze the construction and evaluated transfer across all 53 BIDMC
-records. The original absolute transition rule produced 8,960 complete
-FeatureGraph objects and the frozen LLM-selected baseline produced 7,168;
-6,200 objects matched, leaving 2,760 FeatureGraph-only and 968 baseline-only
-objects. A second experiment normalized the directional difference by a
-subject-level median absolute deviation (MAD), retaining a threshold
-calibrated only on subject 1. MAD normalization increased baseline coverage on the 51 records for which it was defined: matched objects increased from 6,030 to 6,850 and baseline-only objects fell from 963 to 143. This apparent recall
-gain came with severe over-segmentation: FeatureGraph-only objects increased
-from 2,671 to 5,553, and the normalized construction was undefined for two
-records with zero difference MAD.
+The interval-to-point correction was then frozen prospectively and tested on
+the first 20 eligible non-BIDMC MIMIC-II waveform subjects selected by a
+deterministic protocol, totaling approximately 160 minutes. Relative to the
+same envelope events anchored at plateau leading edges, midpoint projection
+preserved all 3,811 detected peaks, increased matches from 2,792 to 2,859,
+reduced comparator-only objects from 149 to 82, and reduced median absolute
+peak error from 17 to 7 samples. Matches improved on 13 subjects and were
+unchanged on seven; none decreased. All four predeclared confirmation criteria
+passed.
 
-A subsequent post hoc audit constructed boundaries from a grouped
-rolling-maximum/rolling-mean envelope and represented exact flat extrema as
-bounded intervals with midpoint projections. Midpoint projection preserved all
-8,205 detected peak events but increased baseline matches from 6,513 to 7,086
-of 7,168 complete baseline objects. Median absolute peak error fell from 16 to
-6.5 samples and median period error from 0.080 to 0.056 seconds; full-excursion
-error was unchanged, while symmetry error did not improve. The audit showed
-that subjects 35, 38, and 39 were primarily failures of point-peak semantics,
-whereas subject 5 retained substantial over-segmentation.
-
-The study demonstrates successful preservation, deterministic execution,
-object-level auditability, and explicit failure localization. Determinism
-preserved the researcher-specified representation; it did not supply the
-missing judgment about which transitions constitute meaningful breaths. This
-distinction motivates a transition-only next phase of FeatureGraph and
-provides a candid research record of both the achieved capability and its
-limits.
+These results support FeatureGraph as an explicit representation layer: a
+single detected event may have a transition time, an extremum interval, and a
+projected comparison time without collapsing those meanings. The remaining
+FeatureGraph-only objects are concentrated in a minority of BIDMC records and
+are preserved as detector-discordant candidate episodes for downstream review.
+They prevent a claim of detector equivalence, and neither comparator agreement
+nor the unannotated confirmation cohort establishes clinical breath validity.
 
 ## 1. Introduction
 
-The research question behind this study is: "If large language model (LLM) access were gone tomorrow, what could researchers maintain from their LLM-assisted analyses?"
+A time series is sampled as values, but an analysis usually reasons in objects:
+cycles, episodes, transitions, extrema, and intervals. Converting samples into
+those objects is a representation problem before it is a measurement problem.
+A peak can mean the first sample at which rising ceases, an entire flat maximum,
+or one point projected from that maximum. If those meanings remain implicit in
+code, two methods can appear to disagree even when they identify the same
+observed structure.
 
-A researcher using an LLM for data analysis can produce useful results, but an LLM interaction is not a persistent computational representation of that analysis. Much of the output of the work exists in prompts, generated code, ad hoc parameter tuning, and both human and LLM interpretation that cannot be easily recreated to perform the analysis again without LLM assistance. If a researcher needed to run a similar study, they would need to consult the LLM again, or often design their own bespoke analysis that incorporated their own expertise and that might not be reproducible by others.
+FeatureGraph is a deterministic representation layer for making such choices
+explicit. It separates observed values from states, transition events, bounded
+objects, landmark intervals, point projections, and measurement contracts. The
+system does not infer that an object is a physiological breath. It executes a
+declared construction, preserves partial and ambiguous cases, and emits tables
+in which each agreement or disagreement can be located and revised.
 
-FeatureGraph proposes a framework for deterministic preservation and repeatable execution of LLM-driven analysis. This preservation study's contributions are:
+Respiration waveforms from critically ill patients provide a demanding case.
+Repeated structure is visible, but amplitude scale, clipping, plateaus,
+irregular morphology, and measurement artifacts vary substantially among
+records. A representation developed on one clean-looking record may therefore
+execute perfectly yet transfer poorly. This study asks whether FeatureGraph can
+represent candidate trough–peak–trough cycles in a way that remains explicit,
+auditable, and transferable across that variation.
 
-1. a reproducible handoff from a raw-data LLM analysis to an explicit,
-   deterministic behavioral-object representation;
-2. an object-level comparison that distinguishes genuine agreement from
-   aggregate cancellation and definition mismatch;
-3. a 53-subject transfer evaluation of the original absolute transition rule;
-4. a second cohort experiment isolating the effect of subject-level MAD
-   normalization; and
-5. a post hoc representation audit distinguishing transition boundaries from
-   interval-valued extrema; and
-6. a capability ledger separating LLM proposal, researcher judgment,
-   FeatureGraph execution, conventional signal-processing dependencies, and
-   functionality preserved without continued LLM access.
+The work began with an LLM-proposed SciPy analysis, which is retained as a
+frozen comparator and provenance case. That origin is useful but not the main
+object of evaluation. The central result is the current FeatureGraph
+representation: envelope-derived transition events, interval-valued exact
+extrema, deterministic midpoint projections, explicit ambiguity flags, and
+object-level transfer evidence.
 
-### 1.1 Execution success, empirical adequacy, and transfer
+This representation study contributes:
 
-A representation can be evaluated using three criteria:
+1. an explicit construction and measurement contract for converting sampled
+   respiration into bounded candidate-cycle objects;
+2. a distinction among transition anchors, extremum intervals, and projected
+   comparison points;
+3. a 53-record evaluation of the final plateau-aware representation against a
+   frozen SciPy comparator and two manual annotation series;
+4. a prospectively frozen confirmation on 20 untouched non-BIDMC MIMIC-II
+   source subjects;
+5. localization of residual detector-discordant episodes rather than their
+   silent removal or automatic classification; and
+6. a reproducible provenance record showing how an LLM-originated analysis was
+   converted into a durable representation.
+
+### 1.1 Representation success, empirical adequacy, and transfer
+
+A representation can be evaluated using four criteria:
 
 - Execution success: does FeatureGraph apply the declared contracts deterministically and reproduce the saved outputs?
+- Representational adequacy: are distinct temporal meanings retained rather
+  than collapsed into one index or discarded as malformed?
 - Empirical adequacy: does the resulting representation satisfy the evaluation criteria on the data for which it was developed?
 - Transfer: can the same frozen representation produce adequate objects and measurements on new records?
 
-The BIDMC study produced the following results under these criteria:
+The final plateau-aware contract ran deterministically across all 53 BIDMC
+records. It retained transition anchors and exact-extremum intervals, marked
+ambiguous boundary compositions, and substantially aligned its point
+projections with the comparator and annotations. Because that correction was
+developed after inspection of BIDMC transfer failures, the 53-record result is
+developmental evidence for the final representation. The separate 20-subject
+MIMIC-II run froze the correction and its success criteria before detector
+outputs were examined; it provides the study's prospective transfer evidence.
 
-- Execution success: the frozen contract ran deterministically on all valid records.
-- Development-record adequacy: subject 1 produced strong object-level agreement with the LLM baseline.
-- Transfer: the same absolute contract produced substantial unmatched objects across subjects 2 through 53.
-
-As a diagnostic modification, MAD normalization improved baseline coverage but increased over-segmentation and was undefined for two records. These results localize one source of over-segmentation to construction parameters calibrated too specifically to a single development record.
-
-A later envelope and plateau audit localized a second failure mechanism. For
-flat-topped signals, exiting the rising state marks the beginning of a maximum
-interval, whereas SciPy and the BIDMC annotations may associate the same cycle
-with a point near the interval midpoint. Correcting that projection recovered
-substantial agreement without adding or deleting detected peak events. Because
-the audit was developed after inspecting transfer failures, it is explanatory
-rather than confirmatory.
+Earlier absolute-threshold, MAD-normalized, and hysteresis variants remain in
+the record as ablations. They explain why explicit scale and persistence rules
+were insufficient, but they do not define the current FeatureGraph result.
 
 ## 2. Representation
 
@@ -148,9 +169,13 @@ FeatureGraph as described provides two contracts:
 
 2. A measurement contract that provides specifications for obtaining amplitude, rates of change, symmetry, accumulation, and other calculated properties of derived objects.
 
-These two contracts preserve two different kinds of analytical decisions. The construction contract determines whether an object exists, its identify, its boudaries, its landmarks, and its membership in the set of objects. The measurement contract operates on the constructed object and determines how its properties are calculated.
+These two contracts preserve different analytical decisions. The construction
+contract determines whether an object exists, its identity, boundaries,
+landmarks, and membership in the object set. The measurement contract operates
+on the constructed object and determines how its properties are calculated.
 
-The BIDMC study identified several areas where these contracts failed:
+The BIDMC study identified several areas where these contracts must remain
+distinct:
 
 **Construction contract:**
 
@@ -295,12 +320,22 @@ physiological signals sampled at 125 Hz and two sets of manually annotated
 breath sample numbers. Each record is approximately eight minutes long. This
 study uses the impedance respiration waveform and the two annotation columns.
 
-Subject 1 served as the development record. The initial LLM analysis,
+Subject 1 served as the initial development record. The first comparator,
 FeatureGraph construction, threshold selection, and object-contract
 harmonization were performed on this record. Subjects 2–53 were initially
-treated as a frozen transfer cohort. The later MAD experiment reused the
-subject-1 calibration and applied one rule to every record; no threshold was
-selected separately for an evaluation subject.
+treated as a frozen transfer cohort. The envelope and plateau representation
+was subsequently developed from the 53-record evidence and is therefore
+reported as a final-representation evaluation rather than an untouched test.
+
+Prospective confirmation used the MIMIC-II matched waveform archive from which
+the curated BIDMC records were derived. All 53 curated source-subject IDs were
+excluded before scanning. Remaining subject directories were considered in
+lexicographic order, with one eight-minute RESP window selected only when the
+record had an exact 125 Hz channel, at least 60,001 samples, a supported uniform
+WFDB encoding, and no invalid sentinel in the window. The first 20 eligible
+subjects were retained. No waveform was selected or excluded by visual
+inspection or detector output. These 20 subjects and their raw-window hashes
+are distinct from the curated cohort and total approximately 160 minutes.
 
 The annotations were not used to construct objects or tune individual
 boundaries. They were consulted after construction as an external diagnostic.
@@ -319,80 +354,76 @@ each result.
 | Phase | Records | Permitted activity | Evidential status |
 | --- | --- | --- | --- |
 | Exploratory development | Subject 1 | Inspect waveform; choose and revise contracts; harmonize measures; debug boundaries | Generates hypotheses and implementation; no transfer claim |
-| Frozen absolute transfer | Subjects 2–53 | Run the locked LLM baseline and locked FeatureGraph absolute rule; no per-subject tuning or correction | Primary evidence about transfer of the original representation |
-| Post-transfer diagnosis | Subjects 1–53, with paired reporting on the 51 MAD-valid records | Test MAD normalization, subject-5 hysteresis, the rolling-envelope construction, and exact-plateau midpoint projection | Ablations and representation audits explaining failures; not independent validation |
-| Future confirmatory evaluation | New declared split or external dataset | Freeze the transition-only contract before opening the test outcomes | Required for a confirmatory transfer claim |
+| Initial frozen transfer | Subjects 2–53 | Run the locked comparator and absolute FeatureGraph rule; no per-subject tuning | Evidence about the initial representation; retained as an ablation |
+| Final-representation development | Subjects 1–53 | Test envelope boundaries and exact-plateau intervals after inspecting failures | Developmental evidence for the final representation |
+| Prospective confirmation | First 20 eligible non-BIDMC MIMIC-II subjects | Freeze selection, construction, comparator, matching, and four directional criteria before opening outputs | Prospective transfer evidence for the interval-to-point correction |
 
-The absolute FeatureGraph rule and the frozen LLM/SciPy baseline were locked
-after subject 1. Subjects 2–53 were processed without subject-specific
-parameters, manual boundary changes, or annotation-guided corrections.
-Annotations were used only after construction for diagnosis. The MAD rule was
-conceived after the absolute transfer failures had been observed. Although its
-threshold was calibrated only from subject 1 and then shared, its evaluation
-uses previously examined records; it is therefore explicitly post hoc. The
-subject 5 hysteresis pass is an even narrower diagnostic and is not a cohort
-result. The envelope and plateau rules were developed after examining subject
-1 and the severe cohort failures, including subjects 5, 35, 38, and 39. Their
-53-subject reruns therefore remain post hoc even though one fixed rule was
-applied to every record.
+The absolute FeatureGraph rule and frozen SciPy comparator were locked after
+subject 1. The MAD and hysteresis variants were conceived after initial
+transfer failures and remain diagnostic ablations. The envelope and plateau
+rules were developed after examining the 53 BIDMC records, including severe
+failures on subjects 5, 35, 38, and 39. Their BIDMC results are consequently
+post hoc even though one fixed rule was applied to every record.
 
-This protocol prevents three invalid substitutions: development agreement is
-not transfer, agreement with the frozen baseline is not clinical accuracy, and
-post hoc improvement is not independent confirmation. A future study should
-declare development, optional validation, and untouched test records before
-parameter selection; record every attempted construction; and publish the
-locked contract before computing final test metrics.
+Before the MIMIC-II confirmation outputs were examined, the repository fixed
+the subject-selection algorithm, exclusion rules, source window, envelope,
+plateau projection, comparator, matching tolerance, and four success criteria:
+preserve detected peak count in every window, do not reduce cohort matches, do
+not increase comparator-only objects, and reduce median absolute peak error.
+This separation prevents three invalid substitutions: development improvement
+is not prospective transfer, comparator agreement is not clinical accuracy,
+and a bounded candidate episode is not automatically a breath.
 
-### 5.2 Blinded raw-data LLM path
+### 5.2 Final FeatureGraph object representation
+
+Let `x_t` be the raw respiration value at sample `t`. FeatureGraph retains
+`x_t` unchanged for measurement and builds a separate construction signal by
+applying a 100-sample rolling maximum followed by a 100-sample rolling mean.
+For the offline study the result is shifted backward by 100 samples; invalid
+endpoint rows are excluded and windows are never joined across subjects.
+Rising is a positive one-sample difference of this aligned envelope. Entry to
+rising creates a candidate trough transition and exit creates a candidate peak
+transition.
+
+Transition times are not forced to stand in for extrema. Every exact
+constant-valued run containing an already detected peak or trough is stored as
+an interval `[l,r]`. Its deterministic point projection is
+
+$$
+l + \left\lfloor\frac{r-l}{2}\right\rfloor.
+$$
+
+The original transition anchor and both interval edges remain available. A
+complete object requires a strictly ordered trough interval, peak interval,
+and subsequent trough interval. If midpoint projections overlap or violate
+that order, the object is retained with
+`plateau_boundary_ambiguous=True` and excluded from complete-object metrics.
+Endpoint fragments likewise remain represented with `is_complete=False`.
+
+This construction does not assert that the waveform is physiologically
+oscillatory or that every object is a breath. It states how observed changes
+become bounded candidate objects while preserving uncertainty that point-only
+output would conceal.
+
+### 5.3 Frozen SciPy comparator and its provenance
 
 A context-isolated LLM received only the subject 1 waveform, its 125 Hz
-sampling rate, a required object schema, and a measurement contract. It was
-instructed not to use or search for FeatureGraph results. The LLM selected:
+sampling rate, a required object schema, and a measurement contract. It selected
+a fourth-order 0.8 Hz Butterworth low-pass filter with zero-phase application,
+`scipy.signal.find_peaks` on the filtered signal and its negation, a minimum
+distance of 188 samples, prominence 0.08, and cycles defined by consecutive
+troughs containing exactly one peak.
 
-1. a fourth-order Butterworth low-pass filter at 0.8 Hz, applied with
-   zero-phase forward/backward filtering;
-2. `scipy.signal.find_peaks` on the filtered signal and its negation;
-3. minimum peak distance of 188 samples and prominence of 0.08; and
-4. complete cycles defined as consecutive troughs containing exactly one
-   peak.
+The method, parameters, endpoint rules, and returned object table were saved
+and reproduced as conventional deterministic Python. SciPy therefore remains
+a dependency of the comparator path, including its distance, prominence, and
+flat-peak behavior; it is not a FeatureGraph dependency or implementation of
+the FeatureGraph construction. The comparator is an independently specified
+point detector, not respiratory ground truth.
 
-The LLM returned 169 complete objects and one trailing incomplete fragment.
-Its method, libraries, parameters, endpoint rules, and output object table
-were saved. A conventional Python function now reproduces this frozen method
-without consulting an LLM. SciPy remains a dependency of this comparison path;
-its peak-distance and prominence constraints are established signal-processing
-operations rather than FeatureGraph behavior.
-
-The exact model/session metadata for the proposal interaction was not retained
-in the experiment directory. Consequently, this study claims reproducibility
-of the frozen method and outputs, not reproducibility of the original model's
-decision to select that method.
-
-### 5.3 FeatureGraph object construction
-
-Let `x_t` be the respiration value at sample `t`. The original native
-FeatureGraph construction computes
-
-$$
-d_t = x_t - x_{t-45}
-$$
-
-and defines the rising state as
-
-$$
-R_t = \mathbf{1}(d_t > 0.15).
-$$
-
-Internally bounded non-rising gaps of at most seven samples are closed. An
-entry into the rising state creates a candidate trough event; an exit creates
-a candidate peak event at the preceding sample. Cumulative trough-entry
-events assign wave identifiers. A complete object requires a strictly ordered
-trough, peak, and subsequent trough and cannot be the final boundary-truncated
-wave. Endpoint fragments remain represented with `is_complete=False`.
-
-These rules do not assert that the signal is truly oscillatory or that every
-candidate event is a breath. They state exactly how the researcher chose to
-partition this waveform into transition-derived objects.
+Exact model/session metadata for the proposal interaction were not retained.
+The reproducible artifact is the frozen method and its outputs, not the
+original model's decision to propose it.
 
 ### 5.4 Measurement contracts
 
@@ -429,12 +460,20 @@ could be used at most once. Annotation agreement was summarized in both
 directions: the fraction of detected peaks matched and the fraction of
 annotated peaks recovered.
 
-### 5.6 Frozen absolute-threshold cohort
+### 5.6 Development ablation: frozen absolute threshold
 
-The subject 1 construction (no smoothing, lag 45, threshold 0.15, and maximum
-state gap 7) was applied unchanged to all 53 subjects. The frozen LLM-selected
-SciPy method was also applied unchanged to all records. No subject-specific
-parameters or manual boundary corrections were introduced.
+The initial FeatureGraph construction computed
+
+$$
+d_t = x_t - x_{t-45}
+$$
+
+and defined rising as $R_t = \mathbf{1}(d_t > 0.15)$. Internally bounded
+non-rising gaps of at most seven samples were closed. Rising entries created
+candidate troughs and exits created candidate peaks. This subject-1 rule was
+applied unchanged to all 53 subjects, with no subject-specific parameters or
+manual boundary corrections. It is retained to show why the final envelope
+and interval representation was needed; it is not the current construction.
 
 ### 5.7 MAD-normalized cohort
 
@@ -467,42 +506,148 @@ exercise. Hysteresis was excluded so that only the normalization changed.
 When MAD equaled zero, the construction was declared undefined; no arbitrary
 fallback scale was substituted.
 
-### 5.8 Rolling-envelope and interval-extremum audit
+### 5.8 Prospective confirmation protocol
 
-The post hoc envelope construction preserves the raw respiration observation
-for measurement and adds a separate construction signal. Within each subject,
-it applies a 100-sample rolling maximum followed by a 100-sample rolling mean
-and shifts the result backward by 100 samples for offline alignment. Invalid
-endpoint rows are excluded, and no operation crosses subject boundaries.
-Rising is defined as a positive one-sample difference of the aligned envelope;
-exiting rising creates the original transition-derived peak anchor.
+The confirmation compared two projections of the same frozen envelope events:
+the transition-derived leading edge and the midpoint of the exact extremum
+interval. Both variants used identical samples and detected event identities;
+raw within-object extrema remained the source of full excursion. This isolates
+representation of an extended extremum from detection of the event itself.
 
-The plateau adapter changes representation rather than event detection. Every
-exact constant-valued run containing an already detected peak or trough is
-stored as an interval `[l,r]`. Its canonical comparison point is
+The SciPy comparator, 63-sample one-to-one matching tolerance, and object
+metrics were frozen unchanged. Selection scanned non-BIDMC MIMIC-II source
+subjects deterministically until 20 eligible windows were obtained. One
+otherwise eligible candidate was rejected for invalid WFDB samples under the
+predeclared validity rule; a selected subject producing zero objects under both
+methods remained in the cohort. The protocol and runner hashes were recorded
+before the output tables were interpreted.
 
-$$
-l + \left\lfloor\frac{r-l}{2}\right\rfloor,
-$$
-
-which follows
-[`scipy.signal.find_peaks`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.find_peaks.html)'s
-floor-midpoint convention for even-length flat peaks.
-Original transition anchors are retained alongside interval edges. For a
-causal implementation, the peak detection index is the upper-plateau end plus
-the 100-sample alignment delay; it is therefore distinct from the
-offline-aligned midpoint event index. If midpointed extremum intervals overlap
-or fail strict trough–peak–trough order, the object is retained with
-`plateau_boundary_ambiguous=True` and excluded from complete-object metrics.
-
-The envelope-leading-edge and plateau-midpoint constructions use identical
-envelope samples and detected transition events. Raw within-object extrema
-remain the source of full excursion. This isolates the effect of representing
-an extended extremum and projecting it to a comparison timestamp.
+For a causal implementation, the detection time is distinct from the
+offline-aligned event time: a plateau midpoint becomes known only after the
+upper edge of the interval, and the trailing rolling windows impose additional
+latency. FeatureGraph retains these timestamps separately rather than treating
+offline centering as a real-time detector.
 
 ## 6. Results
 
-### 6.1 Development-record agreement
+### 6.1 Final plateau-aware representation on 53 BIDMC records
+
+The final construction detected 8,205 peak events across all 53 subjects and
+produced 8,133 complete FeatureGraph objects. Of 7,168 complete comparator
+objects, 7,086 matched; 1,047 FeatureGraph-only and 82 comparator-only objects
+remained.
+
+| Measure, all 53 subjects | Envelope leading edge | Plateau midpoint |
+| --- | ---: | ---: |
+| Detected FeatureGraph peak events | 8,205 | 8,205 |
+| Complete FeatureGraph objects | 8,180 | 8,133 |
+| Complete comparator objects | 7,168 | 7,168 |
+| Matched objects | 6,513 | 7,086 |
+| FeatureGraph-only objects | 1,667 | 1,047 |
+| Comparator-only objects | 655 | 82 |
+| Median subject FeatureGraph matched fraction | 88.80% | 94.44% |
+| Median subject comparator matched fraction | 100% | 100% |
+| Median absolute peak error | 16 samples | 6.5 samples |
+| 90th-percentile absolute peak error | 45 samples | 24 samples |
+| Median absolute period error | 0.080 s | 0.056 s |
+| Median absolute full-excursion error | 0 | 0 |
+| Median absolute temporal-symmetry error | 0.0943 | 0.0967 |
+
+Midpoint projection did not add or delete a detected event. It changed how an
+extended extremum was represented and how neighboring intervals composed into
+complete objects. Forty-seven formerly complete candidates became explicitly
+boundary-ambiguous; the saved ambiguity table has 100 rows, including 53
+already-partial endpoint fragments. Matches increased on 21 subjects, were
+unchanged on 31, and decreased by one on subject 36.
+
+Agreement with both BIDMC annotation series also improved. FeatureGraph peaks
+matched to annotator 1 increased from 76.03% to 85.36%, and annotated peaks
+recovered increased from 85.59% to 96.10%. Corresponding annotator-2 values
+increased from 79.74% to 88.62% and from 88.65% to 98.51%. These are agreement
+rates, not clinical sensitivity or positive predictive value.
+
+Plateau-shaped subjects changed most: baseline matches increased from 22 to
+119 on subject 35, from 44 to 125 on subject 38, and from zero to 52 on subject
+39. Their median post-projection peak errors were 1, 7, and 7.5 samples.
+Subject 5 increased from 30 to 74 matches but retained 89 unmatched complete
+FeatureGraph objects, showing that interval projection does not resolve every
+source of detector disagreement.
+
+### 6.2 Prospective confirmation on 20 untouched source subjects
+
+The deterministic archive scan considered 124 non-BIDMC source-subject
+directories before obtaining 20 eligible subjects. The selected windows had 20
+distinct raw-data hashes and contained approximately 160 minutes of RESP. One
+selected subject produced no object under either construction and was retained.
+
+All four predeclared criteria passed.
+
+| Measure | Envelope leading edge | Plateau midpoint | Delta |
+| --- | ---: | ---: | ---: |
+| Detected FeatureGraph peak events | 3,811 | 3,811 | 0 |
+| Complete FeatureGraph objects | 3,802 | 3,773 | -29 |
+| Complete comparator objects | 2,941 | 2,941 | 0 |
+| Matched objects | 2,792 | 2,859 | +67 |
+| FeatureGraph-only objects | 1,010 | 914 | -96 |
+| Comparator-only objects | 149 | 82 | -67 |
+| Aggregate FeatureGraph matched fraction | 73.4% | 75.8% | +2.4 points |
+| Aggregate comparator matched fraction | 94.9% | 97.2% | +2.3 points |
+| Median absolute peak error | 17 samples | 7 samples | -10 samples |
+| 90th-percentile absolute peak error | 50 samples | 24 samples | -26 samples |
+| Median absolute period error | 0.088 s | 0.056 s | -0.032 s |
+| Median absolute full-excursion error | 0 | 0 | 0 |
+| Median absolute temporal-symmetry error | 0.0922 | 0.0531 | -0.0391 |
+
+Matches increased on 13 subjects and were unchanged on seven; none decreased.
+Comparator-only counts decreased on the same 13 subjects. FeatureGraph-only
+counts decreased on 18 subjects and were unchanged on two. Among the 19
+subjects with matched peaks, median peak error decreased on 16 and was
+unchanged on three. Forty-eight ambiguous objects were represented explicitly,
+causing 29 formerly complete objects to be excluded rather than silently
+forced into strict point order.
+
+The prospective result confirms transfer of the interval-to-point
+representation correction. It does not establish detector equivalence: 914
+FeatureGraph-only and 82 comparator-only complete objects remain. The source
+windows also lack independent manual breath annotations, so this experiment
+does not establish the physiological meaning of those candidates.
+
+### 6.3 Localization of detector-discordant candidate episodes
+
+The 1,047 BIDMC FeatureGraph-only complete objects are strongly concentrated
+rather than spread uniformly among records. Seven subjects (5, 13, 14, 19,
+27, 33, and 39) account for 555 objects, or 53.0%; the ten highest-count
+subjects account for 678, or 64.8%. Six subjects have none, and 23 have five or
+fewer. The descriptive Gini coefficient of per-subject counts is 0.64.
+
+| Subject | FeatureGraph-only objects | Share of total |
+| ---: | ---: | ---: |
+| 13 | 136 | 13.0% |
+| 19 | 92 | 8.8% |
+| 5 | 89 | 8.5% |
+| 14 | 63 | 6.0% |
+| 33 | 61 | 5.8% |
+| 39 | 60 | 5.7% |
+| 27 | 54 | 5.2% |
+
+The objects are not concentrated at one normalized position across the cohort:
+counts in successive tenths of the records range from 79 to 127. Within some
+subjects they form local bursts; subject 25 has 30 of 32 unmatched objects in
+one tenth of its record, while subjects 13, 33, and 39 distribute them across
+many regions. Of all 1,047 episodes, 680 are excluded by both annotation series
+and 367 are not; none of subject 39's 60 is jointly excluded.
+
+FeatureGraph therefore labels and passes these rows forward as
+*detector-discordant candidate episodes*. The label identifies a localized
+computational disagreement. It is deliberately not a diagnosis, a claim of
+abnormal breathing, or a declaration that either detector is correct.
+
+### 6.4 Development and ablation history
+
+The following experiments explain how the final representation was reached.
+They are retained for transparency but are not the paper's primary result.
+
+#### 6.4.1 Development-record agreement
 
 On subject 1, native FeatureGraph produced 174 complete objects and the
 blinded LLM path produced 169. All 169 LLM objects matched FeatureGraph
@@ -523,7 +668,7 @@ transition rule and filtered local-extrema rule place trough boundaries
 differently. This is a boundary-semantics mismatch, not an arithmetic or unit
 mismatch.
 
-### 6.2 Original absolute-threshold transfer
+#### 6.4.2 Original absolute-threshold transfer
 
 Across all 53 subjects, the native absolute rule produced 8,960 complete
 objects and the frozen LLM path produced 7,168. Of these, 6,200 matched.
@@ -546,7 +691,7 @@ Peak placement for matched objects remained close (median absolute difference
 over-segmented, while subjects including 5, 13, 19, 27, and 45 were severely
 under-detected. Thus the absolute threshold did not fail in one uniform way.
 
-### 6.3 MAD normalization versus the original run
+#### 6.4.3 MAD normalization versus the original run
 
 MAD normalization was defined for 51 of 53 records. Subjects 35 and 39 had
 zero 45-sample difference MAD and were excluded from MAD aggregates. The
@@ -598,7 +743,7 @@ baseline, the original FeatureGraph absolute threshold, and MAD-normalized
 FeatureGraph. Missing MAD values at subjects 35 and 39 denote undefined zero
 difference scales, not zero detected objects.
 
-### 6.4 Hysteresis diagnostic
+#### 6.4.4 Hysteresis diagnostic
 
 An exploratory subject 5 ablation retained the MAD-normalized entry threshold
 and lowered the exit threshold from `1.0k` through `0.0k`. Complete candidates
@@ -606,92 +751,6 @@ fell only from 388 to 365, while annotation match counts did not improve. This
 indicates that most extra candidates result from repeated threshold re-entry,
 not brief flicker within a neutral band. Because this diagnostic did not solve
 the transfer problem, hysteresis was not included in the full MAD cohort.
-
-### 6.5 Rolling envelope and plateau midpoint
-
-The rolling-envelope construction produced 8,205 peak events across all 53
-subjects. Replacing each leading-edge extremum anchor with an exact-plateau
-interval and midpoint projection preserved the same 8,205 events. Forty-seven
-formerly complete candidates became explicitly boundary-ambiguous because a
-peak and neighboring trough projected from the same or overlapping flat run.
-The saved ambiguity table contains 100 rows in total: 53 were already partial
-endpoint fragments, and 47 were newly excluded from complete-object metrics.
-
-| Measure, all 53 subjects | Envelope leading edge | Plateau midpoint |
-| --- | ---: | ---: |
-| Detected peak events | 8,205 | 8,205 |
-| Complete FeatureGraph objects | 8,180 | 8,133 |
-| LLM-baseline complete objects | 7,168 | 7,168 |
-| Matched objects | 6,513 | 7,086 |
-| FeatureGraph-only objects | 1,667 | 1,047 |
-| Baseline-only objects | 655 | 82 |
-| Median subject FeatureGraph matched fraction | 88.80% | 94.44% |
-| Median subject baseline matched fraction | 100% | 100% |
-| Median absolute peak error | 16 samples | 6.5 samples |
-| 90th-percentile absolute peak error | 45 samples | 24 samples |
-| Median absolute period error | 0.080 s | 0.056 s |
-| Median absolute full-excursion error | 0 | 0 |
-| Median absolute temporal-symmetry error | 0.0943 | 0.0967 |
-
-Object matches increased on 21 subjects, were unchanged on 31, and decreased
-by one on subject 36. Annotation agreement improved in both directions. The
-fraction of detected FeatureGraph peaks matched increased from 76.03% to
-85.36% for annotator 1 and from 79.74% to 88.62% for annotator 2. The fraction
-of annotated peaks recovered increased from 85.59% to 96.10% and from 88.65%
-to 98.51%, respectively.
-
-The severe plateau-shaped cases changed most. Subject 35 increased from 22 to
-119 baseline matches, subject 38 from 44 to 125, and subject 39 from zero to
-52. Their post-projection median peak errors were 1, 7, and 7.5 samples.
-Subject 5 increased from 30 to 74 matches but still retained 89 unmatched
-complete FeatureGraph objects. Thus subjects 35, 38, and 39 were primarily
-point-anchor failures; subject 5 remains a distinct over-segmentation and
-signal-quality problem.
-
-The small cohort-level increase in symmetry error is also informative. The
-midpoint projection substantially corrects extremum timing and period while
-leaving unresolved disagreement about how entire rising, stable, and falling
-phases should contribute to trough–peak–trough symmetry.
-
-### 6.6 Localization of detector-discordant episodes
-
-The 1,047 complete FeatureGraph objects without a matched baseline object are
-not distributed uniformly across the 52 transfer records. Seven subjects
-(5, 13, 14, 19, 27, 33, and 39) account for 555 objects, or 53.0% of the
-total; the ten highest-count subjects account for 678, or 64.8%. At the other
-end of the distribution, six subjects have no FeatureGraph-only objects and
-23 have five or fewer. Those 23 subjects contribute only 50 objects, or 4.8%
-of the total. The descriptive Gini coefficient of the per-subject counts is
-0.64.
-
-| Subject | FeatureGraph-only objects | Share of transfer total |
-| ---: | ---: | ---: |
-| 13 | 136 | 13.0% |
-| 19 | 92 | 8.8% |
-| 5 | 89 | 8.5% |
-| 14 | 63 | 6.0% |
-| 33 | 61 | 5.8% |
-| 39 | 60 | 5.7% |
-| 27 | 54 | 5.2% |
-
-The objects are not concentrated at one normalized time across the cohort.
-Counts in successive tenths of the records range from 79 to 127, providing no
-evidence that a common beginning- or end-of-record artifact explains the
-result. Within individual subjects, however, the temporal patterns differ.
-Subject 25 has 30 of its 32 unmatched objects in one tenth of the record and
-in one consecutive run. Subjects 5 and 19 contain several local bursts, while
-subjects 13, 33, and 39 distribute their unmatched objects across many parts
-of the record.
-
-These rows are therefore retained as *detector-discordant respiratory
-episodes*: temporally bounded candidate cycles for which the deterministic
-FeatureGraph and frozen SciPy constructions disagree. The term is a
-computational comparison label, not a clinical diagnosis. Of the 1,047
-episodes, 680 (64.9%) are excluded by both BIDMC annotation series and 367 are
-not. Subject 39 is particularly informative: none of its 60 unmatched objects
-is jointly excluded by the annotators. This does not establish that they are
-valid breaths, but it prevents the unmatched set from being interpreted
-wholesale as false detections.
 
 ## 7. Capability and dependency ledger
 
@@ -702,14 +761,14 @@ wholesale as false detections.
 | Execute LLM-selected baseline | NumPy, pandas, SciPy | Yes |
 | Construct rising/falling states | FeatureGraph from researcher parameters | Yes |
 | Expose trough/peak events and wave IDs | FeatureGraph | Yes |
-| Retain extremum intervals, transition anchors, and midpoint projections | FeatureGraph post hoc adapter | Yes |
-| Distinguish offline event time from causal detection time | FeatureGraph post hoc adapter | Yes |
-| Flag overlapping or degenerate extremum intervals | FeatureGraph post hoc adapter | Yes |
+| Retain extremum intervals, transition anchors, and midpoint projections | FeatureGraph representation | Yes |
+| Distinguish offline event time from causal detection time | FeatureGraph representation | Yes |
+| Flag overlapping or degenerate extremum intervals | FeatureGraph representation | Yes |
 | Retain incomplete endpoint objects | FeatureGraph | Yes |
 | Summarize period, excursion, symmetry | Frozen measurement contracts | Yes |
 | Match and audit individual objects | Deterministic comparison code | Yes |
 | Diagnose transfer failures across subjects | Saved object and annotation tables | Yes |
-| Localize detector-discordant episodes and bursts | Saved bounded object tables | Yes |
+| Localize detector-discordant candidate episodes and bursts | Saved bounded object tables | Yes |
 | Invent a transferable detector automatically | Not achieved | No |
 | Establish clinical validity | Requires domain expertise and clinical protocol | No |
 
@@ -721,30 +780,23 @@ count as meaningful objects in a new record or domain.
 
 ## 8. Discussion
 
-The subject 1 result alone could have supported an overly optimistic claim.
-Aggregate counts, rates, periods, and excursions were close, and every LLM
-object matched a FeatureGraph object. The cohort experiments reveal why
-object-level and multi-subject validation are necessary. A rule can preserve
-one analysis faithfully and still fail to transfer.
+The principal result is that temporal representation, not only event
+detection, determined whether the methods appeared to agree. A transition out
+of rising, an exact flat maximum, and the midpoint convention of a point
+detector can refer to the same observed event while producing different sample
+indices. FeatureGraph can retain all three without changing event identity.
+That separation preserved 8,205 BIDMC peak events while adding interval edges,
+improving alignment, and exposing 47 otherwise hidden boundary ambiguities.
 
-This does not make the representation unsuccessful. FeatureGraph's role is
-separable from detector quality. It deterministically transformed a declared
-state rule into inspectable events, identities, complete and incomplete
-objects, properties, and audit tables. When the absolute threshold failed,
-the failure was visible by subject and object. When MAD normalization shifted
-the failure from under-detection to over-segmentation, that tradeoff was
-measurable rather than hidden in a narrative summary. When normalization was
-undefined, the pipeline rejected the records instead of silently inventing a
-scale.
-
-The plateau audit demonstrates a second form of inspectability. Three of the
-four most severe envelope comparison failures did not require new thresholds
-or subject-specific detector rules. They required separating an observed
-transition boundary from the conventional point used to summarize an extended
-maximum. Once extrema were represented as intervals, the same detected events
-aligned with nearly all baseline objects and manual annotations. This is a
-representation correction rather than evidence that FeatureGraph inferred
-respiratory semantics.
+The prospective MIMIC-II run changes this from a purely post hoc explanation
+to transfer evidence for a specific representation correction. The midpoint
+projection passed every predeclared directional criterion, improved or
+preserved matches on every subject, and reduced peak, period, and symmetry
+errors on untouched source windows. Because leading-edge and midpoint variants
+shared the same detected events, the result cannot be attributed to adding a
+more permissive detector. It supports the narrower claim that an extended
+extremum is better represented as an interval and projected only when a
+point-based comparison requires one.
 
 The remaining 1,047 FeatureGraph-only complete objects prevent a general
 equivalence claim, but their localization is itself an achieved capability.
@@ -756,7 +808,7 @@ cannot classify its morphology. This converts aggregate transfer failure into
 an inspectable object set that can support later signal-quality analysis,
 domain review, or comparison with clinical events.
 
-The localization result also changes the interpretation of transfer failure.
+The localization result changes the interpretation of residual disagreement.
 The data are short recordings from critically ill patients, so heterogeneous
 respiratory morphology, physiological irregularity, and measurement artifact
 are all plausible sources of detector disagreement. The present study cannot
@@ -768,35 +820,33 @@ meaningful. Likewise, unchanged full-excursion agreement and slightly worse
 symmetry agreement show that correcting peak projection does not harmonize
 every boundary-sensitive property.
 
-The study therefore supports a narrower but defensible claim: an
-LLM-assisted analysis can be converted into a durable computational artifact
-whose behavior humans can inspect and maintain after LLM access is lost.
-FeatureGraph can preserve the representation and its execution, but it does
-not automatically preserve or reproduce all analytical intelligence that led
-to the representation.
+The earlier absolute-threshold, MAD, and hysteresis experiments remain useful
+because they distinguish representation from detector tuning. The absolute
+rule transferred unevenly; MAD recovered more comparator events but caused
+systematic over-segmentation; hysteresis did not repair the subject-5 pattern.
+Those failures motivated the final construction, but they are not the current
+FeatureGraph claim. The current claim is that declared temporal semantics can
+be executed, transferred, inspected, and revised at object level.
 
-This distinction also changes the preferred architectural direction. The
-current alpha packages the transition rules into an `Oscillation`
-construction, even though the software cannot know whether a signal is an
-oscillation. A transition-only representation would describe exactly what the
-deterministic layer observes: state entries, exits, persistence, boundaries,
-and relations among transitions. Higher-order interpretations such as
-oscillation or respiration cycle could then be supplied by users or other
-systems as compositions over those objects. The failures in this study are
-evidence for that separation.
+The LLM origin provides an additional preservation result. The comparator
+method and its object schema now execute without a live model, while the
+FeatureGraph path exposes assumptions that were implicit in the point-detector
+workflow. This is secondary to the representation result but demonstrates that
+an LLM-originated analysis can become a durable computational artifact rather
+than remain dependent on a conversation.
 
 ## 9. Threats to validity
 
 ### 9.1 Construct validity
 
-The primary construct is *preservation of an analysis*, operationalized as the
-ability to rerun explicit construction and measurement contracts, inspect
-object boundaries, and reproduce saved tables without live LLM access. This
-does not measure preservation of the LLM's latent reasoning, autonomous
-semantic understanding, or ability to invent a new detector. Agreement with
-the frozen LLM/SciPy path is also not respiratory ground truth. The two manual
-annotation series provide an external diagnostic, but annotators differ and
-may encode peak semantics that differ from either constructed object type.
+The primary construct is *explicit temporal representation*, operationalized
+as the ability to rerun declared construction and measurement contracts,
+retain distinct event and interval semantics, inspect object boundaries, and
+reproduce saved tables. Agreement with the frozen SciPy path is not respiratory
+ground truth. The two manual annotation series provide an external diagnostic,
+but annotators differ and may encode peak semantics that differ from either
+constructed object type. Preservation of an LLM-originated analysis is a
+secondary construct and does not imply preservation of latent model reasoning.
 
 Period and full excursion have harmonized contracts; trough-sensitive symmetry
 does not have equivalent boundary semantics across detectors. Reporting that
@@ -820,22 +870,25 @@ tables make that sensitivity testable.
 The MAD construction was proposed after observing absolute-rule failures, and
 the subject 5 hysteresis test followed inspection of a specific failure. The
 rolling envelope and plateau midpoint were likewise developed after inspecting
-subject 1 and cohort failures. These are post hoc diagnostics. They can
-identify mechanisms and motivate the next design, but they cannot provide an
-unbiased estimate of future transfer. The plateau interval and ambiguity rules
-must be frozen before evaluation on a new cohort or external dataset.
+subject 1 and cohort failures, so their 53-record results are post hoc. The
+20-subject confirmation reduces this threat because the representation,
+selection algorithm, matching, and directional criteria were frozen before
+outputs were examined. It does not erase prior exposure to the broader
+MIMIC-II/BIDMC source domain or constitute random population sampling.
 
 ### 9.3 External validity
 
 BIDMC contains 53 short recordings from critically ill patients, all sampled
-at 125 Hz and distributed through one dataset. Results may not generalize to
-other sensors, sampling rates, preprocessing conventions, populations, or
-longer recordings. The researcher lacked respiration-domain expertise, which
-helped expose how much semantic judgment the representation required but
-precludes clinical or physiological claims. A new dataset and domain review
-are required before using these objects as breath measurements.
+at 125 Hz and distributed through one dataset. The confirmation adds 20
+non-BIDMC MIMIC-II source subjects but retains the same archive family,
+sampling rate, and short-window design. Its windows lack independent manual
+breath annotations. Results may not generalize to other sensors, sampling
+rates, preprocessing conventions, populations, or longer recordings. The
+researcher lacked respiration-domain expertise, which precludes clinical or
+physiological claims. Independent data and domain review are required before
+using these objects as breath measurements.
 
-For the same reason, a detector-discordant episode must not be interpreted as
+For the same reason, a detector-discordant candidate episode must not be interpreted as
 an abnormal breath. It may reflect physiological morphology, sensor artifact,
 annotation convention, baseline suppression, FeatureGraph over-segmentation,
 or some combination of these mechanisms. The current contribution is exact
@@ -908,38 +961,50 @@ full experiment-level disclosure is maintained in
 
 ## 11. Conclusion
 
-This study began with the question of what would remain if LLM access were
-lost. The answer is neither “nothing” nor “the entire analytical capability.”
-The LLM-proposed method, researcher-defined representation, deterministic
-object construction, measurement contracts, and object-level audits now run
-without an LLM. Humans can inspect their states and boundaries, reproduce
-their outputs, and identify exactly where they fail.
+FeatureGraph represented candidate respiration cycles as explicit temporal
+objects whose transition anchors, extremum intervals, point projections,
+completeness, ambiguity, and measurements remain separately inspectable. On 53
+BIDMC records, the final plateau-aware representation preserved all detected
+events while aligning 7,086 of 7,168 comparator objects. On 20 prospectively
+selected untouched source subjects, the same interval-to-point correction
+passed all four predeclared transfer criteria and reduced median matched-peak
+error from 17 to 7 samples.
 
-What did not transfer was the rule for deciding which candidate transitions
-should be treated as meaningful breaths. The absolute threshold failed
-unevenly across subjects. MAD normalization recovered most baseline objects
-but produced severe systematic over-segmentation and failed mathematically on
-two records. Hysteresis did not repair the problem. A post hoc rolling-envelope
-construction improved the candidate set, and interval-valued extrema showed
-that subjects 35, 38, and 39 were largely peak-projection failures rather than
-missed-cycle failures. Subject 5 and the remaining unmatched candidates still
-demonstrate that peak projection cannot replace signal-quality and semantic
-selection rules. These are not incidental exceptions to conceal; they are the
-main scientific result about the boundary between deterministic preservation
-and analytical judgment.
+The result is not detector equivalence or clinical validation. Residual
+FeatureGraph-only objects remain, are concentrated in a minority of records,
+and may reflect physiological morphology, measurement artifact, annotation
+convention, or over-segmentation. The appropriate FeatureGraph behavior is to
+label and preserve those detector-discordant candidate episodes for downstream
+review, not to infer their meaning.
 
-The next phase will therefore retain this study as a completed research
-record and move FeatureGraph toward transition-only objects. That architecture
-better matches what the system can claim: it can represent explicit temporal
-changes faithfully, while leaving higher-order semantic interpretation to a
-declared human or computational layer.
+The study therefore supports FeatureGraph's present purpose: turning implicit
+sample-level analytical decisions into durable, executable, object-level
+representations. The frozen LLM-originated comparator demonstrates analytical
+preservation, but the broader contribution is the ability to distinguish what
+was observed, how it was bounded, how it was projected, and what remains
+uncertain.
 
 ## 12. Reproducibility
 
-The repository stores the blinded prompt, LLM method record, raw and object
-tables, frozen reproduction code, subject-level comparisons, unmatched-object
-audits, annotation comparisons, MAD failures, paired scaling deltas, plateau
-intervals, and explicit boundary-ambiguity rows.
+The beta release stores the blinded prompt, comparator method record, raw and
+object tables, frozen reproduction code, subject-level comparisons,
+unmatched-object audits, annotation comparisons, development ablations,
+plateau intervals, and explicit boundary-ambiguity rows. The live study
+repository additionally stores the prospective confirmation protocol,
+selection audit, hashes, decision record, and object-level outputs.
+
+### 12.1 Code and data availability
+
+The exact computational artifact used for this study is FeatureGraph
+version 0.1.0b1, archived on Zenodo at
+[https://doi.org/10.5281/zenodo.21984186](https://doi.org/10.5281/zenodo.21984186)
+and released from Git commit
+[`e6df4d0a309bffdf36c4f2e3dbcf3ee29f9f9c4b`](https://github.com/featuregraph/featuregraph/tree/e6df4d0a309bffdf36c4f2e3dbcf3ee29f9f9c4b).
+The public release includes the frozen comparator, FeatureGraph constructions,
+tests, subject-level summaries, object-level audit tables, and verification
+manifest. The source recordings and manual breath annotations are available
+from the BIDMC PPG and Respiration Dataset, version 1.0.0, under its PhysioNet
+terms at [https://doi.org/10.13026/C2208R](https://doi.org/10.13026/C2208R).
 
 ```bash
 PYTHONPATH=. python experiments/bidmc_llm_capture/multi_subject_comparison.py \
@@ -958,6 +1023,10 @@ PYTHONPATH=src:. python \
   --subjects 1-53 --jobs 4 --construction envelope_plateau \
   --output-directory \
     experiments/bidmc_llm_capture/results/envelope_plateau_multi_subject
+
+PYTHONPATH=src:. python \
+  experiments/mimic2_envelope_confirmation/run_confirmation.py \
+  --output-directory results/mimic2_envelope_confirmation
 ```
 
 ## References
@@ -973,8 +1042,8 @@ PYTHONPATH=src:. python \
 3. Virtanen, P. et al. “SciPy 1.0: Fundamental Algorithms for Scientific
    Computing in Python.” *Nature Methods* 17, 261–272, 2020.
    [https://doi.org/10.1038/s41592-019-0686-2](https://doi.org/10.1038/s41592-019-0686-2).
-4. Habib, N. *FeatureGraph*, version 0.1.0a2, 2026.
-   [https://doi.org/10.5281/zenodo.21939319](https://doi.org/10.5281/zenodo.21939319).
+4. Habib, N. *FeatureGraph*, version 0.1.0b1, 2026.
+   [https://doi.org/10.5281/zenodo.21984186](https://doi.org/10.5281/zenodo.21984186).
 5. Peng, R. D. “Reproducible Research in Computational Science.” *Science*
    334(6060), 1226–1227, 2011.
    [https://doi.org/10.1126/science.1213847](https://doi.org/10.1126/science.1213847).
