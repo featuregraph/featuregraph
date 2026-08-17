@@ -406,29 +406,47 @@ def discover_cohort(
 
     selected: list[SelectedWindow] = []
     audit_rows: list[dict[str, object]] = []
-    for subject in source_subjects:
-        window, reason = inspect_subject(client, subject)
-        audit_rows.append(
-            {
-                "subject": subject,
-                "status": reason,
-                "selected_rank": (
-                    len(selected) + 1 if window is not None else pd.NA
-                ),
-                "header_file": (
-                    window.segment.header_file if window is not None else pd.NA
-                ),
-            }
-        )
-        if window is not None:
-            selected.append(window)
-        print(
-            f"considered={len(audit_rows)} selected={len(selected)} "
-            f"subject={subject} status={reason}",
-            flush=True,
-        )
-        if len(selected) == target_subjects:
-            break
+    batch_size = jobs * 2
+    with ThreadPoolExecutor(max_workers=jobs) as executor:
+        for batch_start in range(0, len(source_subjects), batch_size):
+            batch = source_subjects[batch_start : batch_start + batch_size]
+            outcomes = executor.map(
+                lambda subject: inspect_subject(client, subject),
+                batch,
+            )
+            for subject, (window, reason) in zip(
+                batch,
+                outcomes,
+                strict=True,
+            ):
+                audit_rows.append(
+                    {
+                        "subject": subject,
+                        "status": reason,
+                        "selected_rank": (
+                            len(selected) + 1
+                            if window is not None
+                            else pd.NA
+                        ),
+                        "header_file": (
+                            window.segment.header_file
+                            if window is not None
+                            else pd.NA
+                        ),
+                    }
+                )
+                if window is not None:
+                    selected.append(window)
+                print(
+                    f"considered={len(audit_rows)} "
+                    f"selected={len(selected)} "
+                    f"subject={subject} status={reason}",
+                    flush=True,
+                )
+                if len(selected) == target_subjects:
+                    break
+            if len(selected) == target_subjects:
+                break
 
     if len(selected) != target_subjects:
         raise RuntimeError(
@@ -746,7 +764,7 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument(
         "--jobs",
         type=int,
-        default=4,
+        default=8,
         help="Concurrent metadata downloads; does not change selection order.",
     )
     parser.add_argument(
