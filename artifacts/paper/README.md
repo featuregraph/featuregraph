@@ -1,7 +1,7 @@
 # FeatureGraph alpha paper
 
 The standalone BIDMC analysis-preservation study is maintained in
-[`bidmc_llm_preservation_study/manuscript.md`](bidmc_llm_preservation_study/manuscript.md).
+[the preservation study manuscript](https://github.com/featuregraph/featuregraph/blob/alpha/v0.1.x/artifacts/paper/bidmc_llm_preservation_study/manuscript.md).
 It records the blinded LLM comparison, the original absolute-threshold cohort,
 and the subsequent MAD-normalized cohort as a separate research paper draft.
 The draft now also contains a primary-source related-work section, a formal
