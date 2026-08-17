@@ -57,11 +57,11 @@ The beta does not claim:
 - [x] Run `python -m build`.
 - [x] Confirm the clean wheel metadata reports version `0.1.0b1` without SciPy
   installed as a core dependency.
-- [ ] Execute both public notebooks from the repository root.
+- [x] Execute both public notebooks from the repository root in GitHub Actions.
 - [x] Regenerate the 53-subject envelope/plateau result directory.
 - [x] Run `experiments/bidmc_llm_capture/verify_beta_release.py`.
 - [x] Compare regenerated tables with the manuscript claims.
-- [ ] Confirm GitHub Actions passes on Python 3.10–3.13, notebook execution,
+- [x] Confirm GitHub Actions passes on Python 3.10–3.13, notebook execution,
   and distribution builds.
 - [ ] Create and verify the immutable `v0.1.0b1` prerelease.
 
