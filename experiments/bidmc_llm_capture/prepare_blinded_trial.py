@@ -2,10 +2,15 @@
 
 from __future__ import annotations
 
+import argparse
 from pathlib import Path
 
-import featuregraph as fg
+import pandas as pd
 
+import featuregraph as fg
+from experiments.bidmc_llm_capture.native_envelope import (
+    native_envelope_objects,
+)
 
 SUBJECT = 1
 SAMPLING_RATE = 125
@@ -14,19 +19,10 @@ EPS = 0.15
 MAX_STATE_GAP = 7
 
 
-def prepare(output_directory: Path) -> None:
-    """Write raw LLM input and the hidden native comparison table."""
-    output_directory.mkdir(parents=True, exist_ok=True)
-
-    observations = fg.datasets.bidmc(subject=SUBJECT)
-    raw = observations[["respiration"]].copy()
-    raw.insert(0, "sample_index", raw.index)
-    raw.insert(1, "time_seconds", raw.index / SAMPLING_RATE)
-    raw.to_csv(
-        output_directory / "raw_respiration_subject_01.csv",
-        index=False,
-    )
-
+def difference_native_objects(
+    observations: pd.DataFrame,
+) -> pd.DataFrame:
+    """Reproduce the original frozen native difference construction."""
     behavior = fg.oscillation.Oscillation(
         signals="respiration",
         group="subject",
@@ -41,10 +37,9 @@ def prepare(output_directory: Path) -> None:
         signal="respiration",
         include_partial=True,
     ).table.copy()
-
     objects["period_seconds"] = objects["period"] / SAMPLING_RATE
     objects["full_excursion"] = 2 * objects["amplitude"]
-    native = objects[
+    return objects[
         [
             "oscillation_id",
             "start_index",
@@ -56,6 +51,33 @@ def prepare(output_directory: Path) -> None:
             "temporal_symmetry",
         ]
     ].rename(columns={"oscillation_id": "featuregraph_object_id"})
+
+
+def prepare(
+    output_directory: Path,
+    *,
+    construction: str = "envelope",
+) -> None:
+    """Write raw LLM input and the hidden native comparison table."""
+    output_directory.mkdir(parents=True, exist_ok=True)
+
+    observations = fg.datasets.bidmc(subject=SUBJECT)
+    raw = observations[["respiration"]].copy()
+    raw.insert(0, "sample_index", raw.index)
+    raw.insert(1, "time_seconds", raw.index / SAMPLING_RATE)
+    raw.to_csv(
+        output_directory / "raw_respiration_subject_01.csv",
+        index=False,
+    )
+
+    if construction == "envelope":
+        native, _ = native_envelope_objects(observations)
+    elif construction == "difference":
+        native = difference_native_objects(observations)
+    else:
+        raise ValueError(
+            "construction must be 'difference' or 'envelope'"
+        )
     native.to_csv(
         output_directory / "featuregraph_objects_subject_01.csv",
         index=False,
@@ -63,4 +85,14 @@ def prepare(output_directory: Path) -> None:
 
 
 if __name__ == "__main__":
-    prepare(Path(__file__).parent / "generated")
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--construction",
+        choices=("difference", "envelope"),
+        default="envelope",
+    )
+    arguments = parser.parse_args()
+    prepare(
+        Path(__file__).parent / "generated",
+        construction=arguments.construction,
+    )

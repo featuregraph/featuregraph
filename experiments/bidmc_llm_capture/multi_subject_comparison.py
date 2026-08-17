@@ -7,14 +7,17 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 from functools import lru_cache
 from pathlib import Path
 
-import featuregraph as fg
 import numpy as np
 import pandas as pd
 
+import featuregraph as fg
 from experiments.bidmc_llm_capture.compare_object_tables import (
     comparison_summary,
     match_ordered_objects,
     optimal_ordered_pairs,
+)
+from experiments.bidmc_llm_capture.native_envelope import (
+    native_envelope_objects,
 )
 from experiments.bidmc_llm_capture.prepare_blinded_trial import (
     DIFF_LAG,
@@ -26,7 +29,6 @@ from experiments.bidmc_llm_capture.reproduce_llm_method import (
     detect_boundaries,
     reproduce,
 )
-
 
 PEAK_TOLERANCE_SAMPLES = 63
 ANNOTATION_COLUMNS = (
@@ -59,10 +61,17 @@ def normalized_entry_threshold() -> float:
 def native_featuregraph_objects(
     observations: pd.DataFrame,
     *,
+    construction: str = "difference",
     scaling: str = "absolute",
     normalized_eps: float | None = None,
 ) -> tuple[pd.DataFrame, list[int]]:
-    """Apply the frozen native construction and return objects and peaks."""
+    """Apply a native construction and return objects and detected peaks."""
+    if construction == "envelope":
+        return native_envelope_objects(observations)
+    if construction != "difference":
+        raise ValueError(
+            "construction must be 'difference' or 'envelope'"
+        )
     if scaling not in {"absolute", "mad"}:
         raise ValueError("scaling must be 'absolute' or 'mad'")
 
@@ -210,6 +219,7 @@ def annotation_comparison(
 def compare_subject(
     subject: int,
     scaling: str = "absolute",
+    construction: str = "difference",
 ) -> dict[str, pd.DataFrame | pd.Series]:
     """Run both frozen paths and annotation checks for one subject."""
     observations = fg.datasets.bidmc(subject=subject)
@@ -217,6 +227,7 @@ def compare_subject(
 
     featuregraph_objects, featuregraph_peaks = native_featuregraph_objects(
         observations,
+        construction=construction,
         scaling=scaling,
     )
     raw = observations[["respiration"]].copy()
@@ -231,6 +242,7 @@ def compare_subject(
     )
     summary = comparison_summary(matched, featuregraph_only, llm_only)
     summary["subject"] = subject
+    summary["featuregraph_construction"] = construction
     summary["featuregraph_scaling"] = scaling
     summary["samples"] = len(observations)
     summary["featuregraph_detected_peaks"] = len(featuregraph_peaks)
@@ -321,9 +333,14 @@ def cohort_summary(
             subject_summary["subject"].isin(subject_ids)
         ]
         pairs = matched[matched["subject"].isin(subject_ids)]
-        native_only = featuregraph_only[
-            featuregraph_only["subject"].isin(subject_ids)
-        ]
+        if "subject" in featuregraph_only:
+            native_only = featuregraph_only[
+                featuregraph_only["subject"].isin(subject_ids)
+            ]
+        else:
+            native_only = pd.DataFrame(
+                columns=["excluded_by_both_annotators"]
+            )
         annotations = annotation_summary[
             annotation_summary["subject"].isin(subject_ids)
         ]
@@ -395,6 +412,7 @@ def run(
     *,
     jobs: int = 1,
     scaling: str = "absolute",
+    construction: str = "difference",
 ) -> None:
     """Run a declared subject cohort and save all audit tables."""
     output_directory.mkdir(parents=True, exist_ok=True)
@@ -404,7 +422,13 @@ def run(
         for subject in subjects:
             print(f"Comparing BIDMC subject {subject:02d}...", flush=True)
             try:
-                results.append(compare_subject(subject, scaling))
+                results.append(
+                    compare_subject(
+                        subject,
+                        scaling,
+                        construction,
+                    )
+                )
             except ValueError as error:
                 failures.append(
                     {"subject": subject, "error": str(error)}
@@ -417,7 +441,12 @@ def run(
         result_by_subject = {}
         with ProcessPoolExecutor(max_workers=jobs) as executor:
             futures = {
-                executor.submit(compare_subject, subject, scaling): subject
+                executor.submit(
+                    compare_subject,
+                    subject,
+                    scaling,
+                    construction,
+                ): subject
                 for subject in subjects
             }
             for future in as_completed(futures):
@@ -515,6 +544,11 @@ if __name__ == "__main__":
         default="absolute",
     )
     parser.add_argument(
+        "--construction",
+        choices=("difference", "envelope"),
+        default="difference",
+    )
+    parser.add_argument(
         "--output-directory",
         type=Path,
         default=(Path(__file__).parent / "results" / "multi_subject"),
@@ -525,4 +559,5 @@ if __name__ == "__main__":
         arguments.output_directory,
         jobs=arguments.jobs,
         scaling=arguments.scaling,
+        construction=arguments.construction,
     )

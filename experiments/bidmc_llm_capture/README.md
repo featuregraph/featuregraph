@@ -1,6 +1,8 @@
 # BIDMC respiration experiment record
 
 The frozen multi-subject result is recorded in `MULTI_SUBJECT_RESULTS.md`.
+The subsequent rolling-envelope construction and its 53-subject rerun are
+recorded in `ENVELOPE_RESULTS.md`.
 The scale-adaptive subject 5 hysteresis test is recorded in
 `HYSTERESIS_RESULTS.md` and reproduced by `hysteresis_ablation.py`.
 The completed absolute-versus-MAD study and its interpretation are incorporated
@@ -33,7 +35,7 @@ documented object properties.
 
 ## Subject 1 record
 
-The current native construction uses the BIDMC subject 1 respiration channel
+The preserved original native construction uses the BIDMC subject 1 respiration channel
 at 125 Hz with no smoothing, `diff_lag=45`, `eps=0.15`, and
 `max_state_gap=7`. The last parameter closes only short False runs bounded by
 rising states; it removes one spurious split at the start of the inspected
@@ -174,7 +176,7 @@ rule general or give FeatureGraph autonomous semantic recognition.
 
 ## Reproducing the object-level pass
 
-Run `python experiments/bidmc_llm_capture/prepare_blinded_trial.py`. This
+Run `python experiments/bidmc_llm_capture/prepare_blinded_trial.py --construction difference`. This
 creates the raw input and a hidden FeatureGraph object table under `generated/`.
 In a new context-isolated LLM chat, attach only
 `raw_respiration_subject_01.csv` and `BLINDED_LLM_PROMPT.md`. Do not expose the
