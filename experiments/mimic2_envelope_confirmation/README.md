@@ -16,3 +16,7 @@ PYTHONPATH=src:. python \
 
 HTTP responses are cached outside the results directory. Generated result
 tables are written to `results/mimic2_envelope_confirmation/`.
+
+The completed run passed all four prospectively declared criteria. See
+`RESULTS.md` for the compact interpretation and the result directory for the
+selection audit and object-level tables.

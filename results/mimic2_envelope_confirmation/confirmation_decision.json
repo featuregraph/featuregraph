@@ -1,0 +1,36 @@
+{
+  "criteria": {
+    "peak_count_preserved_every_window": true,
+    "matched_objects_not_decreased": true,
+    "baseline_only_objects_not_increased": true,
+    "median_absolute_peak_error_lower": true
+  },
+  "passed_all_declared_criteria": true,
+  "git_revision": "0ea57bb75c1c42431c2375888b3381a74571d80f",
+  "script_sha256": "f5f8060f5e5a57fba90e341ffee6352c629db7889757c884a384ffde88dc2282",
+  "protocol_sha256": "352dc7c58c67df2db11623090a1197a6366212f8e4c90e25d7bc0bbe87525a47",
+  "source_base_url": "https://physionet.org/physiobank/database/mimic2wdb/matched",
+  "target_subjects": 20,
+  "selected_subjects": [
+    "s00052",
+    "s00076",
+    "s00262",
+    "s00402",
+    "s00523",
+    "s00600",
+    "s00618",
+    "s00631",
+    "s00639",
+    "s00652",
+    "s00672",
+    "s00798",
+    "s00801",
+    "s00870",
+    "s00946",
+    "s00985",
+    "s01004",
+    "s01042",
+    "s01049",
+    "s01158"
+  ]
+}
