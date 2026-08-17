@@ -9,7 +9,7 @@ FeatureGraph turns ordered observations into explicit behavioral objects that so
 
 This clean, executable notebook walks from a raw respiration waveform to explicit transition states, oscillation objects, accumulation objects, validation checks, and a deterministic summary. To run it, clone this branch, install the development environment as shown below, and execute the notebook from top to bottom.
 
-**2. Read the study:** [From LLM-Proposed Analysis to Maintainable Behavioral Objects](artifacts/paper/bidmc_llm_preservation_study/manuscript.md)
+**2. Read the study:** [From LLM-Proposed Analysis to Maintainable Behavioral Objects](https://github.com/featuregraph/featuregraph/blob/alpha/v0.1.x/artifacts/paper/bidmc_llm_preservation_study/manuscript.md)
 
 The paper draft asks what remains maintainable when an LLM-assisted analysis is converted into an explicit computational representation. It reports what the BIDMC experiment preserved, where the representation transferred, and where the boundary rule failed.
 
