@@ -85,6 +85,8 @@ artifacts/paper/discussion_and_limitations/*
 !artifacts/paper/abstract_and_conclusion/
 artifacts/paper/abstract_and_conclusion/*
 !artifacts/paper/abstract_and_conclusion/abstract_and_conclusion.md
+/notebooks/.bidmc_notebook_cache/
+/notebooks/drafts/
 
 # Notebook-generated exports
 *.nbconvert.ipynb
