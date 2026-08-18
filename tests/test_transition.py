@@ -25,6 +25,34 @@ def test_transition_materializes_falling_state() -> None:
     assert df["signal_falling"].tolist() == [False, True, True, False]
 
 
+def test_transition_epsilon_rejects_floating_point_chatter() -> None:
+    residue = 5.551115123125783e-17
+    genuine_change = 9.7e-06
+    df = pd.DataFrame(
+        {
+            "signal": [
+                0.36,
+                0.36 + residue,
+                0.36,
+                0.36 + genuine_change,
+            ]
+        }
+    )
+
+    Transition(
+        df,
+        "signal",
+        "rising",
+        rising_state,
+        eps=1e-12,
+    )
+
+    assert df["signal_rising"].tolist() == [False, False, False, True]
+    assert df["enter_signal_rising"].tolist() == [False, False, False, True]
+    assert df["exit_signal_rising"].tolist() == [False, False, False, False]
+    assert df["signal_id"].tolist() == [0, 0, 0, 1]
+
+
 def test_transition_event_ids_reset_at_group_boundaries() -> None:
     df = pd.DataFrame(
         {
