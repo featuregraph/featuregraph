@@ -32,14 +32,12 @@ class Transition():
         df[enter_state_col] = enter_state(df[f'{signal}_{direction}'])
         df[exit_state_col] = exit_state(df[f'{signal}_{direction}'])
         df[id_col] = event_id(df, enter_state_col, group)
-        # df[rate_of_change_col] = rate_of_change(df[f'{signal}_{direction}'])
 
         self.df = df
         self.group = group
         self.signal = signal
         self.id_col = id_col
         self.state_col = state_col
-        # self.rate_of_change_col = rate_of_change_col
         
     # def accumulations(self):
     #     df[baseline_col] ...
