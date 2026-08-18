@@ -28,7 +28,7 @@ class Transition():
         id_col = f'{signal}_id'
         rate_of_change_col = f'{signal}_rate_of_change'
 
-        df[state_col] = op(df[signal], eps=0)
+        df[state_col] = op(df[signal], eps=eps)
         df[enter_state_col] = enter_state(df[f'{signal}_{direction}'])
         df[exit_state_col] = exit_state(df[f'{signal}_{direction}'])
         df[id_col] = event_id(df, enter_state_col, group)
