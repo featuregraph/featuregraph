@@ -8,7 +8,7 @@
 >
 > 1. [Open the beta release](https://github.com/featuregraph/featuregraph/releases/tag/v0.1.0b1)
 > 2. [Run the BIDMC reconstruction notebook](https://github.com/featuregraph/featuregraph/blob/v0.1.0b1/notebooks/bidmc_respiration_pipeline.ipynb)
-> 3. [Read the beta paper draft](https://github.com/featuregraph/featuregraph/blob/v0.1.0b1/artifacts/paper/bidmc_llm_preservation_study/manuscript.md)
+> 3. [Read the beta paper draft](https://github.com/featuregraph/featuregraph/blob/beta/v0.1.x/artifacts/paper/bidmc_llm_preservation_study/manuscript.md)
 >
 > Compatible maintenance continues on
 > [`beta/v0.1.x`](https://github.com/featuregraph/featuregraph/tree/beta/v0.1.x).
@@ -105,9 +105,10 @@ See the [beta demo notebook](https://github.com/featuregraph/featuregraph/blob/v
 
 ## Beta research record
 
-The beta paper draft, evaluation artifacts, and reproduction tooling are
+The immutable beta software, evaluation artifacts, and reproduction tooling are
 frozen in [`v0.1.0b1`](https://github.com/featuregraph/featuregraph/tree/v0.1.0b1).
-The compatible research line continues on
+The corresponding [beta paper draft](https://github.com/featuregraph/featuregraph/blob/beta/v0.1.x/artifacts/paper/bidmc_llm_preservation_study/manuscript.md)
+and compatible research line continue on
 [`beta/v0.1.x`](https://github.com/featuregraph/featuregraph/tree/beta/v0.1.x).
 The historical `alpha/v0.1.x` branch remains unchanged for existing links. The
 immutable beta tag and its
@@ -120,6 +121,7 @@ The next architecture is being developed on `main`. It centers transition summar
 
 Current development documentation is labeled explicitly:
 
+- [current framework paper draft](artifacts/paper/master/featuregraph_master_draft.md);
 - [development architecture](docs/behavior-architecture.md);
 - [unreleased changes](CHANGELOG.md);
 - [current source](https://github.com/featuregraph/featuregraph/tree/main).
