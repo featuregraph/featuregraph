@@ -131,12 +131,6 @@ are treated as reference annotations rather than infallible physical truth.
 One series is sufficient to establish the interface and expose boundary
 semantics, but not to claim general interoperability.
 
-## Next step before author contact
-
-Review the compact figure and object schema, then share this study with the
-CLaP first author. Ask whether distinguishing a recurring inferred state class
-from its bounded temporal occurrences is useful in their downstream workflows.
-
 ## Sources
 
 - Arik Ermshaus, Patrick Schäfer, and Ulf Leser. *CLaP - State Detection from
