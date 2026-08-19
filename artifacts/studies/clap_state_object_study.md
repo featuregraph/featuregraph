@@ -121,6 +121,30 @@ All eleven declared checks passed:
 - relation state pairs equal CLaP's sparse transition graph;
 - first and final boundary fragments retained.
 
+## Querying the object layer
+
+CLaP already supplies segments, recurring state classes, a dense state
+sequence, and unique transition types. FeatureGraph makes each temporal
+occurrence independently addressable through the returned object table,
+`FeatureObject` instances, relation table, provenance, and source indices.
+
+The generated study demonstrates queries that:
+
+- retrieve all three bounded occurrences of state 1;
+- identify the first and final objects as boundary-truncated fragments;
+- aggregate occurrence count, total samples, and mean duration by state class;
+- identify `CLAP-CROP-O005` (state 3, 3,522 samples) as the longest occurrence;
+- retrieve the three state-3 objects that immediately follow state-2 objects;
+- count transition instances as three `1 → 2`, three `2 → 3`, and two `3 → 1`;
+- inspect `CLAP-CROP-O004`, its neighbors, provenance, and supporting samples;
+- reconstruct the original CLaP label sequence exactly from the queried objects.
+
+This is the operational distinction between a recurring state class and its
+temporal instances. The sparse transition graph records which transition types
+exist; the object and relation tables retain which individual occurrences took
+part, when they occurred, what they measured, and which source observations
+support them.
+
 ## Interpretation
 
 This result demonstrates lossless object materialization of one CLaP output by
