@@ -25,21 +25,21 @@ FeatureGraph preserves three layers:
 
 For a processed signal \(s_t\), a simple directional construction defines
 
-$
+$$
 \Delta s_t = s_t - s_{t-1},
-$
+$$
 
-$
+$$
 R_t = [\Delta s_t > \epsilon], \quad
 F_t = [\Delta s_t < -\epsilon], \quad
 I_t = [|\Delta s_t| \leq \epsilon].
-$
+$$
 
 Entering or exiting a state creates an event. For example, a valid transition from rising to non-rising can define a peak event:
 
-$
+$$
 P_t = R_{t-1} \land \neg R_t.
-$
+$$
 
 Cumulative boundary counts assign identity to intervals, while an explicit interval convention determines which side contains the boundary. Grouped aggregation then derives properties implied by the object definition, such as duration, amplitude, period, phase symmetry, or prominence. First and final fragments remain represented but are marked incomplete.
 
