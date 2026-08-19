@@ -2,21 +2,24 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21984186.svg)](https://doi.org/10.5281/zenodo.21984186)
 
-> ## Start with the public beta
+> ## Start with the completed CLaP interoperability study
 >
-> **The released, public-facing project is [`v0.1.0b1`](https://github.com/featuregraph/featuregraph/releases/tag/v0.1.0b1).**
+> CLaP detects a state sequence. The public development API
+> `featuregraph.from_state_sequence` materializes the unchanged labels as
+> bounded `FeatureObject` instances and temporal relations.
 >
-> 1. [Open the beta release](https://github.com/featuregraph/featuregraph/releases/tag/v0.1.0b1)
-> 2. [Run the BIDMC reconstruction notebook](https://github.com/featuregraph/featuregraph/blob/v0.1.0b1/notebooks/bidmc_respiration_pipeline.ipynb)
-> 3. [Read the beta paper draft](https://github.com/featuregraph/featuregraph/blob/beta/v0.1.x/artifacts/paper/bidmc_llm_preservation_study/manuscript.md)
+> 1. [Read the completed study](artifacts/studies/clap_state_object_study.md)
+> 2. [Open the generated study notebook](notebooks/generated_study/clap_generated_study.ipynb)
+> 3. [Inspect the construction figure](artifacts/studies/clap_crop_object_construction.png)
+> 4. [Read the public state-sequence adapter](src/featuregraph/behaviors/state_occurrence.py)
 >
-> Compatible maintenance continues on
-> [`beta/v0.1.x`](https://github.com/featuregraph/featuregraph/tree/beta/v0.1.x).
-> The historical `alpha/v0.1.x` branch remains available for old links. The
-> `main` branch is an unreleased successor architecture and is not the
-> recommended visitor path.
+> The study preserved all 20,700 CLaP labels as nine occurrence objects and
+> eight adjacency relations, with 11 of 11 declared validation checks passing.
 
-FeatureGraph studies how an LLM-assisted analysis can become a deterministic, inspectable computational record, so the code, method, assumptions, and evidence remain available after the conversation is gone.
+FeatureGraph turns observation-level states and events into explicit behavioral
+objects. External scientific methods may perform detection; FeatureGraph adds
+bounded identity, measurements, completeness, provenance, composition, and
+relations without taking over the detector's scientific role.
 
 ```text
 observations
@@ -27,6 +30,36 @@ observations
 ```
 
 > **Development status:** The `main` branch contains an unreleased architectural redesign and is not API-compatible with FeatureGraph `v0.1.0b1`. To use or reproduce the public beta, work from the immutable [`v0.1.0b1` release](https://github.com/featuregraph/featuregraph/releases/tag/v0.1.0b1) or its compatible maintenance branch, [`beta/v0.1.x`](https://github.com/featuregraph/featuregraph/tree/beta/v0.1.x). Migration guidance will be published when the replacement API stabilizes.
+
+## CLaP interoperability result
+
+The first external-detector integration uses the maintained ClaSPy
+implementation of CLaP on the 20,700-sample Crop benchmark. CLaP supplies the
+detected state labels. FeatureGraph consumes those labels through the public
+development API:
+
+```python
+result = fg.from_state_sequence(
+    clap_states,
+    signal=signal,
+    group_id="CLAP-CROP",
+    dataset="Crop",
+    detector="claspy.AgglomerativeCLaPDetection",
+    software_version=fg.__version__,
+)
+```
+
+The adapter produced nine bounded `FeatureObject` instances, retained the two
+series-edge objects as boundary-truncated fragments, constructed eight
+`precedes` relations, and reconstructed every source label exactly. FeatureGraph
+does not claim to detect or improve the CLaP states.
+
+- [Completed study record](artifacts/studies/clap_state_object_study.md)
+- [Researcher input](notebooks/researcher_input/clap_researcher_input.ipynb)
+- [Generated study](notebooks/generated_study/clap_generated_study.ipynb)
+- [Construction figure](artifacts/studies/clap_crop_object_construction.png)
+- [`from_state_sequence` implementation](src/featuregraph/behaviors/state_occurrence.py)
+- [Focused package tests](tests/test_state_occurrence.py)
 
 ## Released beta
 
