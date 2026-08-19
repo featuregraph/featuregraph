@@ -1,6 +1,6 @@
 # CLaP state-occurrence object study
 
-**Status:** first completed development record  
+**Status:** completed package-integration record  
 **Run date:** August 19, 2026  
 **Researcher input:** [`notebooks/researcher_input/clap_researcher_input.ipynb`](../../notebooks/researcher_input/clap_researcher_input.ipynb)  
 **Generated study:** [`notebooks/generated_study/clap_generated_study.ipynb`](../../notebooks/generated_study/clap_generated_study.ipynb)
@@ -13,7 +13,8 @@ example from ClaSPy and the CLaP method described by Ermshaus, Schäfer, and
 Leser in *CLaP - State Detection from Time Series*.
 
 CLaP remains the state detector. FeatureGraph does not smooth, merge, split,
-relabel, or reinterpret its output. FeatureGraph begins with the returned state
+relabel, or reinterpret its output. The public
+`featuregraph.from_state_sequence` adapter begins with the returned state
 sequence and materializes:
 
 1. observation-level inferred and reference states;
@@ -21,6 +22,8 @@ sequence and materializes:
 3. one bounded object per maximal contiguous state occurrence;
 4. adjacency relations between consecutive occurrences;
 5. object measurements, boundary status, and provenance.
+
+![CLaP detections materialized as FeatureGraph objects](clap_crop_object_construction.png)
 
 ## Frozen development configuration
 
@@ -31,6 +34,7 @@ sequence and materializes:
 | Detector | `AgglomerativeCLaPDetection` |
 | ClaSPy version | 0.2.8 |
 | Detector parameters | package defaults |
+| FeatureGraph materializer | `featuregraph.from_state_sequence` |
 | Observations | 20,700 |
 | Benchmark window size | 10 samples |
 
@@ -103,8 +107,9 @@ matching rule rather than silently pairing boundaries by position.
 
 ## Structural validation
 
-All declared checks passed:
+All eleven declared checks passed:
 
+- public FeatureGraph package adapter used;
 - raw signal preserved;
 - one inferred label per observation;
 - one constant inferred state per occurrence;
@@ -118,8 +123,9 @@ All declared checks passed:
 
 ## Interpretation
 
-This result demonstrates lossless object materialization of one CLaP output. It
-does not demonstrate that FeatureGraph detected or improved the states. The
+This result demonstrates lossless object materialization of one CLaP output by
+the public FeatureGraph package API. It does not demonstrate that FeatureGraph
+detected or improved the states. The
 state-class integers are not assigned crop meanings, and the benchmark labels
 are treated as reference annotations rather than infallible physical truth.
 One series is sufficient to establish the interface and expose boundary
@@ -127,10 +133,9 @@ semantics, but not to claim general interoperability.
 
 ## Next step before author contact
 
-Create one compact figure containing the raw series, reference states, CLaP
-states, and object boundaries. Then share this study with the CLaP first author
-and ask whether distinguishing a recurring inferred state class from its
-bounded temporal occurrences is useful in their downstream workflows.
+Review the compact figure and object schema, then share this study with the
+CLaP first author. Ask whether distinguishing a recurring inferred state class
+from its bounded temporal occurrences is useful in their downstream workflows.
 
 ## Sources
 
