@@ -1,1 +1,2 @@
 claspy==0.2.8
+scikit-learn>=1.4,<2

@@ -38,6 +38,15 @@ implementation of CLaP on the 20,700-sample Crop benchmark. CLaP supplies the
 detected state labels. FeatureGraph consumes those labels through the public
 development API:
 
+Install the optional study environment before running either CLaP notebook:
+
+```bash
+python -m pip install -e ".[clap-study]"
+```
+
+In an already-open notebook, run `%pip install -e ".[clap-study]"` and restart
+the kernel so the new packages are available to that kernel.
+
 ```python
 result = fg.from_state_sequence(
     clap_states,
