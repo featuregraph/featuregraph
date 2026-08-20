@@ -1,13 +1,13 @@
 # From Ordered Observations to Auditable Behavioral Objects: The FeatureGraph Framework
 
 **Nazia Habib**  
-**Consolidated master draft — August 19, 2026**
+**Consolidated master draft — August 20, 2026**
 
 ## Abstract
 
 Scientific notebooks commonly combine investigator assumptions, data preparation, repeated execution, validation, and reporting in one evolving artifact. This makes it difficult to identify which choices came from the researcher, which were introduced for implementation convenience, and which were added by an assisting language model. FeatureGraph addresses this problem by converting ordered observations into explicit states, events, bounded objects, properties, and relations under a researcher-authored construction contract. A paired notebook workflow separates that contract from its mechanical execution. The researcher input notebook records study scope, signal mapping, preprocessing, state definitions, event boundaries, object identity, measurements, comparison rules, validation requirements, requested outputs, and interpretive limits. The generated study notebook expands the contract into executable cohort logic, object construction, matching, aggregation, regression checks, and reporting.
 
-We examine the framework in two unrelated domains. On 53 BIDMC respiratory records, the current main-branch construction produces 7,926 complete trough-peak-trough objects, of which 7,086 match objects from a frozen SciPy comparator under an ordered one-to-one rule. On Tennessee Eastman Process simulations, a frozen reactor-pressure construction produces explicit peak events and peak-to-peak cycles, transfers across ten Fault 2 runs, and separates those runs from matched normal-operation windows while showing that reactor pressure alone is not specific to Fault 2. A subsequent interoperability study consumes a CLaP-detected state sequence unchanged, materializes nine bounded occurrence objects and eight adjacency relations, and reconstructs all 20,700 source labels. These studies preserve discordant, incomplete, ambiguous, and externally supplied structures rather than collapsing them into a single performance score. FeatureGraph does not claim automatic scientific discovery, clinical validity, or a fault classifier. Its narrower contribution is a durable representation and workflow in which scientific choices, object boundaries, evidence, provenance, and failure limits remain explicit.
+We examine the framework in two unrelated domains. On 53 BIDMC respiratory records, the current main-branch construction produces 7,926 complete trough-peak-trough objects, of which 7,086 match objects from a frozen SciPy comparator under an ordered one-to-one rule. Its directional states and enter/exit boundaries now execute through the first deterministic `state-contract-v1` compiler slice, with per-record parity assertions against the previously frozen formulas. On Tennessee Eastman Process simulations, a frozen reactor-pressure construction produces explicit peak events and peak-to-peak cycles, transfers across ten Fault 2 runs, and separates those runs from matched normal-operation windows while showing that reactor pressure alone is not specific to Fault 2. A subsequent interoperability study consumes a CLaP-detected state sequence unchanged, materializes nine bounded occurrence objects and eight adjacency relations, and reconstructs all 20,700 source labels. A Replica-inspired traceability study then holds those outputs constant while showing that declared scientific provenance can still differ. These studies preserve discordant, incomplete, ambiguous, and externally supplied structures rather than collapsing them into a single performance score. FeatureGraph does not claim automatic scientific discovery, clinical validity, or a fault classifier. Its narrower contribution is a durable representation and workflow in which scientific choices, object boundaries, evidence, provenance, and failure limits remain explicit.
 
 ## 1. Introduction
 
@@ -27,6 +27,7 @@ The contributions of this draft are:
 4. Worked implementations on the 53-record BIDMC respiration dataset and Tennessee Eastman Process simulations.
 5. A transfer protocol that distinguishes representation success from domain diagnosis.
 6. Evaluation criteria for extending the workflow without silently changing its representational assumptions.
+7. A deterministic state-contract compiler slice and an executable distinction between output agreement and scientific traceability.
 
 This master draft concerns the framework and software workflow developed on the `main` branch. Frozen alpha and beta manuscripts remain historical study records. Their released implementations, counts, and claims are not rewritten here, and their results should not be combined numerically with the current main-branch study.
 
@@ -139,8 +140,8 @@ The generated study notebook takes the researcher contract and expands it into a
 2. verifies row counts, required columns, and missingness;
 3. constructs an observation table for each subject;
 4. preserves the raw signal and creates a separate envelope column;
-5. materializes rising, falling, and inactive states;
-6. materializes entering and exiting events;
+5. compiles the researcher-authored `state-contract-v1` mapping into rising, falling, and inactive states;
+6. materializes state-occurrence identifiers and entering- and exiting-rising boundaries through the same compiler;
 7. projects numerical plateaus to explicit boundary intervals and representative midpoints;
 8. assembles candidate wave objects;
 9. retains incomplete, truncated, ambiguous, and invalidated candidates;
@@ -179,14 +180,15 @@ The workflow is designed to preserve more than the rendered notebook. The curren
 - software and platform versions;
 - repository commit identifiers;
 - hashes of the researcher input and execution notebook.
+- a canonical state-contract artifact and its SHA-256 fingerprint.
 
 The notebook is therefore one view of the result. The durable result is a linked set of specifications, code, object tables, validation records, and provenance.
 
 ### 5.4 Binding input to execution
 
-The current prototype parses declarative assignments from the researcher notebook, validates frozen values, verifies that required implementation fragments appear in the generated notebook, executes the notebook, and records hashes of both artifacts. This prevents accidental execution of a visibly inconsistent study.
+The current prototype parses declarative assignments from the researcher notebook, validates frozen values, verifies that required implementation fragments appear in the generated notebook, executes the notebook, and records hashes of both artifacts. For the first compiler-backed vertical slice, it also extracts the researcher's `state-contract-v1` mapping, checks exact structural equality with the generated notebook's independently executable default, injects the researcher-owned mapping into execution, stores its canonical JSON representation, and records its SHA-256 fingerprint.
 
-The binding is not yet a semantic compiler. String-fragment checks can confirm that selected frozen parameters and calls are present, but they cannot prove that all execution logic is equivalent to the researcher specification. The workflow currently combines explicit contracts, regression assertions, artifact hashes, and review. A future implementation should replace hard-coded binding checks with a typed intermediate specification from which both execution and validation can be generated.
+The state contract is a semantic compiler for a deliberately narrow layer: named directional states, exclusivity and exhaustiveness validation, state occurrences, and requested enter/exit boundaries. On every BIDMC record, independent parity assertions compare those compiled results with the previously frozen formulas before the cohort regression assertions run. The surrounding workflow is not yet a general semantic compiler. Preprocessing, plateau projection, trough-peak-trough identity, measurements, comparisons, aggregation, and interpretation remain generated Python, and selected bindings still use source-fragment checks. Exact contract equality and output parity reduce a specific class of drift but do not prove semantic equivalence of the complete notebooks.
 
 ## 6. BIDMC implementation study
 
@@ -196,7 +198,7 @@ The complete implementation uses BIDMC version 1.0.0, subjects 1 through 53, and
 
 The first difference of the envelope defines local directional change. A valid sample is rising when the change exceeds \(10^{-12}\), falling when it is below \(-10^{-12}\), and inactive when its absolute value is at most \(10^{-12}\). The tolerance separates floating-point residue from directional change; it is not a physiological amplitude threshold.
 
-Entering the rising state marks a trough transition, and exiting the rising state marks a peak transition. Because the state describes the edge ending at the current row, the extremum event is projected to the preceding sample. Numerically flat extrema are represented as intervals. Each object boundary is projected to the floor midpoint of its complete plateau interval.
+The compiler marks entry on the first rising sample and exit on the final rising sample. Because a directional state describes the edge ending at the current row, entering rising is projected one sample backward to the trough; the compiled exit is already located on the peak sample. Numerically flat extrema are represented as intervals. Each object boundary is projected to the floor midpoint of its complete plateau interval.
 
 One candidate respiratory-wave object is a trough-peak-trough interval. A complete object requires a starting trough, an interior peak, a following trough, strict temporal ordering, complete leading and trailing boundaries, and non-overlapping projected plateau intervals. Incomplete and ambiguous candidates remain in the object table with flags.
 
@@ -264,6 +266,21 @@ explicit: first execute a complete authored contract, then freeze and transfer
 one construction, then show that the object layer can also consume an
 independent detector's output.
 
+### 7.5 Output agreement and scientific traceability
+
+A Replica-inspired mechanism-fidelity study tests whether identical materialized
+outputs imply equivalent scientific provenance. A declared CLaP construction
+and an output-only surrogate are given the same 20,700 state labels. They agree
+exactly on sample labels, nine object boundaries, eight adjacency relations, and
+signal measurements. Deterministic queries nevertheless distinguish whether
+the source dataset, detector, detector version, and study contract are declared.
+
+This result establishes neither fraud detection nor cryptographic proof of
+execution. A provenance declaration can itself be inaccurate. The narrower
+result is that output agreement is insufficient evidence of mechanism fidelity,
+and that FeatureGraph can retain and query the traceability distinctions needed
+for subsequent review or re-execution.
+
 ## 8. Evaluation criteria for reusable workflows
 
 A reusable FeatureGraph workflow should be evaluated along dimensions that are not captured by a single detector score.
@@ -316,11 +333,11 @@ The defensible claim is therefore that FeatureGraph automates portions of the co
 
 The repository contains complete researcher-input/generated-study pairs for BIDMC and TEP, but the two studies are not equivalent forms of validation. BIDMC has comparator objects and two annotation series; TEP has repeated simulations, normal-operation windows, and a one-run-per-class specificity check. Neither evidence design supplies universal ground truth.
 
-The researcher input is executable Python rather than a typed formal specification. This provides flexibility but permits arbitrary code and makes complete semantic validation difficult.
+The researcher input is executable Python rather than a wholly typed formal specification. The embedded `state-contract-v1` mapping is a versioned declarative structure validated at runtime, but the notebook around it still permits arbitrary code and remains difficult to validate completely.
 
 The generated study notebook is presently produced through an assisted development process and then bound to selected input values. The system does not yet compile an arbitrary researcher notebook automatically into a complete study.
 
-The binding script validates declared assignments, selected implementation fragments, regression outputs, and artifact hashes. These checks are useful but do not prove semantic equivalence between the input and generated notebooks.
+The binding script now injects and fingerprints the directional-state contract and validates per-record compiler parity, but it still validates other declarations through selected implementation fragments, regression outputs, and artifact hashes. These checks are useful but do not prove semantic equivalence between the complete input and generated notebooks.
 
 The BIDMC construction includes a non-causal envelope and a fixed smoothing window chosen for this study. Neither is claimed to be universally appropriate. The comparator and annotations provide external reference points, not ground truth for every object.
 
@@ -332,12 +349,12 @@ The workflow has not yet formalized object composition and relations across mult
 
 The next implementation stage is to turn the successful BIDMC pair into a reusable workflow across domains. The required deliverables are:
 
-1. A typed researcher specification that separates dataset mapping, representation frame, construction, measurement, validation, requested output, and interpretation.
+1. Extend the versioned state-contract slice into a broader typed researcher specification that separates dataset mapping, representation frame, construction, measurement, validation, requested output, and interpretation.
 2. A stable observation interface for timestamps, signals, groups, units, missingness, and preprocessing provenance.
 3. Reusable operators for states, enter/exit events, identities, intervals, bounded measurements, and relations.
 4. A generated notebook template that expands a specification without introducing undeclared scientific rules.
 5. An output bundle containing observation tables, object tables, relations, readable object narratives, validation, and provenance.
-6. Binding tests that operate on a structured intermediate representation rather than source-code fragments.
+6. Replace the remaining source-fragment bindings with structured intermediate representations and semantic validation.
 7. At least one unrelated physical-domain study using the same object contract and stable schema.
 8. A transfer report that distinguishes unchanged contracts, allowed adapters, manual interventions, failures, and required extensions.
 
@@ -347,7 +364,7 @@ The completed Tennessee Eastman pressure study supplies the first unrelated-doma
 
 This paper presents a software workflow for converting researcher-authored behavioral definitions into auditable generated studies. The researcher input notebook records the scientific and representational contract. The generated notebook implements repetition, object assembly, comparison, validation, aggregation, and reporting while retaining the observations, states, events, boundaries, and provenance needed to inspect every result.
 
-The BIDMC implementation shows that this separation can support a complete 53-record workflow with frozen assumptions, object-level outputs, explicit discordance, numerical-boundary regression tests, and reproducibility metadata. The TEP implementation shows that the same representational sequence can construct useful objects in an unrelated physical system while exposing the boundary between abnormal-response representation and fault diagnosis. The result is not an autonomous scientist and not a universal language of physical behavior. It is a concrete mechanism for preserving researcher intent while using software and LLM assistance to expand that intent into repeatable, inspectable studies.
+The BIDMC implementation shows that this separation can support a complete 53-record workflow with frozen assumptions, compiler-backed state and boundary construction, object-level outputs, explicit discordance, numerical-boundary regression tests, and reproducibility metadata. The TEP implementation shows that the same representational sequence can construct useful objects in an unrelated physical system while exposing the boundary between abnormal-response representation and fault diagnosis. CLaP and the traceability study show that externally supplied states can remain losslessly queryable while provenance distinctions remain visible even under exact output agreement. The result is not an autonomous scientist and not a universal language of physical behavior. It is a concrete mechanism for preserving researcher intent while using software and LLM assistance to expand that intent into repeatable, inspectable studies.
 
 ## References
 
