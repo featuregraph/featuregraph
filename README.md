@@ -4,21 +4,23 @@
 
 ## Follow the research sequence
 
-The current research record is organized as three linked studies:
+The current research record is organized as four linked studies:
 
 | Study | Question | Evidence |
 | --- | --- | --- |
-| [BIDMC respiratory objects](artifacts/studies/bidmc_object_workflow_study.md) | Can a researcher-authored contract be expanded into a complete, auditable object workflow? | 53 records, object-level comparator matching, annotation comparisons, and numerical-boundary regression checks |
+| [BIDMC respiratory objects](artifacts/studies/bidmc_object_workflow_study.md) | Can a researcher-authored contract be expanded into a complete, auditable object workflow? | Compiler-backed directional states and boundaries, 53 records, object-level comparator matching, annotation comparisons, and frozen regression checks |
 | [TEP reactor-pressure transfer](artifacts/studies/tep_pressure_transfer_study.md) | Does a frozen construction transfer beyond its development run and distinguish abnormal from normal operation? | Held-out Fault 2 runs, normal-operation windows, and contrasting fault classes |
 | [CLaP interoperability](artifacts/studies/clap_state_object_study.md) | Can FeatureGraph preserve states detected by an external method as queryable objects without taking over detection? | Exact label reconstruction, bounded occurrence objects, temporal relations, and declared validation checks |
+| [Output agreement and traceability](artifacts/studies/replica_mechanism_fidelity_study.md) | Can identical outputs hide different levels of scientific traceability? | Exact sample, object, relation, and measurement agreement with deterministic provenance queries |
 
 [Open the complete study guide](artifacts/studies/README.md).
 
 
 [Visit the FeatureGraph website](https://featuregraph.ai/?utm_source=github&utm_medium=referral&utm_campaign=featuregraph_core_repository). Each record links
 the researcher input, generated study, implementation evidence, and limitations.
-The sequence moves from a complete in-domain workflow, through frozen transfer,
-to interoperability with an independent detector.
+The sequence moves from a complete in-domain workflow, through frozen transfer
+and external-detector interoperability, to a focused test of scientific
+traceability.
 
 FeatureGraph turns observation-level states and events into explicit behavioral
 objects. External scientific methods may perform detection; FeatureGraph adds
@@ -43,10 +45,15 @@ The BIDMC study establishes the paired researcher-input/generated-study
 workflow on 53 respiratory records. It preserves observations, directional
 states, transition events, plateau-aware boundaries, complete and incomplete
 objects, comparator matches, annotation comparisons, and validation evidence.
+Its first compiler-backed vertical slice executes the researcher-authored
+`state-contract-v1` mapping for directional states and enter/exit boundaries;
+preprocessing, plateau projection, object assembly, comparison, and
+interpretation remain explicit generated-study logic.
 
 - [Study record](artifacts/studies/bidmc_object_workflow_study.md)
 - [Researcher input](notebooks/researcher_input/bidmc_researcher_input.ipynb)
 - [Generated study](notebooks/generated_study/bidmc_generated_study.ipynb)
+- [State-contract compiler](docs/concepts/state-contracts.md)
 
 ### 2. Tennessee Eastman: frozen transfer
 
@@ -73,6 +80,18 @@ states.
 - [Generated study](notebooks/generated_study/clap_generated_study.ipynb)
 - [Construction figure](artifacts/studies/clap_crop_object_construction.png)
 - [State-sequence adapter](src/featuregraph/behaviors/state_occurrence.py)
+
+### 4. Output agreement and scientific traceability
+
+The Replica-inspired mechanism-fidelity study holds every sample label, object
+boundary, relation, and signal measurement constant while varying whether the
+dataset, detector, software version, and study contract are declared. It shows
+that exact output agreement is compatible with materially different
+traceability records; declared provenance remains evidence, not proof that a
+mechanism was executed.
+
+- [Study record](artifacts/studies/replica_mechanism_fidelity_study.md)
+- [Executable study](scripts/run_replica_mechanism_fidelity_study.py)
 
 ## Released beta
 
@@ -169,6 +188,7 @@ Current development documentation is labeled explicitly:
 
 - [current framework paper draft](artifacts/paper/master/featuregraph_master_draft.md);
 - [development architecture](docs/behavior-architecture.md);
+- [state-contract compiler](docs/concepts/state-contracts.md);
 - [unreleased changes](CHANGELOG.md);
 - [current source](https://github.com/featuregraph/featuregraph/tree/main).
 

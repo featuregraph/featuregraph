@@ -15,10 +15,18 @@ states, transition events, plateau-aware boundaries, trough-peak-trough object
 identity, completeness rules, object measurements, comparison rules,
 validation requirements, requested outputs, and interpretation limits.
 
-The generated notebook applies that contract independently to every record. It
-retains raw observations, sample-level states and events, complete and
-incomplete candidates, object tables, comparator matches, annotation
-comparisons, cohort summaries, sensitivity evidence, and provenance.
+The generated notebook applies that contract independently to every record. Its
+first compiler-backed vertical slice passes the declared `state-contract-v1`
+mapping to FeatureGraph's deterministic compiler, which materializes rising,
+falling, and inactive states, state-occurrence identifiers, and entering- and
+exiting-rising boundaries. The runner stores the canonical contract as JSON and
+records its SHA-256 fingerprint in provenance.
+
+Preprocessing, plateau projection, trough-peak-trough identity, object
+measurements, comparison, aggregation, and interpretation remain explicit
+generated-study logic. Independent per-record parity assertions compare the
+compiled states and event locations with the previously frozen formulas before
+the existing cohort regression assertions are evaluated.
 
 ## Recorded results
 
@@ -54,7 +62,9 @@ genuine envelope change of approximately `9.7e-6`.
 The study demonstrates a complete paired-notebook workflow in which a declared
 construction is executed across 53 records and produces inspectable
 observation-, event-, and object-level evidence with frozen comparison and
-validation rules.
+validation rules. It also demonstrates a bounded compiler integration: the
+researcher-authored directional-state contract now drives the corresponding
+state and event layer without changing the protected cohort outputs.
 
 It does not establish clinical validity, automatic scientific discovery, or
 ground truth for every discordant object.
@@ -71,7 +81,9 @@ ground truth for every discordant object.
 - The envelope is non-causal and uses a fixed study-specific smoothing window.
 - The SciPy comparator and BIDMC annotations are external reference points, not
   universal ground truth.
-- The notebook-binding prototype checks selected declarations and hashes but is
-  not yet a semantic compiler.
-- The generated notebook was produced through assisted development; arbitrary
-  researcher inputs are not yet compiled automatically.
+- `state-contract-v1` compiles only the directional states and their enter/exit
+  boundaries in this workflow. It does not compile preprocessing, plateau
+  projection, object identity, measurements, comparisons, or interpretation.
+- The remaining notebook binding still checks selected declarations and source
+  fragments. The generated notebook was produced through assisted development;
+  arbitrary researcher notebooks are not compiled automatically.
