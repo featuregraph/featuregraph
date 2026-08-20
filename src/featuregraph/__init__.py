@@ -13,8 +13,6 @@ __version__ = "0.1.0a1"
 
 
 __all__ = [
-    "oscillation",
-    "accumulation",
     "transition",
     "feature_object",
     "from_state_sequence",
