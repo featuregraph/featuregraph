@@ -12,7 +12,7 @@ The current research record is organized as three linked studies:
 | [TEP reactor-pressure transfer](artifacts/studies/tep_pressure_transfer_study.md) | Does a frozen construction transfer beyond its development run and distinguish abnormal from normal operation? | Held-out Fault 2 runs, normal-operation windows, and contrasting fault classes |
 | [CLaP interoperability](artifacts/studies/clap_state_object_study.md) | Can FeatureGraph preserve states detected by an external method as queryable objects without taking over detection? | Exact label reconstruction, bounded occurrence objects, temporal relations, and declared validation checks |
 
-[Open the complete study guide](artifacts/studies/README.md). Each record links
+[Open the complete study guide](artifacts/studies/README.md).\n\n[Visit the FeatureGraph website](https://featuregraph.ai/?utm_source=github&utm_medium=referral&utm_campaign=featuregraph_core_repository). Each record links
 the researcher input, generated study, implementation evidence, and limitations.
 The sequence moves from a complete in-domain workflow, through frozen transfer,
 to interoperability with an independent detector.
