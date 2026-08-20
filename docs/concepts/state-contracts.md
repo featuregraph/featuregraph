@@ -10,6 +10,7 @@ The first contract version deliberately has a narrow scope:
 - combine comparisons with `abs`, negation, `and`, `or`, and `not`;
 - validate that named states are mutually exclusive and exhaustive;
 - mark entry at the first observation in an occurrence and exit at the last;
+- mark generic label changes for externally supplied categorical states;
 - reset boundaries and occurrence identifiers within declared groups; and
 - accept an externally produced categorical state column without relabeling it.
 
@@ -59,3 +60,5 @@ result.validation_report
 For an existing categorical construction, replace `states` with
 `"state_column": "the_external_column"`. FeatureGraph preserves those label
 values, derives occurrences and requested events, and reports structural checks.
+Use `{"type": "enter_label"}` or `{"type": "exit_label"}` for boundaries at
+every categorical label change, regardless of the label value.

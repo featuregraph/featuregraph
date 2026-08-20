@@ -1,9 +1,13 @@
 # CLaP state-occurrence object study
 
-**Status:** completed package-integration record  
+**Series:** FeatureGraph Study of the Month, September 2026
+
+**Status:** completed and publication-prepared package-integration record
+
 **Run date:** August 19, 2026  
 **Researcher input:** [`notebooks/researcher_input/clap_researcher_input.ipynb`](../../notebooks/researcher_input/clap_researcher_input.ipynb)  
 **Generated study:** [`notebooks/generated_study/clap_generated_study.ipynb`](../../notebooks/generated_study/clap_generated_study.ipynb)
+**LinkedIn draft:** [`september_2026_clap_post.md`](september_2026_clap_post.md)
 
 ## Purpose
 
@@ -14,8 +18,10 @@ Leser in *CLaP - State Detection from Time Series*.
 
 CLaP remains the state detector. FeatureGraph does not smooth, merge, split,
 relabel, or reinterpret its output. The public
-`featuregraph.from_state_sequence` adapter begins with the returned state
-sequence and materializes:
+`featuregraph.compile_states` first preserves the returned categorical state
+sequence and deterministically derives occurrence identity and enter/exit
+boundaries from a declared `state-contract-v1` contract. The public
+`featuregraph.from_state_sequence` adapter then materializes:
 
 1. observation-level inferred and reference states;
 2. state-entry, state-exit, and change-point events;
@@ -34,6 +40,7 @@ sequence and materializes:
 | Detector | `AgglomerativeCLaPDetection` |
 | ClaSPy version | 0.2.8 |
 | Detector parameters | package defaults |
+| FeatureGraph state compiler | `featuregraph.compile_states` |
 | FeatureGraph materializer | `featuregraph.from_state_sequence` |
 | Observations | 20,700 |
 | Benchmark window size | 10 samples |
@@ -107,8 +114,13 @@ matching rule rather than silently pairing boundaries by position.
 
 ## Structural validation
 
-All eleven declared checks passed:
+All sixteen declared checks passed:
 
+- compiler validation report passed;
+- compiler preserved every CLaP label exactly;
+- compiler occurrence identities matched the object adapter;
+- compiler entry events matched the object adapter;
+- compiler exit events matched the object adapter;
 - public FeatureGraph package adapter used;
 - raw signal preserved;
 - one inferred label per observation;
@@ -147,9 +159,9 @@ support them.
 
 ## Interpretation
 
-This result demonstrates lossless object materialization of one CLaP output by
-the public FeatureGraph package API. It does not demonstrate that FeatureGraph
-detected or improved the states. The
+This result demonstrates lossless contract compilation and object
+materialization of one CLaP output by the public FeatureGraph package API. It
+does not demonstrate that FeatureGraph detected or improved the states. The
 state-class integers are not assigned crop meanings, and the benchmark labels
 are treated as reference annotations rather than infallible physical truth.
 One series is sufficient to establish the interface and expose boundary
