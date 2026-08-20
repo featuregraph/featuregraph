@@ -7,7 +7,7 @@
 
 Scientific notebooks commonly combine investigator assumptions, data preparation, repeated execution, validation, and reporting in one evolving artifact. This makes it difficult to identify which choices came from the researcher, which were introduced for implementation convenience, and which were added by an assisting language model. FeatureGraph addresses this problem by converting ordered observations into explicit states, events, bounded objects, properties, and relations under a researcher-authored construction contract. A paired notebook workflow separates that contract from its mechanical execution. The researcher input notebook records study scope, signal mapping, preprocessing, state definitions, event boundaries, object identity, measurements, comparison rules, validation requirements, requested outputs, and interpretive limits. The generated study notebook expands the contract into executable cohort logic, object construction, matching, aggregation, regression checks, and reporting.
 
-We examine the framework in two unrelated domains. On 53 BIDMC respiratory records, the current main-branch construction produces 7,926 complete trough-peak-trough objects, of which 7,086 match objects from a frozen SciPy comparator under an ordered one-to-one rule. On Tennessee Eastman Process simulations, a frozen reactor-pressure construction produces explicit peak events and peak-to-peak cycles, transfers across ten Fault 2 runs, and separates those runs from matched normal-operation windows while showing that reactor pressure alone is not specific to Fault 2. In both studies, discordant, incomplete, and ambiguous objects remain inspectable rather than being collapsed into a single performance score. FeatureGraph does not claim automatic scientific discovery, clinical validity, or a fault classifier. Its narrower contribution is a durable representation and workflow in which scientific choices, object boundaries, evidence, provenance, and failure limits remain explicit.
+We examine the framework in two unrelated domains. On 53 BIDMC respiratory records, the current main-branch construction produces 7,926 complete trough-peak-trough objects, of which 7,086 match objects from a frozen SciPy comparator under an ordered one-to-one rule. On Tennessee Eastman Process simulations, a frozen reactor-pressure construction produces explicit peak events and peak-to-peak cycles, transfers across ten Fault 2 runs, and separates those runs from matched normal-operation windows while showing that reactor pressure alone is not specific to Fault 2. A subsequent interoperability study consumes a CLaP-detected state sequence unchanged, materializes nine bounded occurrence objects and eight adjacency relations, and reconstructs all 20,700 source labels. These studies preserve discordant, incomplete, ambiguous, and externally supplied structures rather than collapsing them into a single performance score. FeatureGraph does not claim automatic scientific discovery, clinical validity, or a fault classifier. Its narrower contribution is a durable representation and workflow in which scientific choices, object boundaries, evidence, provenance, and failure limits remain explicit.
 
 ## 1. Introduction
 
@@ -244,6 +244,25 @@ For a negative control, the 500-hour normal Mode 1 record is divided into ten no
 The same frozen construction is applied to simulation run 10 from the other 20 fault classes. Ten classes equal or exceed Fault 2 run 10 in peak excess, and Faults 1 and 7 also produce large early pressure peaks near the Fault 2 event time. Reactor pressure therefore identifies a repeatable abnormal response associated with Fault 2 in this cohort, but it does not uniquely identify Fault 2.
 
 This negative specificity result is an important framework result. The pressure object is still a valid representation of an excursion even when it is insufficient for diagnosis. A more specific fault representation may require relations among objects from several signals, but the original pressure-cycle definition should not be retrospectively altered merely to manufacture specificity.
+
+### 7.4 External-detector interoperability
+
+The CLaP study tests a different boundary of the framework. Rather than deriving
+states from a FeatureGraph signal construction, it accepts the 20,700 state
+labels produced by the maintained ClaSPy implementation of CLaP on the Crop
+benchmark. The public `from_state_sequence` adapter preserves those labels as
+nine bounded occurrence objects, retains both series-edge objects as truncated
+fragments, constructs eight `precedes` relations, and reconstructs every
+source label exactly. All 11 declared structural validation checks pass.
+
+This is evidence of interoperability, not a third domain-transfer result and
+not an evaluation of CLaP detection quality. CLaP remains responsible for the
+scientific segmentation; FeatureGraph supplies object identity, measurements,
+completeness, provenance, and relations without relabeling or improving the
+detected states. Placing this study after BIDMC and TEP makes the progression
+explicit: first execute a complete authored contract, then freeze and transfer
+one construction, then show that the object layer can also consume an
+independent detector's output.
 
 ## 8. Evaluation criteria for reusable workflows
 

@@ -2,19 +2,20 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21984186.svg)](https://doi.org/10.5281/zenodo.21984186)
 
-> ## Start with the completed CLaP interoperability study
->
-> CLaP detects a state sequence. The public development API
-> `featuregraph.from_state_sequence` materializes the unchanged labels as
-> bounded `FeatureObject` instances and temporal relations.
->
-> 1. [Read the completed study](artifacts/studies/clap_state_object_study.md)
-> 2. [Open the generated study notebook](notebooks/generated_study/clap_generated_study.ipynb)
-> 3. [Inspect the construction figure](artifacts/studies/clap_crop_object_construction.png)
-> 4. [Read the public state-sequence adapter](src/featuregraph/behaviors/state_occurrence.py)
->
-> The study preserved all 20,700 CLaP labels as nine occurrence objects and
-> eight adjacency relations, with 11 of 11 declared validation checks passing.
+## Follow the research sequence
+
+The current research record is organized as three linked studies:
+
+| Study | Question | Evidence |
+| --- | --- | --- |
+| [BIDMC respiratory objects](artifacts/studies/bidmc_object_workflow_study.md) | Can a researcher-authored contract be expanded into a complete, auditable object workflow? | 53 records, object-level comparator matching, annotation comparisons, and numerical-boundary regression checks |
+| [TEP reactor-pressure transfer](artifacts/studies/tep_pressure_transfer_study.md) | Does a frozen construction transfer beyond its development run and distinguish abnormal from normal operation? | Held-out Fault 2 runs, normal-operation windows, and contrasting fault classes |
+| [CLaP interoperability](artifacts/studies/clap_state_object_study.md) | Can FeatureGraph preserve states detected by an external method as queryable objects without taking over detection? | Exact label reconstruction, bounded occurrence objects, temporal relations, and declared validation checks |
+
+[Open the complete study guide](artifacts/studies/README.md). Each record links
+the researcher input, generated study, implementation evidence, and limitations.
+The sequence moves from a complete in-domain workflow, through frozen transfer,
+to interoperability with an independent detector.
 
 FeatureGraph turns observation-level states and events into explicit behavioral
 objects. External scientific methods may perform detection; FeatureGraph adds
@@ -31,44 +32,44 @@ observations
 
 > **Development status:** The `main` branch contains an unreleased architectural redesign and is not API-compatible with FeatureGraph `v0.1.0b1`. To use or reproduce the public beta, work from the immutable [`v0.1.0b1` release](https://github.com/featuregraph/featuregraph/releases/tag/v0.1.0b1) or its compatible maintenance branch, [`beta/v0.1.x`](https://github.com/featuregraph/featuregraph/tree/beta/v0.1.x). Migration guidance will be published when the replacement API stabilizes.
 
-## CLaP interoperability result
+## Current research studies
 
-The first external-detector integration uses the maintained ClaSPy
-implementation of CLaP on the 20,700-sample Crop benchmark. CLaP supplies the
-detected state labels. FeatureGraph consumes those labels through the public
-development API:
+### 1. BIDMC: complete object workflow
 
-Install the optional study environment before running either CLaP notebook:
+The BIDMC study establishes the paired researcher-input/generated-study
+workflow on 53 respiratory records. It preserves observations, directional
+states, transition events, plateau-aware boundaries, complete and incomplete
+objects, comparator matches, annotation comparisons, and validation evidence.
 
-```bash
-python -m pip install -e ".[clap-study]"
-```
+- [Study record](artifacts/studies/bidmc_object_workflow_study.md)
+- [Researcher input](notebooks/researcher_input/bidmc_researcher_input.ipynb)
+- [Generated study](notebooks/generated_study/bidmc_generated_study.ipynb)
 
-In an already-open notebook, run `%pip install -e ".[clap-study]"` and restart
-the kernel so the new packages are available to that kernel.
+### 2. Tennessee Eastman: frozen transfer
 
-```python
-result = fg.from_state_sequence(
-    clap_states,
-    signal=signal,
-    group_id="CLAP-CROP",
-    dataset="Crop",
-    detector="claspy.AgglomerativeCLaPDetection",
-    software_version=fg.__version__,
-)
-```
+The TEP study freezes the reactor-pressure construction selected on Fault 2 run
+10 and applies it unchanged to nine held-out Fault 2 runs, ten normal-operation
+windows, and matched runs from 20 contrasting fault classes. It finds a
+repeatable Fault 2-associated pressure response while showing that reactor
+pressure alone is not specific to Fault 2.
 
-The adapter produced nine bounded `FeatureObject` instances, retained the two
-series-edge objects as boundary-truncated fragments, constructed eight
-`precedes` relations, and reconstructed every source label exactly. FeatureGraph
-does not claim to detect or improve the CLaP states.
+- [Study record](artifacts/studies/tep_pressure_transfer_study.md)
+- [Researcher input](notebooks/researcher_input/tep_researcher_input.ipynb)
+- [Generated study](notebooks/generated_study/tep_generated_study.ipynb)
 
-- [Completed study record](artifacts/studies/clap_state_object_study.md)
+### 3. CLaP: external-detector interoperability
+
+The CLaP study uses the maintained ClaSPy implementation on the Crop benchmark.
+CLaP supplies the state labels; FeatureGraph preserves them as nine bounded
+occurrence objects and eight adjacency relations, reconstructing all 20,700
+labels exactly. FeatureGraph does not claim to detect or improve the CLaP
+states.
+
+- [Study record](artifacts/studies/clap_state_object_study.md)
 - [Researcher input](notebooks/researcher_input/clap_researcher_input.ipynb)
 - [Generated study](notebooks/generated_study/clap_generated_study.ipynb)
 - [Construction figure](artifacts/studies/clap_crop_object_construction.png)
-- [`from_state_sequence` implementation](src/featuregraph/behaviors/state_occurrence.py)
-- [Focused package tests](tests/test_state_occurrence.py)
+- [State-sequence adapter](src/featuregraph/behaviors/state_occurrence.py)
 
 ## Released beta
 
