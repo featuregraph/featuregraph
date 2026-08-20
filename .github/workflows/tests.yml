@@ -36,12 +36,17 @@ jobs:
       - name: Install package and development dependencies
         run: python -m pip install -e ".[dev]"
 
+      - name: Collect all current tests
+        run: python -m pytest --collect-only -q
+
       - name: Test current transition API
         run: >
           python -m pytest
           tests/test_events.py
           tests/test_states.py
           tests/test_transition.py
+          tests/test_state_occurrence.py
+          tests/test_state_contract.py
           --cov=featuregraph
           --cov-report=term-missing
 
