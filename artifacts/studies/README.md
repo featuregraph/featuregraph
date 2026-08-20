@@ -47,6 +47,19 @@ bounded objects and relations without claiming the detector's scientific role.
 | TEP | Held-out replications, normal windows, contrasting faults | Normal windows share one record; cross-fault evidence uses one run per class |
 | CLaP | Exact reconstruction and structural invariants | Evaluates representation of supplied states, not CLaP detection quality |
 
+## 4. Replica connection: separate output agreement from traceability
+
+[Output agreement is not mechanism fidelity](replica_mechanism_fidelity_study.md)
+materializes the same CLaP signal and state sequence through a declared
+scientific construction and an output-only surrogate. The two paths agree at
+the sample, object, relation, and measurement levels, while deterministic
+queries distinguish whether the dataset, detector, software version, and
+study-specific contract are declared.
+
+- [Executable study](../../scripts/run_replica_mechanism_fidelity_study.py)
+- [Prior CLaP interoperability record](clap_state_object_study.md)
+- [Replica paper](https://arxiv.org/abs/2608.13331)
+
 The editable paper authority on `main` is
 [the master framework draft](../paper/master/featuregraph_master_draft.md).
 Released alpha and beta histories remain authoritative on their frozen refs and
