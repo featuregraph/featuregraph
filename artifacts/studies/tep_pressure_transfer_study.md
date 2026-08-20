@@ -1,5 +1,9 @@
 # TEP reactor-pressure transfer study
 
+**Compiler-backed rerun:** August 20, 2026
+
+**Executable workflow:** [`scripts/run_tep_researcher_workflow.py`](../../scripts/run_tep_researcher_workflow.py)
+
 ## Question
 
 Does the reactor-pressure construction selected on Tennessee Eastman Process
@@ -26,6 +30,22 @@ simulation run 10 from each of the other 20 fault classes.
 
 The construction produced 32 peak events and 31 complete cycles on the
 development run. All structural validations passed.
+
+## Compiler-backed rerun
+
+The researcher notebook now owns a `state-contract-v1` mapping for rising,
+falling, and inactive pressure states plus native entering- and exiting-rising
+boundaries. The workflow injects the exact authored mapping into every Fault 2
+run, normal window, and contrasting-fault run. The compiler's native exit lies
+on the final rising sample; the declared TEP peak event projects that boundary
+one sample forward to preserve the frozen first-non-rising-sample convention.
+
+Independent per-sample assertions showed exact equality between compiled and
+legacy states and events throughout the full transfer study. Regression checks
+then reproduced every published Fault 2 row, all four normal-window ranges, and
+the same ten fault classes at or above the development-run peak-excess
+threshold. The canonical contract fingerprint is
+`384cfc3d28fa97024f891fabb24758930829d64c157b04f19c67e177494a04b2`.
 
 ## Fault 2 replication
 

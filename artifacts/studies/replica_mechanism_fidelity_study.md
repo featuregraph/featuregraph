@@ -31,12 +31,13 @@ the original 20,700 observations are materialized twice with
 `featuregraph.from_state_sequence`:
 
 1. **Declared CLaP construction.** Dataset, detector, detector version, and a
-   study-specific object contract are supplied.
+   study-specific object specification identifier are supplied.
 2. **Output-only surrogate.** The identical signal and inferred labels are
-   supplied, but the source dataset, detector, detector version, and
-   study-specific contract are omitted. FeatureGraph therefore retains its
-   explicit defaults: `unknown`, `external`, `unknown`, and the generic
-   categorical-state contract.
+   supplied through the same compiler contract, but the source dataset,
+   detector, detector version, and study-specific specification identifier are
+   omitted. FeatureGraph therefore retains its explicit provenance defaults:
+   `unknown`, `external`, `unknown`, and the generic categorical-state
+   specification.
 
 Because the labels and signal are identical, this is not a comparison of two
 state detectors. It is a controlled comparison between an output with declared
@@ -67,8 +68,9 @@ The declared scientific contract did distinguish them:
 | Detector software version declared | Pass | Fail |
 | Study-specific construction contract declared | Pass | Fail |
 
-The executable record asserts all four output equivalence checks, all four
-declared-construction checks, and all four output-only failures.
+The executable record independently reruns CLaP, verifies the frozen
+20,700-label fingerprint, and asserts all four output equivalence checks, all
+four declared-construction checks, and all four output-only failures.
 
 ## Relation to Replica's evaluation dimensions
 
@@ -93,11 +95,13 @@ construction contract before considering stronger questions about fidelity.
 
 ## Important limitation
 
-FeatureGraph currently records declared provenance; it does not cryptographically
-prove that the declared detector produced the supplied labels, nor does this
-adapter re-execute CLaP during later validation. A dishonest process could
-attach false metadata. Mechanism verification would require stronger lineage,
-artifact hashes, executable bindings, or independent re-execution.
+FeatureGraph records declared provenance; it does not cryptographically prove
+that the declared detector produced arbitrary supplied labels. This bounded
+runner now independently re-executes CLaP and verifies contract and label
+fingerprints, which makes this particular result reproducible but does not
+prevent a dishonest process from attaching false metadata elsewhere. Stronger
+mechanism verification would require signed lineage or independently controlled
+execution.
 
 Accordingly, this study demonstrates detection of *missing* scientific
 traceability, not proof of mechanism fidelity and not automated scientific

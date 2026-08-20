@@ -6,20 +6,29 @@ choices belong in notebooks/bidmc_researcher_input.ipynb.
 
 from __future__ import annotations
 
-import ast
-import io
 import json
 import platform
 import subprocess
 import sys
-from contextlib import redirect_stdout
 from datetime import datetime, timezone
-from hashlib import sha256
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import scipy
+
+from featuregraph.contracts.study_workflow import (
+    canonical_json,
+    declarative_values,
+    file_sha256,
+    notebook_sources,
+    value_sha256,
+)
+from featuregraph.contracts.study_workflow import (
+    execute_notebook_sources as execute_sources,
+)
+
+__all__ = ["canonical_json", "notebook_sources", "value_sha256"]
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 INPUT_NOTEBOOK = (
@@ -31,48 +40,9 @@ EXECUTION_NOTEBOOK = (
 OUTPUT_ROOT = REPO_ROOT / "outputs" / "bidmc_researcher_workflow"
 
 
-def notebook_sources(path: Path) -> list[str]:
-    notebook = json.loads(path.read_text())
-    return [
-        "".join(cell.get("source", []))
-        for cell in notebook["cells"]
-        if cell["cell_type"] == "code"
-    ]
-
-
-def file_sha256(path: Path) -> str:
-    return sha256(path.read_bytes()).hexdigest()
-
-
-def canonical_json(value: object) -> str:
-    """Serialize a declarative artifact deterministically for storage and hashing."""
-    return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
-
-
-def value_sha256(value: object) -> str:
-    return sha256(canonical_json(value).encode("utf-8")).hexdigest()
-
-
 def researcher_values(source: str) -> dict[str, object]:
     """Evaluate only declarative top-level assignments from the input cell."""
-    tree = ast.parse(source)
-    values: dict[str, object] = {}
-    safe_globals = {"__builtins__": {}, "list": list, "range": range}
-    for node in tree.body:
-        if not isinstance(node, ast.Assign) or len(node.targets) != 1:
-            continue
-        target = node.targets[0]
-        if not isinstance(target, ast.Name):
-            continue
-        try:
-            expression = ast.Expression(node.value)
-            value = eval(
-                compile(expression, str(INPUT_NOTEBOOK), "eval"), safe_globals, values
-            )
-        except Exception:
-            continue
-        values[target.id] = value
-    return values
+    return declarative_values(source, INPUT_NOTEBOOK)
 
 
 def validate_binding(
@@ -127,14 +97,7 @@ def git_commit() -> str:
 def execute_notebook_sources(
     sources: list[str], initial_namespace: dict[str, object] | None = None
 ) -> tuple[dict[str, object], str]:
-    namespace: dict[str, object] = {"__name__": "__main__"}
-    if initial_namespace:
-        namespace.update(initial_namespace)
-    output = io.StringIO()
-    with redirect_stdout(output):
-        for source in sources:
-            exec(compile(source, str(EXECUTION_NOTEBOOK), "exec"), namespace)
-    return namespace, output.getvalue()
+    return execute_sources(sources, EXECUTION_NOTEBOOK, initial_namespace)
 
 
 def save_dataframe(frame: pd.DataFrame, name: str) -> None:

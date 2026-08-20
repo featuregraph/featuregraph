@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import Any
 
@@ -17,6 +17,7 @@ from featuregraph.behaviors.feature_object import (
     Provenance,
     ValidationResult,
 )
+from featuregraph.contracts.state_contract import compile_states
 from featuregraph.operators.events import enter_label, event_id, exit_label
 
 
@@ -65,6 +66,7 @@ def from_state_sequence(
     software_version: str = "unknown",
     time_unit: str = "sample",
     object_type: str = "state_occurrence",
+    state_contract: Mapping[str, Any] | None = None,
 ) -> StateOccurrenceResult:
     """Convert labels into one object per maximal contiguous label run.
 
@@ -103,11 +105,29 @@ def from_state_sequence(
     )
     if signal_array is not None:
         observations["signal_raw"] = signal_array.copy()
+    if state_contract is None:
+        state_contract = {
+            "version": "state-contract-v1",
+            "state_column": "state_label",
+            "events": {},
+            "boundary_policy": {
+                "include_first_entry": True,
+                "include_last_exit": True,
+            },
+        }
+    compiled = compile_states(observations, state_contract)
+    if not compiled.observations["state"].equals(observations["state_label"]):
+        raise AssertionError("The state contract did not preserve external labels.")
     observations["enter_state_occurrence"] = enter_label(observations["state_label"])
     observations["exit_state_occurrence"] = exit_label(observations["state_label"])
-    observations["occurrence_id"] = (
+    observations["occurrence_id"] = compiled.observations[
+        "state_occurrence_id"
+    ].astype(int)
+    legacy_occurrence_id = (
         event_id(observations, "enter_state_occurrence").astype(int) - 1
     )
+    if not observations["occurrence_id"].equals(legacy_occurrence_id):
+        raise AssertionError("Compiled occurrence identity changed legacy semantics.")
 
     grouped = observations.groupby("occurrence_id", sort=True)
     summary = grouped.agg(
@@ -138,7 +158,11 @@ def from_state_sequence(
         signal=signal_name,
         specification_id=specification_id,
         software_version=software_version,
-        parameters={"detector": detector, "interval_convention": "half-open"},
+        parameters={
+            "detector": detector,
+            "interval_convention": "half-open",
+            "state_contract_version": compiled.contract["version"],
+        },
     )
 
     object_count = len(summary)

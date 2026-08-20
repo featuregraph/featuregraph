@@ -9,8 +9,8 @@ The current research record is organized as four linked studies:
 | Study | Question | Evidence |
 | --- | --- | --- |
 | [BIDMC respiratory objects](artifacts/studies/bidmc_object_workflow_study.md) | Can a researcher-authored contract be expanded into a complete, auditable object workflow? | Compiler-backed directional states and boundaries, 53 records, object-level comparator matching, annotation comparisons, and frozen regression checks |
-| [TEP reactor-pressure transfer](artifacts/studies/tep_pressure_transfer_study.md) | Does a frozen construction transfer beyond its development run and distinguish abnormal from normal operation? | Held-out Fault 2 runs, normal-operation windows, and contrasting fault classes |
-| [CLaP interoperability](artifacts/studies/clap_state_object_study.md) | Can FeatureGraph preserve states detected by an external method as queryable objects without taking over detection? | Exact label reconstruction, bounded occurrence objects, temporal relations, and declared validation checks |
+| [TEP reactor-pressure transfer](artifacts/studies/tep_pressure_transfer_study.md) | Does a frozen construction transfer beyond its development run and distinguish abnormal from normal operation? | Compiler-backed states, held-out Fault 2 runs, normal-operation windows, and contrasting fault classes |
+| [CLaP interoperability](artifacts/studies/clap_state_object_study.md) | Can FeatureGraph preserve states detected by an external method as queryable objects without taking over detection? | Compiler-backed occurrence identity, exact label reconstruction, bounded objects, and temporal relations |
 | [Output agreement and traceability](artifacts/studies/replica_mechanism_fidelity_study.md) | Can identical outputs hide different levels of scientific traceability? | Exact sample, object, relation, and measurement agreement with deterministic provenance queries |
 
 [Open the complete study guide](artifacts/studies/README.md).
@@ -61,7 +61,10 @@ The TEP study freezes the reactor-pressure construction selected on Fault 2 run
 10 and applies it unchanged to nine held-out Fault 2 runs, ten normal-operation
 windows, and matched runs from 20 contrasting fault classes. It finds a
 repeatable Fault 2-associated pressure response while showing that reactor
-pressure alone is not specific to Fault 2.
+pressure alone is not specific to Fault 2. The same researcher-authored
+`state-contract-v1` mapping now compiles the directional states and native
+boundaries in every run; per-sample assertions preserve the frozen peak-event
+projection and every published transfer regression.
 
 - [Study record](artifacts/studies/tep_pressure_transfer_study.md)
 - [Researcher input](notebooks/researcher_input/tep_researcher_input.ipynb)
@@ -73,7 +76,9 @@ The CLaP study uses the maintained ClaSPy implementation on the Crop benchmark.
 CLaP supplies the state labels; FeatureGraph preserves them as nine bounded
 occurrence objects and eight adjacency relations, reconstructing all 20,700
 labels exactly. FeatureGraph does not claim to detect or improve the CLaP
-states.
+states. A categorical `state-contract-v1` mapping now compiles maximal-run
+occurrence identity while an independent parity assertion protects the former
+adapter semantics.
 
 - [Study record](artifacts/studies/clap_state_object_study.md)
 - [Researcher input](notebooks/researcher_input/clap_researcher_input.ipynb)

@@ -38,6 +38,23 @@ sequence and materializes:
 | Observations | 20,700 |
 | Benchmark window size | 10 samples |
 
+## Compiler-backed materialization
+
+The researcher notebook now owns a categorical `state-contract-v1` mapping
+whose input is the unmodified external `state_label` column. CLaP remains
+authoritative for label membership. The compiler assigns deterministic
+maximal-run occurrence identity, and the public adapter independently compares
+those IDs with its frozen cumulative-entry implementation before constructing
+objects.
+
+The end-to-end rerun reproduced the exact 20,700-label sequence, all eight
+detected boundaries, nine objects, seven complete internal occurrences, two
+boundary fragments, eight relations, and both published agreement scores. The
+contract fingerprint is
+`7503172f9051ac749993010941058307d5bcfe5382e79ae23a356a6ef39683a0`; the
+external CLaP label-sequence fingerprint is
+`f3b8f863b95801db39e32bf611c1bfba6e4585870b0df627af509da59f610b9b`.
+
 ## Object contract
 
 One `clap_state_occurrence` is a maximal contiguous run with a constant CLaP

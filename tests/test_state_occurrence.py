@@ -48,6 +48,26 @@ def test_half_open_boundaries_cover_irregular_time_sequence():
     assert result.objects[1].end.time == 2.5
 
 
+def test_external_state_contract_preserves_occurrence_identity():
+    contract = {
+        "version": "state-contract-v1",
+        "state_column": "state_label",
+        "events": {},
+        "boundary_policy": {
+            "include_first_entry": True,
+            "include_last_exit": True,
+        },
+    }
+
+    result = fg.from_state_sequence([1, 1, 2, 3, 3], state_contract=contract)
+
+    assert result.observations["occurrence_id"].tolist() == [0, 0, 1, 2, 2]
+    assert result.reconstruct_states().tolist() == [1, 1, 2, 3, 3]
+    assert result.objects[0].provenance.parameters["state_contract_version"] == (
+        "state-contract-v1"
+    )
+
+
 @pytest.mark.parametrize("states", [[], [1, np.nan]])
 def test_invalid_state_sequences_are_rejected(states):
     with pytest.raises(ValueError):

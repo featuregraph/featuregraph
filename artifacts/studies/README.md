@@ -25,6 +25,7 @@ repeatable abnormal-pressure representation, not a Fault 2 classifier.
 
 - [Researcher input](../../notebooks/researcher_input/tep_researcher_input.ipynb)
 - [Generated study](../../notebooks/generated_study/tep_generated_study.ipynb)
+- [Compiler-backed workflow runner](../../scripts/run_tep_researcher_workflow.py)
 - [Current framework paper](../paper/master/featuregraph_master_draft.md#7-tennessee-eastman-process-transfer-study)
 
 ## 3. CLaP: test interoperability
@@ -35,6 +36,7 @@ bounded objects and relations without claiming the detector's scientific role.
 
 - [Researcher input](../../notebooks/researcher_input/clap_researcher_input.ipynb)
 - [Generated study](../../notebooks/generated_study/clap_generated_study.ipynb)
+- [Compiler-backed workflow runner](../../scripts/run_clap_researcher_workflow.py)
 - [Construction figure](clap_crop_object_construction.png)
 - [Adapter implementation](../../src/featuregraph/behaviors/state_occurrence.py)
 - [Focused tests](../../tests/test_state_occurrence.py)
