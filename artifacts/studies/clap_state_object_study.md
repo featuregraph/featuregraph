@@ -7,8 +7,6 @@
 **Run date:** August 19, 2026  
 **Researcher input:** [`notebooks/researcher_input/clap_researcher_input.ipynb`](../../notebooks/researcher_input/clap_researcher_input.ipynb)  
 **Generated study:** [`notebooks/generated_study/clap_generated_study.ipynb`](../../notebooks/generated_study/clap_generated_study.ipynb)
-**LinkedIn draft:** [`september_2026_clap_post.md`](september_2026_clap_post.md)
-
 ## Purpose
 
 This study tests whether an externally inferred state sequence can be preserved
