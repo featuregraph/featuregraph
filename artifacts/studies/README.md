@@ -30,14 +30,20 @@ repeatable abnormal-pressure representation, not a Fault 2 classifier.
 ## 3. CLaP: test interoperability
 
 [CLaP state-object interoperability](clap_state_object_study.md) begins with
-states detected by an independent method. FeatureGraph preserves the labels as
-bounded objects and relations without claiming the detector's scientific role.
+states detected by an independent method. The state-contract compiler preserves
+the external labels and derives occurrence boundaries; the object adapter then
+materializes bounded objects and relations without claiming the detector's
+scientific role.
+
+This is the prepared **FeatureGraph Study of the Month for September 2026**.
 
 - [Researcher input](../../notebooks/researcher_input/clap_researcher_input.ipynb)
 - [Generated study](../../notebooks/generated_study/clap_generated_study.ipynb)
 - [Construction figure](clap_crop_object_construction.png)
 - [Adapter implementation](../../src/featuregraph/behaviors/state_occurrence.py)
+- [State-contract compiler](../../src/featuregraph/contracts/state_contract.py)
 - [Focused tests](../../tests/test_state_occurrence.py)
+- [September LinkedIn draft](september_2026_clap_post.md)
 
 ## Reading the evidence
 

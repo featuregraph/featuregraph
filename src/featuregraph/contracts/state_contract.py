@@ -302,22 +302,37 @@ def compile_states(
         )
         _require(isinstance(event, Mapping), f"Event {event_name!r} must be a mapping.")
         _require(
-            set(event) == {"type", "state"},
-            f"Event {event_name!r} requires only 'type' and 'state'.",
+            isinstance(event.get("type"), str),
+            f"Event {event_name!r} must contain a string 'type'.",
         )
         event_type = event["type"]
-        label = event["state"]
         _require(
-            event_type in {"enter_state", "exit_state"},
+            event_type
+            in {"enter_state", "exit_state", "enter_label", "exit_label"},
             f"Unknown event type for {event_name!r}: {event_type!r}.",
         )
-        if declared_labels is not None:
+        if event_type in {"enter_label", "exit_label"}:
             _require(
-                label in declared_labels,
-                f"Event {event_name!r} names undeclared state {label!r}.",
+                set(event) == {"type"},
+                f"Event {event_name!r} of type {event_type!r} requires only 'type'.",
             )
-        boundary_mask = entered if event_type == "enter_state" else exited
-        output[event_name] = (boundary_mask & output["state"].eq(label)).astype(bool)
+            boundary_mask = entered if event_type == "enter_label" else exited
+            output[event_name] = boundary_mask.astype(bool)
+        else:
+            _require(
+                set(event) == {"type", "state"},
+                f"Event {event_name!r} requires only 'type' and 'state'.",
+            )
+            label = event["state"]
+            if declared_labels is not None:
+                _require(
+                    label in declared_labels,
+                    f"Event {event_name!r} names undeclared state {label!r}.",
+                )
+            boundary_mask = entered if event_type == "enter_state" else exited
+            output[event_name] = (
+                boundary_mask & output["state"].eq(label)
+            ).astype(bool)
 
     occurrence_groups: Any = [*group_by, "state_occurrence_id"]
     constant = (

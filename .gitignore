@@ -65,6 +65,9 @@ Icon\r
 data/
 outputs/
 artifacts/*
+!artifacts/studies/
+artifacts/studies/*
+!artifacts/studies/september_2026_clap_post.md
 !artifacts/paper/
 artifacts/paper/*
 !artifacts/paper/framework/
