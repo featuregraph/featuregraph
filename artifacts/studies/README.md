@@ -43,7 +43,6 @@ This is the prepared **FeatureGraph Study of the Month for September 2026**.
 - [Adapter implementation](../../src/featuregraph/behaviors/state_occurrence.py)
 - [State-contract compiler](../../src/featuregraph/contracts/state_contract.py)
 - [Focused tests](../../tests/test_state_occurrence.py)
-- [September LinkedIn draft](september_2026_clap_post.md)
 
 ## Reading the evidence
 
