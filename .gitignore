@@ -68,6 +68,7 @@ artifacts/*
 !artifacts/studies/
 artifacts/studies/*
 !artifacts/studies/september_2026_clap_post.md
+!artifacts/studies/physionet_wearable_protocol_study.md
 !artifacts/paper/
 artifacts/paper/*
 !artifacts/paper/framework/
