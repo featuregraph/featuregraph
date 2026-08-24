@@ -4,13 +4,14 @@
 
 ## Follow the research sequence
 
-The current research record is organized as four linked studies:
+The current research record is organized as five linked studies:
 
 | Study | Question | Evidence |
 | --- | --- | --- |
 | [BIDMC respiratory objects](artifacts/studies/bidmc_object_workflow_study.md) | Can a researcher-authored contract be expanded into a complete, auditable object workflow? | Compiler-backed directional states and boundaries, 53 records, object-level comparator matching, annotation comparisons, and frozen regression checks |
 | [TEP reactor-pressure transfer](artifacts/studies/tep_pressure_transfer_study.md) | Does a frozen construction transfer beyond its development run and distinguish abnormal from normal operation? | Held-out Fault 2 runs, normal-operation windows, and contrasting fault classes |
 | [CLaP interoperability](artifacts/studies/clap_state_object_study.md) | Can FeatureGraph preserve states detected by an external method as queryable objects without taking over detection? | Exact label reconstruction, bounded occurrence objects, temporal relations, and declared validation checks |
+| [PhysioNet wearable protocols](artifacts/studies/physionet_wearable_protocol_study.md) | Can published protocol states, source boundaries, self-reports, and native-rate wearable measurements be preserved without adding undeclared meaning? | 33 eligible participants, 248 exact protocol occurrences, lossless self-report joins, and one schema across two protocol versions |
 | [Output agreement and traceability](artifacts/studies/replica_mechanism_fidelity_study.md) | Can identical outputs hide different levels of scientific traceability? | Exact sample, object, relation, and measurement agreement with deterministic provenance queries |
 
 [Open the complete study guide](artifacts/studies/README.md).
@@ -81,7 +82,21 @@ states.
 - [Construction figure](artifacts/studies/clap_crop_object_construction.png)
 - [State-sequence adapter](src/featuregraph/behaviors/state_occurrence.py)
 
-### 4. Output agreement and scientific traceability
+### 4. PhysioNet: published-protocol preservation
+
+The PhysioNet wearable study follows the stress-protocol states, physical
+button marks, exclusions, and self-reports published with an existing dataset.
+It preserves 248 declared protocol occurrences across 33 eligible participants
+and measures native-rate heart rate, electrodermal activity, and temperature
+inside each occurrence. Undeclared gaps remain `unassigned`; FeatureGraph does
+not claim to detect stress or validate a biomarker.
+
+- [Study record](artifacts/studies/physionet_wearable_protocol_study.md)
+- [Executable study](scripts/run_physionet_wearable_protocol_study.py)
+- [Focused tests](tests/test_physionet_wearable_protocol_study.py)
+- [Source dataset](https://physionet.org/content/wearable-device-dataset/1.0.1/)
+
+### 5. Output agreement and scientific traceability
 
 The Replica-inspired mechanism-fidelity study holds every sample label, object
 boundary, relation, and signal measurement constant while varying whether the

@@ -51,8 +51,22 @@ This is the prepared **FeatureGraph Study of the Month for September 2026**.
 | BIDMC | Comparator matching, annotations, cohort execution, regression checks | Comparator and annotations are reference points, not universal ground truth |
 | TEP | Held-out replications, normal windows, contrasting faults | Normal windows share one record; cross-fault evidence uses one run per class |
 | CLaP | Exact reconstruction and structural invariants | Evaluates representation of supplied states, not CLaP detection quality |
+| PhysioNet wearable protocols | Exact source-boundary preservation, lossless self-report joins, shared schema across protocol versions | Represents the published protocol; does not detect stress or validate physiological biomarkers |
 
-## 4. Replica connection: separate output agreement from traceability
+## 4. PhysioNet: preserve a published protocol
+
+[PhysioNet wearable protocol representation](physionet_wearable_protocol_study.md)
+begins with the stages, physical button marks, exclusions, and self-reports
+published by the dataset authors. FeatureGraph preserves 248 declared protocol
+occurrences across 33 eligible participants, retains undeclared gaps as
+`unassigned`, and measures native-rate wearable signals without interpreting
+them as detected stress.
+
+- [Executable study](../../scripts/run_physionet_wearable_protocol_study.py)
+- [Focused tests](../../tests/test_physionet_wearable_protocol_study.py)
+- [Source dataset](https://physionet.org/content/wearable-device-dataset/1.0.1/)
+
+## 5. Replica connection: separate output agreement from traceability
 
 [Output agreement is not mechanism fidelity](replica_mechanism_fidelity_study.md)
 materializes the same CLaP signal and state sequence through a declared

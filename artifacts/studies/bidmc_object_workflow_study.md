@@ -6,6 +6,21 @@ Can a researcher-authored behavioral construction be expanded into a complete,
 auditable cohort study without allowing the execution layer to introduce
 undeclared scientific rules?
 
+## Source dataset
+
+The study uses all 53 eight-minute recordings in the public
+[BIDMC PPG and Respiration Dataset](https://physionet.org/content/bidmc/1.0.0/)
+([DOI 10.13026/C2208R](https://doi.org/10.13026/C2208R)). Each record contains
+physiological signals sampled at 125 Hz, including the impedance respiration
+signal used here, together with breath annotations produced independently by
+two annotators. The dataset was assembled from recordings acquired during
+hospital care at Beth Israel Deaconess Medical Center.
+
+The source publication is Pimentel et al., *Towards a Robust Estimation of
+Respiratory Rate from Pulse Oximeters*, IEEE Transactions on Biomedical
+Engineering 64(8), 1914-1923
+([DOI 10.1109/TBME.2016.2613124](https://doi.org/10.1109/TBME.2016.2613124)).
+
 ## Frozen construction
 
 The researcher input declares the 53-record BIDMC cohort, the raw respiration
@@ -15,18 +30,18 @@ states, transition events, plateau-aware boundaries, trough-peak-trough object
 identity, completeness rules, object measurements, comparison rules,
 validation requirements, requested outputs, and interpretation limits.
 
-The generated notebook applies that contract independently to every record. Its
-first compiler-backed vertical slice passes the declared `state-contract-v1`
-mapping to FeatureGraph's deterministic compiler, which materializes rising,
-falling, and inactive states, state-occurrence identifiers, and entering- and
-exiting-rising boundaries. The runner stores the canonical contract as JSON and
-records its SHA-256 fingerprint in provenance.
+The generated notebook applies that contract independently to every record.
+For the state and event portion of the workflow, it passes the declared
+`state-contract-v1` mapping to FeatureGraph's deterministic compiler. The
+compiler materializes rising, falling, and inactive states, state-occurrence
+identifiers, and entering- and exiting-rising boundaries. The runner stores the
+canonical contract as JSON and records its SHA-256 fingerprint in provenance.
 
 Preprocessing, plateau projection, trough-peak-trough identity, object
 measurements, comparison, aggregation, and interpretation remain explicit
-generated-study logic. Independent per-record parity assertions compare the
-compiled states and event locations with the previously frozen formulas before
-the existing cohort regression assertions are evaluated.
+generated-study logic. Independent checks compare the compiled states and
+event locations with the study's established deterministic formulas before the
+full cohort regression checks are evaluated.
 
 ## Recorded results
 
@@ -75,6 +90,16 @@ ground truth for every discordant object.
 - [Generated study](../../notebooks/generated_study/bidmc_generated_study.ipynb)
 - [Workflow runner](../../scripts/run_bidmc_researcher_workflow.py)
 - [Master framework paper](../paper/master/featuregraph_master_draft.md#6-bidmc-implementation-study)
+
+From the repository root, install the package and run the complete workflow:
+
+```bash
+python -m pip install -e .
+python scripts/run_bidmc_researcher_workflow.py
+```
+
+The runner downloads the public BIDMC source data, executes all 53 records, and
+writes the generated notebook and validation artifacts declared by the study.
 
 ## Scope limitations
 

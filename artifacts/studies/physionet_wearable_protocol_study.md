@@ -64,11 +64,18 @@ it is not silently repaired here.
 The completed run included 33 participants and materialized 248 declared
 protocol occurrences: 136 from version 1 and 112 from version 2.
 
-- All 248 declared start and end boundaries survived compilation exactly.
-- All 248 objects joined losslessly to the corresponding source self-report.
-- Every object contained native-rate HR, EDA, and temperature samples.
-- All 99 compiler validation checks passed.
-- Both protocol versions produced the same object schema and measurements.
+| Verification | Result |
+| --- | ---: |
+| Eligible participants completed | 33 |
+| Declared protocol occurrences | 248 |
+| Version-1 occurrences | 136 |
+| Version-2 occurrences | 112 |
+| Occurrences preserving both declared boundaries exactly | 248 of 248 |
+| Occurrences joined to the corresponding source self-report | 248 of 248 |
+| Occurrences containing native-rate HR, EDA, and temperature | 248 of 248 |
+| Compiler validation checks passed | 99 of 99 |
+| Shared object schema and measurement equations across versions | Yes |
+
 - `unassigned` time comprised 3,642 of 23,398 compiled seconds (15.6%) in
   version 1 and 461 of 34,817 seconds (1.3%) in version 2.
 
@@ -87,7 +94,15 @@ establish causality, or validate a digital biomarker.
 
 ## Execution
 
+- [Executable study](../../scripts/run_physionet_wearable_protocol_study.py)
+- [Focused protocol and boundary tests](../../tests/test_physionet_wearable_protocol_study.py)
+- [FeatureGraph state-contract compiler](../../src/featuregraph/contracts/state_contract.py)
+- [PhysioNet source dataset](https://physionet.org/content/wearable-device-dataset/1.0.1/)
+
+From the repository root:
+
 ```bash
+python -m pip install -e .
 python scripts/run_physionet_wearable_protocol_study.py
 ```
 
@@ -95,6 +110,10 @@ The runner downloads the declared public source files, compiles the protocol
 timeline, creates the occurrence table, and writes compressed observation,
 object, summary, and validation artifacts under
 `outputs/physionet_wearable_protocol/`.
+
+This study is implemented as a deterministic runner rather than a paired
+researcher-input/generated-study notebook. The page, runner, focused tests, and
+written validation artifacts together form its reproducible record.
 
 ## Validation boundary
 
