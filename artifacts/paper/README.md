@@ -2,10 +2,11 @@
 
 ## Authoritative draft
 
-[The master framework draft](master/featuregraph_master_draft.md) is the only
-editable paper on `main`. It integrates the paired-notebook workflow with the
-BIDMC implementation, the frozen TEP transfer study, and the later CLaP
-interoperability result.
+[The BIDMC arXiv draft](master/featuregraph_master_draft.md) is the only
+editable paper on `main`. It reports the 53-record BIDMC respiratory-object
+study, the concentration and annotation disposition of 840 FeatureGraph-only
+objects, the numerical-boundary correction, and the bounded deterministic
+compiler integration.
 
 The studies remain available as shorter evidence records:
 
@@ -24,8 +25,10 @@ links.
 
 ## Editing rule
 
-Edit the master draft for the current paper. Do not copy frozen manuscripts or
-superseded component drafts back into `main`. When results differ across
-versions, identify the repository ref, construction, and run rather than
-averaging or silently replacing values. Git history preserves the component
-drafts removed during consolidation.
+Edit the master draft for the current BIDMC paper. TEP, CLaP, PhysioNet, and
+other FeatureGraph studies remain separate research records and should not be
+added to this manuscript merely to broaden the framework claim. Do not copy
+frozen manuscripts or superseded component drafts back into `main`. When
+results differ across versions, identify the repository ref, construction, and
+run rather than averaging or silently replacing values. Git history preserves
+the component drafts removed during consolidation.
