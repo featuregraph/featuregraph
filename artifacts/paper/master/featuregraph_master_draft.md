@@ -1,371 +1,362 @@
-# From Ordered Observations to Auditable Behavioral Objects: The FeatureGraph Framework
+# From Agreement Counts to Inspectable Disagreement: An Auditable Respiratory-Object Study on BIDMC
 
-**Nazia Habib**  
-**Consolidated master draft — August 20, 2026**
+**Nazia Habib**
+
+**FeatureGraph**
+
+**arXiv draft — August 25, 2026**
 
 ## Abstract
 
-Scientific notebooks commonly combine investigator assumptions, data preparation, repeated execution, validation, and reporting in one evolving artifact. This makes it difficult to identify which choices came from the researcher, which were introduced for implementation convenience, and which were added by an assisting language model. FeatureGraph addresses this problem by converting ordered observations into explicit states, events, bounded objects, properties, and relations under a researcher-authored construction contract. A paired notebook workflow separates that contract from its mechanical execution. The researcher input notebook records study scope, signal mapping, preprocessing, state definitions, event boundaries, object identity, measurements, comparison rules, validation requirements, requested outputs, and interpretive limits. The generated study notebook expands the contract into executable cohort logic, object construction, matching, aggregation, regression checks, and reporting.
+Time-series studies often reduce agreement between two computational methods to a single score, leaving it difficult to determine where disagreement occurs, which records produce it, and whether discordant events form one coherent error category. We present a deterministic, object-level respiratory waveform study on all 53 records in the public BIDMC PPG and Respiration Dataset. A researcher-authored contract defines preprocessing, directional states, transition events, plateau-aware boundaries, trough-peak-trough object identity, measurements, a frozen SciPy comparator, matching, validation, and interpretation limits. A generated workflow executes that contract independently for every record and retains observation-, event-, object-, comparison-, annotation-, and provenance-level evidence.
 
-We examine the framework in two unrelated domains. On 53 BIDMC respiratory records, the current main-branch construction produces 7,926 complete trough-peak-trough objects, of which 7,086 match objects from a frozen SciPy comparator under an ordered one-to-one rule. Its directional states and enter/exit boundaries now execute through the first deterministic `state-contract-v1` compiler slice, with per-record parity assertions against the previously frozen formulas. On Tennessee Eastman Process simulations, a frozen reactor-pressure construction produces explicit peak events and peak-to-peak cycles, transfers across ten Fault 2 runs, and separates those runs from matched normal-operation windows while showing that reactor pressure alone is not specific to Fault 2. A subsequent interoperability study consumes a CLaP-detected state sequence unchanged, materializes nine bounded occurrence objects and eight adjacency relations, and reconstructs all 20,700 source labels. A Replica-inspired traceability study then holds those outputs constant while showing that declared scientific provenance can still differ. These studies preserve discordant, incomplete, ambiguous, and externally supplied structures rather than collapsing them into a single performance score. FeatureGraph does not claim automatic scientific discovery, clinical validity, or a fault classifier. Its narrower contribution is a durable representation and workflow in which scientific choices, object boundaries, evidence, provenance, and failure limits remain explicit.
+The workflow produced 7,926 complete FeatureGraph objects and 7,168 complete comparator objects. Ordered one-to-one matching associated 7,086 pairs within 63 samples; 840 objects were FeatureGraph-only and 82 were comparator-only. The median absolute peak-location difference among matched pairs was 6.5 samples (0.052 s). The 840 FeatureGraph-only objects were strongly concentrated: the seven highest-contributing subjects accounted for 459 objects (54.6%), and the ten highest accounted for 557 (66.3%). Their annotation relationships were heterogeneous. Of all FeatureGraph-only objects, 474 were excluded by both independent annotation series and 366 were retained by at least one. Among the largest contributing records, subject 5 had 63 of 66 objects excluded by both annotations, subject 39 had all 60 retained by at least one, and subject 13 had 40 of 114 excluded and 74 retained. The unmatched population therefore cannot be interpreted uniformly as either additional valid breaths or false detections.
+
+A numerical-boundary investigation further showed that floating-point residue near \(5.55\times10^{-17}\) could create repeated state changes under exact-zero comparisons. Declaring a numerical tolerance of \(10^{-12}\) removed 207 spurious complete unmatched objects without changing any of the 7,086 matched pairs. A bounded deterministic compiler now executes the directional-state and enter/exit-event layer from the researcher contract, while independent parity checks protect the previously frozen formulas. This study does not establish clinical validity or respiratory ground truth. It demonstrates that explicit construction contracts and retained object-level evidence can turn aggregate disagreement into a reproducible, localized, and scientifically reviewable result.
 
 ## 1. Introduction
 
-A scientific analysis contains at least two kinds of work. The first is scientific and representational: selecting observations, deciding how a signal should be transformed, defining what constitutes a state or event, choosing object boundaries, specifying measurements, and limiting interpretation. The second is mechanical expansion: applying the same rules across records, checking files, assembling tables, matching objects, aggregating results, recording software versions, and rendering reports.
+Respiratory waveform analysis requires a chain of representational decisions before any event can be counted. A researcher must select a signal, choose a preprocessing frame, define what constitutes directional change, decide how flat extrema are handled, identify which events bound a candidate waveform, determine completeness, and choose how two constructions will be compared. When those decisions are embedded across notebook cells and helper functions, the final count does not fully describe the analysis. The same output may conceal different boundary rules, and the same disagreement count may combine several distinct phenomena.
 
-In an ordinary notebook these activities are interleaved. A threshold may appear beside a plotting command. A boundary rule may be embedded in a groupby operation. A cohort loop may silently apply different assumptions to different records. When an LLM assists with the implementation, an additional ambiguity appears: did the researcher choose the scientific rule, or did the model introduce it while making the code run?
+This problem becomes especially important when a study uses computational assistance to expand a compact scientific specification into cohort-scale code. Repetition, file checking, matching, aggregation, and reporting can be automated, but scientific rules should not enter silently through the execution layer. A reproducible workflow must therefore preserve both the result and the authority boundary: which decisions were supplied by the researcher, which operations mechanically execute them, and which interpretations remain unsupported.
 
-FeatureGraph is developing a computational framework for transforming observation sequences into explicit behavioral objects. The framework treats behavior as structure that is present implicitly in an ordered signal and made explicit through declared construction rules. It distinguishes observations, sample-level states and events, bounded objects, object properties, relations, and semantic interpretation. Its purpose is not to infer the physical meaning of a signal from values alone. Its purpose is to preserve a researcher's assumptions as executable and inspectable contracts.
+FeatureGraph is a deterministic representation framework for constructing explicit behavioral objects from ordered observations. In the present study, an object is not assumed to be a clinically validated breath. It is a computational trough-peak-trough waveform defined by a declared signal construction. Each object retains its source record, supporting indices, boundary intervals, completeness and ambiguity flags, measurements, comparison status, and annotation relationships. This makes agreement and disagreement inspectable below the cohort total.
 
-This paper presents a notebook-centered implementation of that idea. The workflow separates a researcher input notebook from a generated study notebook. The input notebook is the authoritative scientific specification. The generated notebook may implement repetition, matching, validation, aggregation, and reporting, but it may not add a scientific rule that is absent from the input. Together, the notebooks create an auditable path from researcher intent to object-level results.
+We apply this workflow to the BIDMC PPG and Respiration Dataset, which contains 53 eight-minute clinical recordings sampled at 125 Hz and two independently produced breath-annotation series [1,2]. The study uses the impedance respiration signal, not the photoplethysmogram, and asks a deliberately bounded question:
 
-The contributions of this draft are:
+> Can a researcher-authored respiratory-object construction be executed across the complete BIDMC cohort while preserving enough evidence to reproduce, localize, and interpret the limits of agreement with a frozen comparator?
 
-1. A division of responsibility between researcher-authored scientific input and generated execution.
-2. A layered specification for behavioral time-series studies, including representation, construction, measurement, comparison, validation, and interpretation contracts.
-3. An output workflow that retains observations, states, events, bounded objects, ambiguity, discordance, and provenance.
-4. Worked implementations on the 53-record BIDMC respiration dataset and Tennessee Eastman Process simulations.
-5. A transfer protocol that distinguishes representation success from domain diagnosis.
-6. Evaluation criteria for extending the workflow without silently changing its representational assumptions.
-7. A deterministic state-contract compiler slice and an executable distinction between output agreement and scientific traceability.
+The primary contribution is not a claim that FeatureGraph detects more valid breaths. It is a method and empirical result showing that the 840 FeatureGraph-only objects are concentrated in a subset of records and divide differently with respect to the two annotation series. Aggregate disagreement therefore contains record-specific structure that would be lost if all unmatched objects were assigned a single label.
 
-This master draft concerns the framework and software workflow developed on the `main` branch. Frozen alpha and beta manuscripts remain historical study records. Their released implementations, counts, and claims are not rewritten here, and their results should not be combined numerically with the current main-branch study.
+The contributions of this study are:
 
-## 2. Problem formulation
+1. an explicit researcher-authored contract for a respiratory waveform construction, comparator, matching rule, validation requirements, and claim boundaries;
+2. a reproducible workflow that executes the construction independently across all 53 BIDMC records and retains observations, states, events, objects, comparisons, annotations, and provenance;
+3. a cohort-level comparison comprising 7,926 complete FeatureGraph objects, 7,168 complete comparator objects, and 7,086 matched pairs;
+4. a subject-level analysis showing that 54.6% of the 840 FeatureGraph-only objects arise from seven subjects and that the highest-contributing records have sharply different annotation patterns;
+5. a documented numerical-boundary correction that removes floating-point-induced identities without changing any matched pair; and
+6. a bounded deterministic compiler integration for the directional-state and transition-event layer, protected by per-record parity assertions.
 
-Let a study begin with ordered observations
+## 2. Materials and methods
+
+### 2.1 Dataset
+
+We used version 1.0.0 of the public BIDMC PPG and Respiration Dataset [1]. The dataset contains 53 eight-minute recordings acquired during hospital care at Beth Israel Deaconess Medical Center. Physiological waveforms are sampled at 125 Hz. The present study uses the impedance respiration signal supplied in the CSV distribution. Each record also includes two independent series of manually identified breath annotations.
+
+All 53 records were included. The workflow expected 60,001 signal rows per record, required the respiration column, rejected missing respiration values, and executed each record independently. The raw respiration signal was retained unchanged alongside every derived column.
+
+The original dataset was assembled to support research on respiratory-rate estimation from pulse oximetry [2]. The present analysis does not reproduce that respiratory-rate algorithm and does not evaluate photoplethysmographic respiratory-rate estimation. It uses the supplied impedance respiratory waveform and annotations to study explicit waveform construction and disagreement.
+
+### 2.2 Researcher-authored study contract
+
+The authoritative researcher input is a single executable notebook cell. It declares:
+
+- subjects 1 through 53;
+- sampling rate and expected record dimensions;
+- raw-signal preservation;
+- preprocessing and temporal alignment;
+- numerical precision;
+- rising, falling, and inactive states;
+- enter- and exit-state events;
+- plateau-aware extrema and representative points;
+- trough-peak-trough identity and completeness;
+- object measurements;
+- the external comparator and one-to-one matching rule;
+- comparison with both annotation series;
+- required cohort, subject, object, and sensitivity outputs;
+- validation assertions; and
+- supported and unsupported interpretations.
+
+The generated workflow may implement downloading, integrity checks, repetition, assembly, matching, aggregation, provenance, and reporting. It may not change a threshold, filter, boundary, identity, completeness rule, matching rule, measurement, exclusion, imputation, or scientific interpretation without changing the researcher contract.
+
+### 2.3 FeatureGraph signal construction
+
+For each subject, the raw respiration sequence \(x_t\) was preserved. A separate offline envelope was formed by a 100-sample rolling maximum followed by a 100-sample rolling mean and an alignment shift of \(-100\) samples. The combined rolling operations have an effective support of 199 samples, approximately 1.592 s at 125 Hz. Because the alignment uses future observations, this construction is non-causal and is not presented as an online detector.
+
+Let \(y_t\) denote the aligned envelope and
 
 \[
-X = \{(t_i, x_i, g_i)\}_{i=1}^{n},
+\Delta y_t = y_t-y_{t-1}.
 \]
 
-where \(t_i\) is time, \(x_i\) is an observed signal value, and \(g_i\) identifies an independent record or group. A behavioral construction maps observations to sample-level states and events, then partitions observations into bounded objects:
+The numerical tolerance was fixed at \(\epsilon=10^{-12}\). Valid samples were assigned one of three mutually exclusive states:
 
 \[
-X \xrightarrow{C} (S, E) \xrightarrow{B} O.
+s_t=
+\begin{cases}
+\text{rising}, & \Delta y_t > \epsilon,\\
+\text{falling}, & \Delta y_t < -\epsilon,\\
+\text{inactive}, & |\Delta y_t|\leq \epsilon.
+\end{cases}
 \]
 
-Here, \(C\) is a construction contract, \(S\) contains persistent state predicates, \(E\) contains discrete transition events, \(B\) contains identity and boundary rules, and \(O\) is an object table with one row per candidate behavior. A measurement contract \(M\) maps each object and its supporting observations to intrinsic properties:
+The tolerance is numerical, not physiological. It distinguishes directional change from floating-point residue after preprocessing; it does not define a minimum respiratory amplitude.
 
-\[
-(X, S, E, O) \xrightarrow{M} P.
-\]
+Entering the rising state defines a trough-side transition, and exiting the rising state defines a peak-side transition. Because the directional state describes the edge ending at the current sample, the entering-rising event is projected one sample backward to the trough. The exiting-rising event is already located on the peak sample.
 
-The challenge addressed here is not merely executing these mappings. It is preserving who supplied them and preventing the execution layer from changing them silently.
+### 2.4 Plateau-aware boundaries and object identity
 
-We therefore define two primary artifacts:
+Numerically flat extrema were represented as intervals rather than immediately collapsed to points. A complete plateau interval was projected to the floor of its midpoint for comparison and measurement. The interval itself remained available for ambiguity and overlap checks.
 
-- **Researcher input notebook \(R\):** the authoritative declaration of study scope and scientific, representational, evaluative, and interpretive choices.
-- **Generated study notebook \(G\):** the expanded implementation that executes the declarations in \(R\), materializes intermediate representations, validates invariants, and produces output artifacts.
+One candidate object was defined by a starting trough, an interior peak, and a following trough. A complete object required:
 
-The desired relationship is not that \(G\) contains no additional code. It necessarily contains more code. The requirement is that every scientific rule in \(G\) be traceable to \(R\). Mechanical implementation may expand; scientific authority may not migrate.
+1. all three boundaries;
+2. strict temporal ordering;
+3. complete leading and trailing boundary support; and
+4. non-overlapping projected plateau intervals.
 
-## 3. Layers of the study specification
+Incomplete, truncated, plateau-ambiguous, and invalidated candidates remained represented with explicit flags. Complete objects were measured for period, derived rate, full excursion, and temporal symmetry. Measurements were calculated only after identity and boundaries had been established.
 
-The workflow separates concepts that are often collapsed into a single feature-engineering notebook.
+### 2.5 Deterministic compiler boundary
 
-### 3.1 Observed data
+The researcher contract contains a versioned `state-contract-v1` mapping. The deterministic compiler consumes the declared input columns and state expressions, validates state exclusivity and exhaustiveness, assigns state-occurrence identities, and materializes requested entering- and exiting-rising events.
 
-Observed data includes timestamps, measured values, record identity, ordering, missingness, and the preserved raw signal. Observations are not behavioral objects. They are the evidence from which objects are constructed.
+The compiler integration is deliberately bounded. It compiles directional states and their enter/exit boundaries. It does not currently compile preprocessing, plateau projection, trough-peak-trough identity, object measurements, comparison, aggregation, or scientific interpretation. Those layers remain explicit generated-study Python.
 
-### 3.2 Representation frame
+For every BIDMC record, independent parity assertions compare the compiler-produced states and event locations with the study's previously frozen deterministic formulas. The workflow stores the canonical contract as JSON and records its SHA-256 fingerprint in provenance. This establishes output parity and traceability for a narrow layer; it does not prove semantic equivalence of the entire generated notebook.
 
-The representation frame includes sampling rate, units, temporal resolution, observation duration, numerical precision, smoothing, normalization, and other declared preprocessing. These are not behaviors themselves. They determine the frame in which behavior is observed and measured.
+### 2.6 Frozen SciPy comparator
 
-### 3.3 Construction contract
+The comparator was specified before cohort execution and remained unchanged. It operated on the raw respiration signal using:
 
-The construction contract defines primitive states, transition events, object identity, boundaries, and completeness. For a directional signal construction, states might include rising, falling, and inactive. Entering or exiting a state creates an event. Events and cumulative identifiers partition observations into candidate objects.
+- a fourth-order Butterworth low-pass filter with a 0.8 Hz cutoff;
+- zero-phase `sosfiltfilt` filtering;
+- `scipy.signal.find_peaks` for peaks and troughs;
+- a minimum peak distance of 188 samples; and
+- a minimum prominence of 0.08.
 
-### 3.4 Measurement contract
+Consecutive comparator troughs surrounding a comparator peak defined a complete comparator object. SciPy provides the numerical filtering and peak-finding implementation [3]; the comparator settings and object assembly are study-specific and are not presented as universal respiratory ground truth.
 
-Measurements are derived only after the object has been defined. They may include start and end time, duration, magnitude, rate, period, symmetry, or a bounded accumulated quantity. A measurement is not allowed to define an object implicitly unless that dependency is declared in the construction contract.
+### 2.7 Ordered one-to-one matching
 
-### 3.5 Semantic context
+FeatureGraph and comparator objects were matched by their representative peak indices. A candidate match required an absolute peak difference no greater than 63 samples, approximately 0.504 s. Matching was ordered and one-to-one so that no object could be paired more than once and temporal ordering could not be reversed.
 
-Semantic context states what a signal represents and what a behavioral object may mean in a domain. The numerical construction alone does not establish that a wave is a breath, that a pressure episode is a fault, or that a discordant object is pathological. Domain interpretation can be attached to an object, but it must remain distinguishable from the object's computational definition.
+Objects were then classified as:
 
-These layers support a practical separation between intrinsic signal behavior, its measurement conditions, and the physical interpretation assigned by a researcher.
+- **matched:** assigned to one object from the other construction;
+- **FeatureGraph-only:** no comparator match within the declared rule; or
+- **comparator-only:** no FeatureGraph match within the declared rule.
 
-## 4. Researcher input notebook workflow
+These labels describe agreement between two computational constructions. They are not truth labels.
 
-### 4.1 Purpose
+### 2.8 Annotation comparison
 
-The researcher input notebook is a compact, human-readable specification. In the current BIDMC implementation, the notebook contains exactly one code cell. The single-cell form is not a universal requirement, but it makes the authority boundary unusually clear: the cell is the complete human-authored scientific input, and the generated layer may not introduce a scientific rule that is absent from it.
+The two BIDMC annotation series were treated as independent external reference points. For each FeatureGraph-only object, its representative peak was compared with each annotation series under the study's declared tolerance. An object was classified as excluded by both annotations only when neither annotation series retained it. Otherwise it was classified as retained by one or both.
 
-The notebook is executable Python rather than a prose prompt. This allows the specification to express values, equations, lists, dictionaries, and invariants without depending on natural-language interpretation alone. At the same time, explanatory comments and named structures make the intent inspectable by a researcher.
+The annotation comparison was not used to redefine the FeatureGraph construction or comparator after results were observed. Nor were the annotation series assumed to provide infallible ground truth for every discordant waveform.
 
-### 4.2 Required content
+### 2.9 Validation and reproducibility
 
-The BIDMC researcher input declares:
+The workflow validated:
 
-- the development record and frozen 53-subject cohort;
-- a 125 Hz sampling rate and expected file dimensions;
-- preservation of the raw respiration signal;
-- a fixed 100-sample max-then-mean envelope and its non-causal support;
-- a numerical tolerance of \(10^{-12}\), explicitly identified as numerical rather than physiological;
-- rising, falling, and inactive state predicates;
-- entering-rising and exiting-rising events;
-- projection of flat extrema to integer plateau midpoints;
-- a trough-peak-trough respiratory-wave object definition;
-- completeness, ambiguity, and truncation rules;
-- the required object-table schema and property equations;
-- a frozen SciPy comparator and ordered one-to-one matching rule;
-- comparison with the two BIDMC breath-annotation series;
-- mechanical and representational validation requirements;
-- requested tables, cohort counts, agreement metrics, discordance metrics, and sensitivity checks;
-- supported and unsupported interpretations;
-- the allowed and prohibited responsibilities of the execution layer.
+- all 53 expected subjects;
+- 60,001 rows and a non-missing respiration signal in every record;
+- independent per-subject state and identity construction;
+- unchanged raw respiration values;
+- mutually exclusive and exhaustive valid states;
+- parity between compiled and frozen state/event formulas;
+- object boundary ordering and completeness;
+- one-to-one ordered matching;
+- declared cohort regression counts;
+- the numerical-boundary regression fixture; and
+- software, repository, notebook, and contract provenance.
 
-The input notebook therefore does more than provide parameter values. It supplies an executable research contract.
+The complete rerun used repository commit `eeb9d5e193a23bce369faec37a207c6e1ff91e01`. It recorded researcher-input SHA-256 `e2dad5d307fd1101f847e591fbc50fc1c11eea6738a433e663948a9c39048b5a`, execution-notebook SHA-256 `cd79bb0b9b9f823f90cb6b188099f3c6295b83884256bab6431da1b317fbb229`, and state-contract SHA-256 `043c8c35d895f81ac5dc5d81313e5581f3ede6136e49f7da842a072c451f6669`.
 
-### 4.3 Human-LLM boundary
+The recorded execution environment used Python 3.12.13, pandas 2.2.3, NumPy
+2.3.5, and SciPy 1.17.0 on 64-bit Linux.
 
-The current execution contract permits an assisting system to implement downloading, integrity checks, cohort repetition, object assembly, matching, validation, aggregation, regression tests, and reporting. It requires consultation before changing a threshold, filter, boundary, identity rule, completeness rule, matching rule, exclusion, imputation, property definition, or scientific interpretation.
+## 3. Results
 
-This boundary is central to the workflow. The LLM may expand the researcher's cognition into software, but it may not become the silent source of scientific assumptions. When a new rule is required, the workflow should stop and return the decision to the researcher.
+### 3.1 Complete cohort execution
 
-### 4.4 Input notebooks across domains
-
-The repository also contains a Tennessee Eastman Process researcher input and generated study. The pair selects Fault 2, simulation run 10, and reactor pressure for development; preserves the raw signal; declares a max-then-mean processed signal; defines directional states, peak events, peak-to-peak objects, fragments, measurements, controls, transfer requirements, and interpretive limits; and applies the frozen construction across repeated Fault 2 simulations, normal-operation windows, and contrasting fault classes.
-
-The distinction between domain mapping and reusable structure remains important. The TEP pair is not a respiratory notebook with renamed events. It uses the same representational layers while supplying its own signal semantics, validation evidence, and limits on diagnosis.
-
-## 5. Generated study notebook workflow
-
-### 5.1 Mechanical expansion
-
-The generated study notebook takes the researcher contract and expands it into a complete executable study. For BIDMC, the generated notebook:
-
-1. retrieves versioned source files;
-2. verifies row counts, required columns, and missingness;
-3. constructs an observation table for each subject;
-4. preserves the raw signal and creates a separate envelope column;
-5. compiles the researcher-authored `state-contract-v1` mapping into rising, falling, and inactive states;
-6. materializes state-occurrence identifiers and entering- and exiting-rising boundaries through the same compiler;
-7. projects numerical plateaus to explicit boundary intervals and representative midpoints;
-8. assembles candidate wave objects;
-9. retains incomplete, truncated, ambiguous, and invalidated candidates;
-10. computes object properties from declared boundaries;
-11. constructs the frozen comparator path;
-12. performs ordered one-to-one object matching;
-13. compares generated events with both annotation series;
-14. repeats the same construction independently across all 53 subjects;
-15. performs the declared sensitivity check;
-16. executes frozen regression assertions and prints a report.
-
-The generated notebook contains implementation detail that would obscure the research contract if it were placed in the input cell. Its role is to make the contract operational without changing its scientific content.
-
-### 5.2 Output notebook as an inspectable record
-
-The output notebook should remain readable at several levels. A reader can inspect the full cohort summary, but can also move downward to subject summaries, object tables, boundary intervals, state and event columns, and ultimately the raw supporting observations. This layered output is part of the FeatureGraph deliverable.
-
-A behavioral object should be capable of supporting a human-readable account such as:
-
-> Object TEP-10-017 is a complete pressure-transition episode beginning at 9.95 hours, changing phase at 10.80 hours, and ending at 11.62 hours. Its definition, supporting observations, measurements, and provenance are available for inspection.
-
-This sentence is an illustrative design target, not a reported TEP result in the current study. The purpose is to show the expected relationship between a compact narrative and the object-level evidence beneath it.
-
-### 5.3 Output bundle
-
-The workflow is designed to preserve more than the rendered notebook. The current BIDMC runner defines an output bundle containing:
-
-- per-subject observation, state, and event tables;
-- complete FeatureGraph objects;
-- comparator objects;
-- matched, FeatureGraph-only, and comparator-only objects;
-- invalidated and ambiguous objects;
-- subject, cohort, annotation, and sensitivity summaries;
-- console output;
-- a validation report;
-- software and platform versions;
-- repository commit identifiers;
-- hashes of the researcher input and execution notebook.
-- a canonical state-contract artifact and its SHA-256 fingerprint.
-
-The notebook is therefore one view of the result. The durable result is a linked set of specifications, code, object tables, validation records, and provenance.
-
-### 5.4 Binding input to execution
-
-The current prototype parses declarative assignments from the researcher notebook, validates frozen values, verifies that required implementation fragments appear in the generated notebook, executes the notebook, and records hashes of both artifacts. For the first compiler-backed vertical slice, it also extracts the researcher's `state-contract-v1` mapping, checks exact structural equality with the generated notebook's independently executable default, injects the researcher-owned mapping into execution, stores its canonical JSON representation, and records its SHA-256 fingerprint.
-
-The state contract is a semantic compiler for a deliberately narrow layer: named directional states, exclusivity and exhaustiveness validation, state occurrences, and requested enter/exit boundaries. On every BIDMC record, independent parity assertions compare those compiled results with the previously frozen formulas before the cohort regression assertions run. The surrounding workflow is not yet a general semantic compiler. Preprocessing, plateau projection, trough-peak-trough identity, measurements, comparisons, aggregation, and interpretation remain generated Python, and selected bindings still use source-fragment checks. Exact contract equality and output parity reduce a specific class of drift but do not prove semantic equivalence of the complete notebooks.
-
-## 6. BIDMC implementation study
-
-### 6.1 Construction
-
-The complete implementation uses BIDMC version 1.0.0, subjects 1 through 53, and the respiration signal sampled at 125 Hz. For each record, the raw signal is retained. A separate offline envelope is constructed by a 100-sample rolling maximum followed by a 100-sample rolling mean and a negative 100-sample shift. The resulting effective support is 199 samples, or approximately 1.592 seconds.
-
-The first difference of the envelope defines local directional change. A valid sample is rising when the change exceeds \(10^{-12}\), falling when it is below \(-10^{-12}\), and inactive when its absolute value is at most \(10^{-12}\). The tolerance separates floating-point residue from directional change; it is not a physiological amplitude threshold.
-
-The compiler marks entry on the first rising sample and exit on the final rising sample. Because a directional state describes the edge ending at the current row, entering rising is projected one sample backward to the trough; the compiled exit is already located on the peak sample. Numerically flat extrema are represented as intervals. Each object boundary is projected to the floor midpoint of its complete plateau interval.
-
-One candidate respiratory-wave object is a trough-peak-trough interval. A complete object requires a starting trough, an interior peak, a following trough, strict temporal ordering, complete leading and trailing boundaries, and non-overlapping projected plateau intervals. Incomplete and ambiguous candidates remain in the object table with flags.
-
-### 6.2 Generated results
-
-The generated notebook completed all 53 records with no execution failures. It produced:
+All 53 records completed with no execution failures. Every source signal passed the declared integrity checks, and 53 per-subject observation/state/event tables were written.
 
 | Output | Count |
 | --- | ---: |
-| Detected FeatureGraph peaks | 7,988 |
+| FeatureGraph peak events | 7,988 |
 | Complete FeatureGraph objects | 7,926 |
 | Complete comparator objects | 7,168 |
-| Matched objects | 7,086 |
+| Matched object pairs | 7,086 |
 | FeatureGraph-only objects | 840 |
 | Comparator-only objects | 82 |
-| Plateau-ambiguous objects | 90 |
+| Plateau-ambiguous FeatureGraph objects | 90 |
 | Formerly complete candidates invalidated by overlapping plateaus | 37 |
 
-Across the 7,086 matched object pairs, the median absolute peak-location difference is 6.5 samples, or 0.052 seconds. The median absolute differences are 0.311 breaths per minute for derived rate, 0.056 seconds for period, 0 for full excursion, and 0.0966 for temporal symmetry. These values characterize the generated workflow relative to the frozen comparator; they do not establish clinical validity or superiority.
+The object counts satisfy the comparison identities
 
-Of the 840 FeatureGraph-only objects, 474 are excluded by both BIDMC annotation series and 366 are retained by at least one annotation series. Discordance is therefore preserved as structured output rather than assigned a single truth label.
+\[
+7{,}926 = 7{,}086 + 840
+\]
 
-### 6.3 Numerical-boundary correction as workflow evidence
+and
 
-Inspection of subject 13 exposed floating-point changes of approximately \(5.55 \times 10^{-17}\) in a numerically flat envelope region. Under an exact-zero state boundary, this residue created repeated state transitions and spurious object identifiers. The researcher contract was amended to include the fixed numerical tolerance of \(10^{-12}\), while explicitly excluding physiological interpretation. A regression fixture now contains the observed residue and a genuine envelope change of approximately \(9.7 \times 10^{-6}\).
+\[
+7{,}168 = 7{,}086 + 82.
+\]
 
-The correction removed 207 complete FeatureGraph-only objects without changing any of the 7,086 matched objects. This episode demonstrates the intended workflow: an implementation failure was localized in the state/event representation, the scientific meaning of the correction was classified, the contract was updated, and the output was protected by a regression assertion.
+At the cohort level, 89.4% of complete FeatureGraph objects were matched, while 98.9% of complete comparator objects were matched. These fractions are directional agreement summaries, not sensitivity or positive predictive value, because neither construction is designated as ground truth.
 
-## 7. Tennessee Eastman Process transfer study
+The median subject-level matched fractions were 96.7% for FeatureGraph objects
+and 100% for comparator objects. The difference between the 89.4% pooled
+FeatureGraph fraction and the 96.7% median subject fraction is consistent with
+the unmatched population being concentrated in a subset of records.
 
-### 7.1 Construction
+### 3.2 Agreement among matched objects
 
-The Tennessee Eastman Process (TEP) study tests whether the same representation sequence can be applied to a different physical system without treating the respiratory waveform class as the framework. Fault 2, simulation run 10, is the development record, and reactor pressure is the observed signal. The raw signal is preserved. A separate processed signal is formed by a 50-sample rolling maximum, a 50-sample rolling mean, and an offline alignment shift of -50 samples. Rising, falling, and inactive states are defined from the sign of the aligned pressure rate. Exits from rising define peak events. Consecutive peak events bound half-open peak-to-peak cycle objects; leading and trailing fragments remain represented as incomplete.
+Across the 7,086 matched pairs, the median absolute peak-location difference was 6.5 samples, equivalent to 0.052 s at 125 Hz. The 90th percentile absolute peak-location difference was 24 samples (0.192 s).
 
-This construction shares mechanics with BIDMC—preserved observations, a derived envelope, directional states, transition events, bounded identity, object properties, and explicit fragments—but it does not import respiratory semantics. The objects are pressure cycles, not breaths, and a pressure peak is not by itself a fault label.
+| Matched-object property | Median absolute difference |
+| --- | ---: |
+| Peak location | 6.5 samples (0.052 s) |
+| Derived rate | 0.311 breaths/min |
+| Period | 0.056 s |
+| Full excursion | 0 |
+| Temporal symmetry | 0.0966 |
 
-### 7.2 Frozen transfer
+These comparisons show that the two constructions often identify nearby peaks and similar bounded measurements when they match. They do not establish interchangeability: 922 complete objects remain unmatched across the two constructions.
 
-On the development run, the construction produces 32 valid peak events, 31 complete cycles, and two boundary fragments. The dominant aligned peak occurs at index 637 (10.62 hours) with pressure 2806.58. The frozen construction is then applied without run-specific tuning to the other nine Fault 2 simulations. Every run produces a dominant peak between indices 630 and 687, and maximum aligned peak pressure ranges from 2804.96 to 2807.60.
+### 3.3 FeatureGraph-only objects were concentrated by subject
 
-For a negative control, the 500-hour normal Mode 1 record is divided into ten non-overlapping 50-hour windows. All ten Fault 2 runs exceed all ten normal windows in maximum aligned peak pressure and peak excess over the run median. Prominence and peak-event count do not separate the two cohorts. The representation therefore preserves multiple properties rather than selecting only the measurements that support separation.
+The 840 FeatureGraph-only objects were not uniformly distributed across the cohort. Seven subjects produced no FeatureGraph-only objects. At the other extreme, subject 13 produced 114, or 13.6% of the cohort total.
 
-### 7.3 Specificity boundary
+| Rank | Subject | FeatureGraph-only objects | Share of all 840 | Cumulative share |
+| ---: | ---: | ---: | ---: | ---: |
+| 1 | 13 | 114 | 13.6% | 13.6% |
+| 2 | 5 | 66 | 7.9% | 21.4% |
+| 3 | 14 | 63 | 7.5% | 28.9% |
+| 4 | 33 | 61 | 7.3% | 36.2% |
+| 5 | 39 | 60 | 7.1% | 43.3% |
+| 6 | 19 | 52 | 6.2% | 49.5% |
+| 7 | 46 | 43 | 5.1% | 54.6% |
+| 8 | 27 | 38 | 4.5% | 59.2% |
+| 9 | 23 | 35 | 4.2% | 63.3% |
+| 10 | 40 | 25 | 3.0% | 66.3% |
 
-The same frozen construction is applied to simulation run 10 from the other 20 fault classes. Ten classes equal or exceed Fault 2 run 10 in peak excess, and Faults 1 and 7 also produce large early pressure peaks near the Fault 2 event time. Reactor pressure therefore identifies a repeatable abnormal response associated with Fault 2 in this cohort, but it does not uniquely identify Fault 2.
+The top five subjects accounted for 364 objects (43.3%), the top seven for 459 (54.6%), and the top ten for 557 (66.3%). Concentration is therefore a cohort result, not an impression based on isolated visual examples.
 
-This negative specificity result is an important framework result. The pressure object is still a valid representation of an excursion even when it is insufficient for diagnosis. A more specific fault representation may require relations among objects from several signals, but the original pressure-cycle definition should not be retrospectively altered merely to manufacture specificity.
+The relative within-subject disagreement was also high in several leading records. FeatureGraph-only objects constituted 52.1% of subject 13's complete FeatureGraph objects, 47.1% of subject 5's, 38.9% of subject 14's, 36.3% of subject 33's, and 53.6% of subject 39's. The overall population is thus driven both by records with many constructed objects and by records in which the two constructions differ over a large portion of the waveform.
 
-### 7.4 External-detector interoperability
+### 3.4 High-contributing subjects had different annotation patterns
 
-The CLaP study tests a different boundary of the framework. Rather than deriving
-states from a FeatureGraph signal construction, it accepts the 20,700 state
-labels produced by the maintained ClaSPy implementation of CLaP on the Crop
-benchmark. The public `from_state_sequence` adapter preserves those labels as
-nine bounded occurrence objects, retains both series-edge objects as truncated
-fragments, constructs eight `precedes` relations, and reconstructs every
-source label exactly. All 11 declared structural validation checks pass.
+Of the 840 FeatureGraph-only objects, 474 (56.4%) were excluded by both annotation series and 366 (43.6%) were retained by at least one. The division varied sharply across the highest-contributing subjects.
 
-This is evidence of interoperability, not a third domain-transfer result and
-not an evaluation of CLaP detection quality. CLaP remains responsible for the
-scientific segmentation; FeatureGraph supplies object identity, measurements,
-completeness, provenance, and relations without relabeling or improving the
-detected states. Placing this study after BIDMC and TEP makes the progression
-explicit: first execute a complete authored contract, then freeze and transfer
-one construction, then show that the object layer can also consume an
-independent detector's output.
+| Subject | FeatureGraph-only | Excluded by both | Retained by at least one | Excluded by both |
+| ---: | ---: | ---: | ---: | ---: |
+| 13 | 114 | 40 | 74 | 35.1% |
+| 5 | 66 | 63 | 3 | 95.5% |
+| 14 | 63 | 39 | 24 | 61.9% |
+| 33 | 61 | 53 | 8 | 86.9% |
+| 39 | 60 | 0 | 60 | 0.0% |
+| 19 | 52 | 42 | 10 | 80.8% |
+| 46 | 43 | 30 | 13 | 69.8% |
+| 27 | 38 | 19 | 19 | 50.0% |
+| 23 | 35 | 30 | 5 | 85.7% |
+| 40 | 25 | 12 | 13 | 48.0% |
 
-### 7.5 Output agreement and scientific traceability
+The contrast between subjects 5, 13, and 39 is especially informative. Nearly every FeatureGraph-only object in subject 5 was excluded by both annotation series. Every FeatureGraph-only object in subject 39 was retained by at least one. Subject 13, the largest contributor, contained substantial populations of both types. A single cohort-wide label for the 840 objects would therefore combine qualitatively different patterns of external agreement.
 
-A Replica-inspired mechanism-fidelity study tests whether identical materialized
-outputs imply equivalent scientific provenance. A declared CLaP construction
-and an output-only surrogate are given the same 20,700 state labels. They agree
-exactly on sample labels, nine object boundaries, eight adjacency relations, and
-signal measurements. Deterministic queries nevertheless distinguish whether
-the source dataset, detector, detector version, and study contract are declared.
+The top ten subjects contained 328 of the 474 objects excluded by both annotations (69.2%) and 229 of the 366 retained by at least one (62.6%). Concentration is present in both annotation categories; it is not produced solely by one type of disagreement.
 
-This result establishes neither fraud detection nor cryptographic proof of
-execution. A provenance declaration can itself be inaccurate. The narrower
-result is that output agreement is insufficient evidence of mechanism fidelity,
-and that FeatureGraph can retain and query the traceability distinctions needed
-for subsequent review or re-execution.
+### 3.5 Numerical-boundary correction localized a deterministic failure
 
-## 8. Evaluation criteria for reusable workflows
+Subject 13 exposed changes near \(5.55\times10^{-17}\) in an envelope region that was numerically, but not bitwise, flat. With an exact-zero comparison, those values repeatedly crossed the rising/falling boundary and created spurious state occurrences and object identities.
 
-A reusable FeatureGraph workflow should be evaluated along dimensions that are not captured by a single detector score.
+The researcher contract was revised to declare \(\epsilon=10^{-12}\) as a numerical tolerance. A regression fixture distinguishes the observed residue from a genuine envelope change near \(9.7\times10^{-6}\). Relative to the exact-zero construction, the tolerance removed 207 complete FeatureGraph-only objects without changing any of the 7,086 matched pairs.
 
-### 8.1 Contract fidelity
+This correction is evidence for the value of an inspectable state/event layer. The failure could be located at the numerical boundary, classified as numerical rather than physiological, repaired in the authoritative contract, and protected by a regression assertion. It was not treated as a reason to tune the comparator or redefine unmatched objects after cohort evaluation.
 
-Every scientific and representational rule in the generated study should be traceable to the researcher input. Changes should be visible as changes to the input contract rather than hidden inside execution code.
+## 4. Discussion
 
-### 8.2 Determinism and repeatability
+### 4.1 What the 840 objects establish
 
-Given the same versioned observations, specification, software environment, and repository state, the workflow should reproduce the same state columns, events, boundaries, object tables, and validation results.
+FeatureGraph found 840 complete objects that were not matched to the frozen comparator. This number alone does not show that FeatureGraph detects more valid breaths, nor does it show that FeatureGraph produces 840 false detections. The annotation analysis rules out either uniform interpretation: 474 objects were excluded by both annotation series, while 366 were retained by at least one.
 
-### 8.3 Inspectability
+The subject-level analysis adds a second constraint on interpretation. Disagreement is concentrated, but the largest contributing subjects differ sharply. Subject 5 resembles a record in which FeatureGraph constructs many waveforms not supported by either annotation series. Subject 39 resembles a record in which the comparator omits many FeatureGraph objects that at least one annotation series retains. Subject 13 contains both populations. These are hypotheses about computational and annotation relationships, not physiological diagnoses. Representative signal-level inspection is required before assigning morphology or cause.
 
-Every object should retain a path to its supporting observations, state assignments, boundary events, completeness flags, measurements, and provenance. Summary reports should not replace these intermediate layers.
+The scientifically supported contribution is therefore **inspectable disagreement**. The workflow identifies which records dominate disagreement, preserves every discordant object's boundaries and measurements, and connects those objects to the underlying signal and both annotation series. This narrows the next scientific question from “Why are there 840 extra objects?” to record- and object-specific questions that can be reviewed directly.
 
-### 8.4 Boundary honesty
+### 4.2 Why object-level evidence changes method comparison
 
-Incomplete, ambiguous, overlapping, and truncated objects should remain explicit. A reusable framework should not manufacture completeness to simplify downstream analysis.
+Aggregate agreement is useful but incomplete. A high comparator matched fraction can coexist with a concentrated population of records on which the constructions behave very differently. Conversely, a large unmatched count can contain objects supported by an external annotation series as well as objects unsupported by either series.
 
-### 8.5 Transfer
+An object table makes these cases queryable. Rather than regenerating candidate events from plots, a reviewer can retrieve the exact subject, start, peak, end, plateau intervals, completeness status, measurements, comparator status, annotation status, and source indices. The same representation supports cohort summaries without discarding the evidence needed to challenge them.
 
-For a domain-transfer claim, the same state definitions, event operators, boundary rules, object schema, and measurement equations should be applied to an unrelated physical domain. Dataset adapters, signal mappings, units, and declared preprocessing may differ. Repeated domain-specific intervention is evidence that the abstraction or ingestion layer requires revision.
+This is distinct from claiming that object construction removes scientific judgment. The tables expose where judgment is needed. Whether a discordant waveform represents a breath, artifact, compound respiratory behavior, annotation omission, preprocessing effect, or an unsuitable object definition requires domain analysis beyond the present computational comparison.
 
-### 8.6 Intervention burden
+### 4.3 Researcher authority and generated execution
 
-The workflow should record every manual intervention required to make the construction execute. A method that transfers only after substantial unreported tuning is not a transferable representation.
+The paired workflow separates a compact scientific specification from its mechanical expansion. This is particularly relevant when an LLM assists with code generation. The generated layer may write loops, checks, tables, and reports, but its output is scientifically defensible only if thresholds, boundaries, comparison rules, and interpretations remain attributable to the researcher contract.
 
-## 9. Discussion
+The present study implements that separation imperfectly but concretely. The input notebook declares the full study. The runner verifies frozen values, fingerprints the input and execution artifacts, executes all records, writes object-level outputs, and protects expected results through assertions. The state-contract compiler further replaces one segment of duplicated execution logic with a deterministic interpreter of the researcher-authored state mapping.
 
-### 9.1 Beyond ordinary feature engineering
+### 4.4 Meaning of the compiler result
 
-Feature engineering usually produces columns selected for a downstream task. The present workflow produces a layered representation: observations, states, events, boundaries, object identity, intrinsic properties, relations, and provenance. The object table is not simply a compressed signal. It is an index into the construction that produced each bounded behavior.
+The compiler result is deliberately narrower than a claim of automatic study generation. The compiler currently owns directional-state assignment, state-occurrence identity, and entering/exiting-state events. Independent parity checks show that this layer reproduces the frozen BIDMC formulas on every record.
 
-The input/output notebook division also changes the role of an LLM. The model is not asked to provide an opaque analysis whose assumptions must be inferred afterward. It is asked to expand a researcher-owned specification into code and artifacts under an explicit authority boundary.
+Preprocessing, plateau handling, respiratory-object identity, measurement, comparison, aggregation, and interpretation remain explicit generated Python. The study therefore demonstrates a bounded compiler-backed vertical slice inside a complete workflow. It does not demonstrate that arbitrary researcher notebooks can be compiled automatically or that declarative metadata proves that an external scientific method executed as claimed.
 
-### 9.2 Externalized scientific cognition
+### 4.5 Numerical precision is part of the representation
 
-The researcher input notebook externalizes assumptions that might otherwise remain distributed across code, conversation, and memory. The generated notebook externalizes the mechanical consequences of those assumptions. Together they create a platform from which the researcher can inspect errors, revise definitions, compare domains, and build further studies.
+The subject 13 correction shows that numerical precision cannot always remain an implicit implementation detail. An exact-zero comparison made machine-scale residue behave as a series of scientific transitions. Once those transitions created object identity, the effect propagated into cohort disagreement.
 
-This does not remove the difficulty of scientific reasoning. It makes the location of that reasoning more visible. When a generated workflow encounters an undefined boundary or a new domain-specific condition, the correct response is not to hide the decision in implementation code. It is to return the unresolved choice to the research contract.
+Declaring the tolerance in the researcher contract made the choice visible and testable. Equally important, the tolerance was explicitly denied physiological meaning. This distinction prevents a numerical repair from being misrepresented as a validated amplitude threshold.
 
-### 9.3 Automation and scientific discovery
+## 5. Limitations
 
-The current workflow automates parts of scientific analysis: repeated construction, validation, matching, aggregation, provenance capture, and production of inspectable object tables. It may support scientific discovery by making unusual or discordant behaviors easier to localize and compare. It does not autonomously determine which behaviors are scientifically important, establish causal explanations, or validate domain interpretations.
+This is a representation and workflow study, not a clinical validation study. The impedance respiratory signal, the SciPy comparator, and the two annotation series provide different external views; none is designated as universal ground truth.
 
-The defensible claim is therefore that FeatureGraph automates portions of the construction and preservation of scientific workflows. Whether this accelerates discovery must be evaluated through future studies.
+The FeatureGraph envelope is non-causal and uses a fixed 100-sample max-then-mean construction selected for this study. Its behavior may not transfer to other sampling rates, sensors, populations, or real-time use without a separately declared study.
 
-## 10. Limitations
+The 63-sample matching tolerance, comparator filtering, minimum distance, and prominence are frozen comparison choices. Different defensible comparators or matching contracts could change the unmatched population. The present contribution is reproducibility and localization under the declared contract, not invariance to all comparison methods.
 
-The repository contains complete researcher-input/generated-study pairs for BIDMC and TEP, but the two studies are not equivalent forms of validation. BIDMC has comparator objects and two annotation series; TEP has repeated simulations, normal-operation windows, and a one-run-per-class specificity check. Neither evidence design supplies universal ground truth.
+The annotation analysis only determines whether an unmatched representative peak lies within the declared relationship to each annotation series. It does not adjudicate ambiguous morphology or explain disagreement causally. The terms “excluded” and “retained” describe the declared comparison; they do not certify false and true breaths.
 
-The researcher input is executable Python rather than a wholly typed formal specification. The embedded `state-contract-v1` mapping is a versioned declarative structure validated at runtime, but the notebook around it still permits arbitrary code and remains difficult to validate completely.
+The concentration analysis is descriptive and was performed on the same complete cohort used to report agreement. It was not prospectively hypothesized and should be treated as a result that motivates targeted follow-up, not as an independently confirmed population law.
 
-The generated study notebook is presently produced through an assisted development process and then bound to selected input values. The system does not yet compile an arbitrary researcher notebook automatically into a complete study.
+The highest-contributing subjects have not yet been assigned a validated taxonomy of signal morphology. The contrasts among subjects 5, 13, and 39 identify where such analysis should begin, but the present manuscript does not label the underlying behavior.
 
-The binding script now injects and fingerprints the directional-state contract and validates per-record compiler parity, but it still validates other declarations through selected implementation fragments, regression outputs, and artifact hashes. These checks are useful but do not prove semantic equivalence between the complete input and generated notebooks.
+The deterministic compiler covers only the state and transition-event layer. Other declarations are protected through explicit code, selected binding checks, artifact hashes, and regression outputs rather than a complete semantic compiler.
 
-The BIDMC construction includes a non-causal envelope and a fixed smoothing window chosen for this study. Neither is claimed to be universally appropriate. The comparator and annotations provide external reference points, not ground truth for every object.
+Finally, the generated workflow was produced through assisted development. Hashes and parity checks make drift visible but do not prove that every line of generated code is semantically entailed by the researcher input. Stronger typed specifications and broader compiler coverage remain future work.
 
-The TEP normal controls are windows from one continuous normal record rather than independent normal simulations, and the cross-fault check uses one matched run per contrasting class. Both constructions use offline alignment with future observations, so causal deployment would require separate event and detection times.
+## 6. Conclusion
 
-The workflow has not yet formalized object composition and relations across multiple signals, overlapping objects, nested behaviors, or irregular sampling. Two domains demonstrate controlled transfer, not universal applicability.
+A complete rerun of an explicit respiratory-object construction across all 53 BIDMC records produced 7,926 complete FeatureGraph objects, 7,168 comparator objects, and 7,086 ordered one-to-one matches. The remaining 840 FeatureGraph-only objects were not diffuse noise: seven subjects accounted for 54.6%, and ten accounted for 66.3%. Nor were they one annotation category: 474 were excluded by both annotation series and 366 were retained by at least one, with sharply different proportions among the highest-contributing subjects.
 
-## 11. Toward a complete FeatureGraph framework
+The result does not establish that FeatureGraph detects more valid breaths. It establishes that computational disagreement can be preserved in a form that is reproducible, localized, and open to scientific inspection. The numerical-boundary correction and bounded state-contract compiler further show how explicit representations can expose implementation failures and protect a researcher-authored decision boundary during cohort-scale execution.
 
-The next implementation stage is to turn the successful BIDMC pair into a reusable workflow across domains. The required deliverables are:
+The immediate next study is not another aggregate detector comparison. It is a targeted analysis of the concentrated subjects and their unmatched waveform morphology, beginning with the contrasting annotation patterns in subjects 5, 13, and 39.
 
-1. Extend the versioned state-contract slice into a broader typed researcher specification that separates dataset mapping, representation frame, construction, measurement, validation, requested output, and interpretation.
-2. A stable observation interface for timestamps, signals, groups, units, missingness, and preprocessing provenance.
-3. Reusable operators for states, enter/exit events, identities, intervals, bounded measurements, and relations.
-4. A generated notebook template that expands a specification without introducing undeclared scientific rules.
-5. An output bundle containing observation tables, object tables, relations, readable object narratives, validation, and provenance.
-6. Replace the remaining source-fragment bindings with structured intermediate representations and semantic validation.
-7. At least one unrelated physical-domain study using the same object contract and stable schema.
-8. A transfer report that distinguishes unchanged contracts, allowed adapters, manual interventions, failures, and required extensions.
+## Code and data availability
 
-The completed Tennessee Eastman pressure study supplies the first unrelated-domain transfer. The next test should construct relations among multiple TEP signals without changing the pressure-cycle object merely to improve fault specificity.
+The complete study record is available in the public FeatureGraph repository:
 
-## 12. Conclusion
+- Researcher input: `notebooks/researcher_input/bidmc_researcher_input.ipynb`
+- Generated study: `notebooks/generated_study/bidmc_generated_study.ipynb`
+- Workflow runner: `scripts/run_bidmc_researcher_workflow.py`
+- Study record: `artifacts/studies/bidmc_object_workflow_study.md`
+- Deterministic state compiler: `src/featuregraph/contracts/state_contract.py`
 
-This paper presents a software workflow for converting researcher-authored behavioral definitions into auditable generated studies. The researcher input notebook records the scientific and representational contract. The generated notebook implements repetition, object assembly, comparison, validation, aggregation, and reporting while retaining the observations, states, events, boundaries, and provenance needed to inspect every result.
+The source dataset is publicly available from PhysioNet under its stated access terms and license [1]. Machine-generated observation and object tables are reproducible outputs and are not committed to the source repository.
 
-The BIDMC implementation shows that this separation can support a complete 53-record workflow with frozen assumptions, compiler-backed state and boundary construction, object-level outputs, explicit discordance, numerical-boundary regression tests, and reproducibility metadata. The TEP implementation shows that the same representational sequence can construct useful objects in an unrelated physical system while exposing the boundary between abnormal-response representation and fault diagnosis. CLaP and the traceability study show that externally supplied states can remain losslessly queryable while provenance distinctions remain visible even under exact output agreement. The result is not an autonomous scientist and not a universal language of physical behavior. It is a concrete mechanism for preserving researcher intent while using software and LLM assistance to expand that intent into repeatable, inspectable studies.
+From the repository root, the workflow is executed with:
+
+```bash
+python -m pip install -e .
+python scripts/run_bidmc_researcher_workflow.py
+```
+
+## Ethics statement
+
+This study uses an existing publicly distributed, de-identified dataset and introduces no new participant recruitment, intervention, or access to identifiable clinical records. Use of the source data remains subject to the dataset's license and terms [1].
+
+## AI-assistance statement
+
+An AI coding and writing assistant was used under researcher direction to help implement, execute, inspect, and draft the study. Scientific definitions, comparison rules, interpretation boundaries, and final responsibility for the manuscript remain with the author. The repository preserves the researcher-authored specification, generated execution artifact, tests, and provenance needed to inspect that division of responsibility.
 
 ## References
 
-References to related work in scientific workflow systems, computational notebooks, provenance, executable specifications, time-series representation, and human-LLM collaboration will be added after the framework and comparison set are frozen.
+1. Pimentel MAF, Johnson AEW, Charlton PH, Clifton DA. BIDMC PPG and Respiration Dataset. PhysioNet, version 1.0.0; 2018. doi:[10.13026/C2208R](https://doi.org/10.13026/C2208R).
+2. Pimentel MAF, Johnson AEW, Charlton PH, Birrenkott D, Watkinson PJ, Tarassenko L, Clifton DA. Toward a robust estimation of respiratory rate from pulse oximeters. *IEEE Transactions on Biomedical Engineering*. 2017;64(8):1914–1923. doi:[10.1109/TBME.2016.2613124](https://doi.org/10.1109/TBME.2016.2613124).
+3. Virtanen P, Gommers R, Oliphant TE, et al. SciPy 1.0: fundamental algorithms for scientific computing in Python. *Nature Methods*. 2020;17:261–272. doi:[10.1038/s41592-019-0686-2](https://doi.org/10.1038/s41592-019-0686-2).
