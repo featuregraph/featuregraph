@@ -1,0 +1,5 @@
+featuregraph_peak_79,preceding_ecg_r_peak,lag_samples,lag_seconds,also_peak_at_window_100
+731,696,35,0.28,False
+848,807,41,0.328,True
+951,919,32,0.256,False
+1069,1033,36,0.288,False
