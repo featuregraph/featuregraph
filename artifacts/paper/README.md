@@ -19,9 +19,9 @@ The studies remain available as shorter evidence records:
 The master draft is intentionally distinct from frozen release manuscripts.
 Use the immutable [`v0.1.0b1` release](https://github.com/featuregraph/featuregraph/tree/v0.1.0b1)
 and its [Zenodo archive](https://doi.org/10.5281/zenodo.21984186) for the citable
-beta result. The [`beta/v0.1.x` paper](https://github.com/featuregraph/featuregraph/blob/beta/v0.1.x/artifacts/paper/bidmc_llm_preservation_study/manuscript.md)
-is the compatible paper line; `alpha/v0.1.x` remains frozen for historical
-links.
+beta result. The [`beta/v0.1.x`](https://github.com/featuregraph/featuregraph/tree/beta/v0.1.x)
+branch is the compatible research line; `alpha/v0.1.x` remains frozen for
+historical links.
 
 ## Editing rule
 

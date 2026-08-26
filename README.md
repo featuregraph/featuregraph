@@ -2,6 +2,12 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21984186.svg)](https://doi.org/10.5281/zenodo.21984186)
 
+FeatureGraph is an open framework for deterministic, inspectable, and
+reproducible scientific data analysis. A researcher declares what the data
+contains and what should be grouped, measured, compared, and checked;
+FeatureGraph executes those declared steps and retains the evidence behind each
+result. Scientific interpretation remains with researchers and domain experts.
+
 ## Follow the research sequence
 
 The current research record is organized as five linked studies:
@@ -187,9 +193,10 @@ See the [beta demo notebook](https://github.com/featuregraph/featuregraph/blob/v
 
 The immutable beta software, evaluation artifacts, and reproduction tooling are
 frozen in [`v0.1.0b1`](https://github.com/featuregraph/featuregraph/tree/v0.1.0b1).
-The corresponding [beta paper draft](https://github.com/featuregraph/featuregraph/blob/beta/v0.1.x/artifacts/paper/bidmc_llm_preservation_study/manuscript.md)
-and compatible research line continue on
-[`beta/v0.1.x`](https://github.com/featuregraph/featuregraph/tree/beta/v0.1.x).
+The compatible beta research line continues on
+[`beta/v0.1.x`](https://github.com/featuregraph/featuregraph/tree/beta/v0.1.x),
+while the current [BIDMC study record](artifacts/studies/bidmc_object_workflow_study.md)
+documents the maintained workflow on `main`.
 The historical `alpha/v0.1.x` branch remains unchanged for existing links. The
 immutable beta tag and its
 [Zenodo archive](https://doi.org/10.5281/zenodo.21984186) remain the authority

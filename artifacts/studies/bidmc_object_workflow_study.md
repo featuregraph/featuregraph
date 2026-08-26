@@ -110,5 +110,6 @@ writes the generated notebook and validation artifacts declared by the study.
   boundaries in this workflow. It does not compile preprocessing, plateau
   projection, object identity, measurements, comparisons, or interpretation.
 - The remaining notebook binding still checks selected declarations and source
-  fragments. The generated notebook was produced through assisted development;
-  arbitrary researcher notebooks are not compiled automatically.
+  fragments. The runner compiles only the declared state-contract slice;
+  arbitrary researcher notebooks and the rest of the study workflow are not
+  compiled automatically.

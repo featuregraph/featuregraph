@@ -1,7 +1,9 @@
 # FeatureGraph documentation
 
-FeatureGraph transforms ordered observations into explicit, temporally bounded
-behavioral objects that software can inspect and query.
+FeatureGraph supports deterministic, inspectable, and reproducible scientific
+data analysis. It turns declared rules for grouping and measuring ordered
+observations into traceable intervals and result tables that software can
+inspect and query, while leaving scientific interpretation to domain experts.
 
 ```{important}
 The `main` branch contains an unreleased architectural redesign. It is not API
