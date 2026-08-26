@@ -3,6 +3,12 @@
 The studies form a cumulative research sequence. They do not make the same kind
 of claim, and later studies do not replace earlier ones.
 
+Each study begins with public scientific data and an explicit analytical
+specification. FeatureGraph then carries out the declared grouping,
+measurement, comparison, and validation work reproducibly. The records show
+what the data analysis established and identify which conclusions still require
+scientific or domain judgment.
+
 ## 1. BIDMC: establish the workflow
 
 [BIDMC respiratory-object workflow](bidmc_object_workflow_study.md) is the
