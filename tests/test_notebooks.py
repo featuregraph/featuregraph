@@ -4,7 +4,10 @@ from pathlib import Path
 
 import pytest
 
-NOTEBOOKS = sorted(Path("notebooks").glob("*.ipynb"))
+NOTEBOOKS = sorted(Path("notebooks").rglob("*.ipynb"))
+TRANSITION_API_NOTEBOOKS = sorted(Path("notebooks").glob("*.ipynb")) + sorted(
+    Path("notebooks/tutorials").glob("*.ipynb")
+)
 
 
 @pytest.mark.parametrize("path", NOTEBOOKS, ids=lambda path: path.name)
@@ -23,7 +26,9 @@ def test_notebook_is_valid_and_has_no_saved_errors(path: Path) -> None:
     assert not errors
 
 
-@pytest.mark.parametrize("path", NOTEBOOKS, ids=lambda path: path.name)
+@pytest.mark.parametrize(
+    "path", TRANSITION_API_NOTEBOOKS, ids=lambda path: path.name
+)
 def test_notebook_uses_current_transition_api(path: Path) -> None:
     notebook = json.loads(path.read_text(encoding="utf-8"))
     source = "\n".join(
