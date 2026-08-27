@@ -58,6 +58,13 @@ clap-study = [
     "claspy==0.2.8",
     "scikit-learn>=1.4,<2",
 ]
+nori-study = [
+    "lightgbm==4.7.0",
+    "scikit-learn==1.9.0",
+    "synthefy-nori==0.20.0",
+    "xgboost-cpu==3.4.1; sys_platform == 'linux'",
+    "xgboost==3.4.1; sys_platform != 'linux'",
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]
