@@ -1,0 +1,7 @@
+condition,comparison,participants,median_nori_minus_comparison_mae,nori_lower_mae_participants,comparison_lower_mae_participants,ties
+physiology_only,train_mean,33,0.04313860784746337,14,19,0
+physiology_only,xgboost,33,0.025569783848235828,14,19,0
+physiology_only,lightgbm,33,-0.1310049018178625,21,12,0
+physiology_plus_protocol,train_mean,33,-0.05209686844692629,19,14,0
+physiology_plus_protocol,xgboost,33,0.011546217718875595,15,18,0
+physiology_plus_protocol,lightgbm,33,-0.05726994278655706,20,13,0

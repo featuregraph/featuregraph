@@ -1,0 +1,109 @@
+{
+  "contract": {
+    "version": "physionet-nori-demonstration-v1",
+    "question": "Can models estimate source self-reported stress from physiological measurements attached to explicit protocol occurrences for participants withheld from model context?",
+    "source_representation": "physionet-wearable-protocol-study-v1",
+    "target": "self_reported_stress",
+    "group": "subject_id",
+    "split": {
+      "type": "participant-held-out stratified cross-validation",
+      "folds": 5,
+      "strata": "protocol cohort crossed with low/high participant mean target",
+      "random_seed": 20260827
+    },
+    "conditions": {
+      "physiology_only": [
+        "hr_mean",
+        "hr_median",
+        "hr_min",
+        "hr_max",
+        "eda_mean",
+        "eda_median",
+        "eda_min",
+        "eda_max",
+        "temp_mean",
+        "temp_median",
+        "temp_min",
+        "temp_max"
+      ],
+      "physiology_plus_protocol": [
+        "hr_mean",
+        "hr_median",
+        "hr_min",
+        "hr_max",
+        "eda_mean",
+        "eda_median",
+        "eda_min",
+        "eda_max",
+        "temp_mean",
+        "temp_median",
+        "temp_min",
+        "temp_max",
+        "one-hot declared protocol state"
+      ]
+    },
+    "excluded_predictors": [
+      "subject identifier",
+      "cohort identifier",
+      "timestamps",
+      "object identifier",
+      "source self-report"
+    ],
+    "models": {
+      "train_mean": {
+        "strategy": "mean"
+      },
+      "nori_6m": {
+        "model": "nori-6m",
+        "device": "cpu",
+        "augmentations": [
+          "yj"
+        ],
+        "strict_pipeline": true
+      },
+      "xgboost": {
+        "n_estimators": 300,
+        "max_depth": 3,
+        "learning_rate": 0.03,
+        "subsample": 0.8,
+        "colsample_bytree": 0.8,
+        "reg_lambda": 1.0,
+        "random_state": 20260827,
+        "n_jobs": 1
+      },
+      "lightgbm": {
+        "n_estimators": 300,
+        "learning_rate": 0.03,
+        "num_leaves": 15,
+        "min_child_samples": 10,
+        "subsample": 0.8,
+        "colsample_bytree": 0.8,
+        "random_state": 20260827,
+        "n_jobs": 1,
+        "verbosity": -1
+      }
+    },
+    "primary_metric": "participant-held-out mean absolute error",
+    "secondary_metrics": [
+      "root mean squared error",
+      "R squared"
+    ],
+    "interpretation_boundary": "The demonstration evaluates downstream regression from preserved protocol objects. It does not validate a stress biomarker, establish causality, or reproduce Synthefy's benchmark claims."
+  },
+  "dataset": {
+    "name": "Wearable Device Dataset from Induced Stress and Structured Exercise Sessions",
+    "version": "1.0.1",
+    "doi": "10.13026/he0v-tf17"
+  },
+  "package_versions": {
+    "featuregraph": "0.1.0a1",
+    "lightgbm": "4.7.0",
+    "numpy": "2.5.2",
+    "pandas": "3.0.5",
+    "scikit-learn": "1.9.0",
+    "synthefy-nori": "0.20.0",
+    "torch": "2.8.0+cpu",
+    "xgboost-cpu": "3.4.1"
+  },
+  "featuregraph_source_revision_before_result_commit": "faa173eab5276c94b9e42b2f8ce0fb099361a1e3"
+}

@@ -58,6 +58,7 @@ This is the prepared **FeatureGraph Study of the Month for September 2026**.
 | TEP | Held-out replications, normal windows, contrasting faults | Normal windows share one record; cross-fault evidence uses one run per class |
 | CLaP | Exact reconstruction and structural invariants | Evaluates representation of supplied states, not CLaP detection quality |
 | PhysioNet wearable protocols | Exact source-boundary preservation, lossless self-report joins, shared schema across protocol versions | Represents the published protocol; does not detect stress or validate physiological biomarkers |
+| Nori downstream interoperability | Participant-held-out regression from explicit protocol objects | Small untuned comparison; no learned model beat the training-mean control |
 
 ## 4. PhysioNet: preserve a published protocol
 
@@ -72,7 +73,23 @@ them as detected stress.
 - [Focused tests](../../tests/test_physionet_wearable_protocol_study.py)
 - [Source dataset](https://physionet.org/content/wearable-device-dataset/1.0.1/)
 
-## 5. Replica connection: separate output agreement from traceability
+## 5. Nori: test a downstream model boundary
+
+[Nori downstream interoperability](physionet_nori_interoperability_study.md)
+uses the frozen PhysioNet occurrence table as input to an independent tabular
+foundation model. Participant-held-out evaluation compares Nori with a training
+mean, XGBoost, and LightGBM under identical folds and two declared feature
+conditions. It demonstrates the software boundary between explicit scientific
+object construction and downstream prediction; it does not validate stress
+estimation.
+
+- [Executable demonstration](../../scripts/run_physionet_nori_demonstration.py)
+- [Frozen study contract and versions](physionet_nori/study_contract.json)
+- [Complete out-of-fold predictions](physionet_nori/predictions.csv)
+- [Focused tests](../../tests/test_physionet_nori_demonstration.py)
+- [Nori repository](https://github.com/Synthefy/synthefy-nori)
+
+## 6. Replica connection: separate output agreement from traceability
 
 [Output agreement is not mechanism fidelity](replica_mechanism_fidelity_study.md)
 materializes the same CLaP signal and state sequence through a declared
