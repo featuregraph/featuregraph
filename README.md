@@ -8,6 +8,9 @@ contains and what should be grouped, measured, compared, and checked;
 FeatureGraph executes those declared steps and retains the evidence behind each
 result. Scientific interpretation remains with researchers and domain experts.
 
+FeatureGraph welcomes open-source contributions. To learn how to use
+FeatureGraph, follow the [tutorial learning path](notebooks/tutorials/README.md).
+
 ## Follow the research sequence
 
 The current research record is organized as five linked studies:
