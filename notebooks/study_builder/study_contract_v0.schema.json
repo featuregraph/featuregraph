@@ -1,0 +1,194 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FeatureGraph study-contract-v0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version",
+    "study",
+    "sources",
+    "participants",
+    "time_axes",
+    "protocol_versions",
+    "boundaries",
+    "joins",
+    "exclusions",
+    "measurements",
+    "validations",
+    "unresolved_questions"
+  ],
+  "properties": {
+    "contract_version": {
+      "type": "string",
+      "enum": ["study-contract-v0"]
+    },
+    "study": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "dataset",
+        "dataset_version",
+        "unit_of_analysis",
+        "claim_boundaries"
+      ],
+      "properties": {
+        "name": {"type": "string"},
+        "dataset": {"type": "string"},
+        "dataset_version": {"type": "string"},
+        "unit_of_analysis": {"type": "string"},
+        "claim_boundaries": {
+          "type": "array",
+          "items": {"type": "string"}
+        }
+      }
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["file_id", "role", "required_columns"],
+        "properties": {
+          "file_id": {"type": "string"},
+          "role": {
+            "type": "string",
+            "enum": [
+              "participants",
+              "boundaries",
+              "self_reports",
+              "sensor_stream"
+            ]
+          },
+          "required_columns": {
+            "type": "array",
+            "items": {"type": "string"}
+          }
+        }
+      }
+    },
+    "participants": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_file", "id_column", "protocol_version_column"],
+      "properties": {
+        "source_file": {"type": "string"},
+        "id_column": {"type": "string"},
+        "protocol_version_column": {"type": "string"}
+      }
+    },
+    "time_axes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["source_file", "time_column", "units", "sampling_policy"],
+        "properties": {
+          "source_file": {"type": "string"},
+          "time_column": {"type": "string"},
+          "units": {"type": "string"},
+          "sampling_policy": {
+            "type": "string",
+            "enum": ["preserve_native_rate", "external_boundaries"]
+          }
+        }
+      }
+    },
+    "protocol_versions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["version", "participant_rule", "ordered_states"],
+        "properties": {
+          "version": {"type": "string"},
+          "participant_rule": {"type": "string"},
+          "ordered_states": {
+            "type": "array",
+            "items": {"type": "string"}
+          }
+        }
+      }
+    },
+    "boundaries": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_file", "interpretation", "undeclared_policy"],
+      "properties": {
+        "source_file": {"type": "string"},
+        "interpretation": {"type": "string"},
+        "undeclared_policy": {
+          "type": "string",
+          "enum": ["leave_unassigned", "reject"]
+        }
+      }
+    },
+    "joins": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["source_file", "target", "keys", "cardinality"],
+        "properties": {
+          "source_file": {"type": "string"},
+          "target": {"type": "string"},
+          "keys": {
+            "type": "array",
+            "items": {"type": "string"}
+          },
+          "cardinality": {
+            "type": "string",
+            "enum": ["one_to_one", "many_to_one", "one_to_many"]
+          }
+        }
+      }
+    },
+    "exclusions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["participant", "reason"],
+        "properties": {
+          "participant": {"type": "string"},
+          "reason": {"type": "string"}
+        }
+      }
+    },
+    "measurements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["source_file", "signal_column", "statistics"],
+        "properties": {
+          "source_file": {"type": "string"},
+          "signal_column": {"type": "string"},
+          "statistics": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["count", "mean", "minimum", "maximum"]
+            }
+          }
+        }
+      }
+    },
+    "validations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "assertion"],
+        "properties": {
+          "id": {"type": "string"},
+          "assertion": {"type": "string"}
+        }
+      }
+    },
+    "unresolved_questions": {
+      "type": "array",
+      "items": {"type": "string"}
+    }
+  }
+}

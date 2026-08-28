@@ -54,6 +54,10 @@ notebooks = [
     "ipykernel>=6.0,<8",
     "jupyterlab>=4.0,<5",
 ]
+study-builder = [
+    "cohere==7.1.0",
+    "jsonschema>=4.26,<5",
+]
 clap-study = [
     "claspy==0.2.8",
     "scikit-learn>=1.4,<2",
