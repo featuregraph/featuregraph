@@ -4,10 +4,47 @@ from pathlib import Path
 
 import pytest
 
-NOTEBOOKS = sorted(Path("notebooks").rglob("*.ipynb"))
-TRANSITION_API_NOTEBOOKS = sorted(Path("notebooks").glob("*.ipynb")) + sorted(
-    Path("notebooks/tutorials").glob("*.ipynb")
+NOTEBOOKS_ROOT = Path("notebooks")
+
+
+def is_maintained_notebook(path: Path) -> bool:
+    """Return whether a notebook belongs to the versioned project surface."""
+    relative_parts = path.relative_to(NOTEBOOKS_ROOT).parts
+    return (
+        "drafts" not in relative_parts
+        and ".ipynb_checkpoints" not in relative_parts
+        and not path.name.endswith(".nbconvert.ipynb")
+    )
+
+
+NOTEBOOKS = sorted(
+    path
+    for path in NOTEBOOKS_ROOT.rglob("*.ipynb")
+    if is_maintained_notebook(path)
 )
+TRANSITION_API_NOTEBOOKS = sorted(
+    path
+    for path in (
+        list(NOTEBOOKS_ROOT.glob("*.ipynb"))
+        + list((NOTEBOOKS_ROOT / "tutorials").glob("*.ipynb"))
+    )
+    if is_maintained_notebook(path)
+)
+
+
+def test_notebook_discovery_excludes_unversioned_artifacts() -> None:
+    assert is_maintained_notebook(
+        NOTEBOOKS_ROOT / "tutorials" / "example.ipynb"
+    )
+    assert not is_maintained_notebook(
+        NOTEBOOKS_ROOT / "drafts" / "experiment.ipynb"
+    )
+    assert not is_maintained_notebook(
+        NOTEBOOKS_ROOT / ".ipynb_checkpoints" / "example.ipynb"
+    )
+    assert not is_maintained_notebook(
+        NOTEBOOKS_ROOT / "tutorials" / "example.nbconvert.ipynb"
+    )
 
 
 @pytest.mark.parametrize("path", NOTEBOOKS, ids=lambda path: path.name)
