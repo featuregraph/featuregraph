@@ -32,3 +32,11 @@ The researcher input declares the 53-record BIDMC cohort, the raw respiration si
 For the first construction, the rolling envelope was set at 79 samples and consisted of a rolling maximum followed by a rolling mean and offline alignment of the rolling-envelope waveform to the input waveform. The process was repeated for the 100-sample construction. The resulting object populations could therefore differ because changing the rolling-window length altered which waveform reversals were preserved.
 
 Because these rolling operations were computed offline rather than causally, the resulting envelope was aligned with the original waveform to correct for the temporal displacement introduced by the rolling windows. The alignment rule was applied identically at both scales and was not fitted separately to individual records. Directional changes in each aligned envelope were used to classify states as rising, falling, or inactive. Boundaries marked the entry into and exit from each state, and ordered state transitions were composed into complete trough–peak–trough objects.
+
+# 4. Cross-scale object comparison
+
+Objects were classified according to whether they could be matched across the two temporal scales. scales. Shared objects were constructed at both the 79 and 100-sample level, whereas shorter-scale or longer-scale objects were constructed at the shorter and longer scales respectively. Across all 53 records, 
+
+- 7918 objects were matched across the two temporal scales and classified as shared.
+- An additional 862 objects were constructed only at 79 samples, while 8 objects were constructed only at 100 samples.
+- Thus, the shorter-scale construction produced 8780 objects in total, compared with 7926 at the longer scale.
