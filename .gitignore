@@ -69,6 +69,8 @@ artifacts/*
 artifacts/studies/*
 !artifacts/studies/september_2026_clap_post.md
 !artifacts/studies/physionet_wearable_protocol_study.md
+!artifacts/studies/physionet_wearable/
+!artifacts/studies/physionet_wearable/**
 !artifacts/studies/physionet_nori_interoperability_study.md
 !artifacts/studies/physionet_nori/
 !artifacts/studies/physionet_nori/**

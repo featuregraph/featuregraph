@@ -30,6 +30,13 @@ that executable declaration and does not assign new meaning to the extra mark.
 The source protocol names remain authoritative. FeatureGraph does not infer
 stress from the physiological signals.
 
+The complete researcher-controlled configuration is stored in the approved
+[`physionet-wearable-study-v1` contract](physionet_wearable/study_contract.json).
+Its fingerprint covers the cohort rules, protocol/tag mappings, self-report
+mappings, exclusions, signals, measurements, compiler configuration,
+validation expectations, analysis grouping, and claim boundaries. Changing
+any covered field invalidates approval until the fingerprint is renewed.
+
 1. Each source tag remains an external boundary.
 2. Named intervals are materialized as baseline, task, or rest occurrences.
 3. Reporting and setup gaps not named by the source notebook are represented as
@@ -95,6 +102,8 @@ establish causality, or validate a digital biomarker.
 ## Execution
 
 - [Executable study](../../scripts/run_physionet_wearable_protocol_study.py)
+- [Approved executable study contract](physionet_wearable/study_contract.json)
+- [Study-contract approval loader](../../src/featuregraph/contracts/study_contract.py)
 - [Focused protocol and boundary tests](../../tests/test_physionet_wearable_protocol_study.py)
 - [FeatureGraph state-contract compiler](../../src/featuregraph/contracts/state_contract.py)
 - [PhysioNet source dataset](https://physionet.org/content/wearable-device-dataset/1.0.1/)
@@ -103,17 +112,21 @@ From the repository root:
 
 ```bash
 python -m pip install -e .
-python scripts/run_physionet_wearable_protocol_study.py
+python scripts/run_physionet_wearable_protocol_study.py \
+  --contract artifacts/studies/physionet_wearable/study_contract.json
 ```
 
-The runner downloads the declared public source files, compiles the protocol
-timeline, creates the occurrence table, and writes compressed observation,
-object, summary, and validation artifacts under
+The runner first verifies the approval fingerprint, then downloads the source
+files declared by that contract, compiles the protocol timeline, creates the
+occurrence table, and writes compressed observation, object, summary,
+validation, contract, and fingerprint artifacts under
 `outputs/physionet_wearable_protocol/`.
 
-This study is implemented as a deterministic runner rather than a paired
-researcher-input/generated-study notebook. The page, runner, focused tests, and
-written validation artifacts together form its reproducible record.
+The contract is now the authority-bearing interface between assisted study
+authoring and deterministic execution. Cohere may propose a candidate contract,
+but this runner accepts only a fingerprinted, approved contract and performs no
+LLM calls. The page, approved contract, runner, focused tests, and written
+validation artifacts together form the reproducible record.
 
 ## Validation boundary
 

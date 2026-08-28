@@ -23,6 +23,9 @@ make a live Cohere request, set `RUN_COHERE = True` in the configuration cell;
 your Cohere account's usage and rate limits apply.
 
 The fixture resembles the completed PhysioNet wearable study but contains no
-source or participant data. The first protected product test is to reproduce
-the maintained 33-participant, 248-occurrence result from an approved contract;
-this notebook stops before that execution step.
+source or participant data, so this authoring notebook stops before execution.
+The next layer is now implemented by the
+[`physionet-wearable-study-v1` contract](../../artifacts/studies/physionet_wearable/study_contract.json)
+and the [deterministic runner](../../scripts/run_physionet_wearable_protocol_study.py).
+A network-free protected test reconstructs all 33 eligible participants, 248
+declared occurrences, and 99 compiler checks from the approved contract.

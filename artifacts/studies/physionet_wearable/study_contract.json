@@ -1,0 +1,144 @@
+{
+  "contract_version": "physionet-wearable-study-v1",
+  "approval": {
+    "status": "approved",
+    "authority": "maintained researcher-authored PhysioNet wearable protocol study",
+    "contract_sha256": "2dab1861786b6c48cbf123770d8c5f466460c1331bd95a37590355ee50698880"
+  },
+  "study": {
+    "name": "PhysioNet wearable protocol representation",
+    "unit_of_analysis": "declared protocol occurrence"
+  },
+  "dataset": {
+    "name": "Wearable Device Dataset from Induced Stress and Structured Exercise Sessions",
+    "version": "1.0.1",
+    "doi": "10.13026/he0v-tf17",
+    "source_url": "https://physionet.org/content/wearable-device-dataset/1.0.1/",
+    "base_url": "https://physionet.org/files/wearable-device-dataset/1.0.1"
+  },
+  "sources": {
+    "subject_directory_template": "Wearable_Dataset/STRESS/{subject_id}",
+    "tags_file": "tags.csv",
+    "self_report_file_template": "Stress_Level_{cohort}.csv",
+    "signals": [
+      {"name": "HR", "file": "HR.csv"},
+      {"name": "EDA", "file": "EDA.csv"},
+      {"name": "TEMP", "file": "TEMP.csv"}
+    ],
+    "timeline_frequency": "1s",
+    "interval_closure": "left",
+    "unassigned_label": "unassigned"
+  },
+  "participant_cohorts": [
+    {
+      "cohort": "v1",
+      "subject_prefix": "S",
+      "first_subject_number": 1,
+      "last_subject_number": 18
+    },
+    {
+      "cohort": "v2",
+      "subject_prefix": "f",
+      "first_subject_number": 1,
+      "last_subject_number": 18
+    }
+  ],
+  "protocol_versions": {
+    "v1": {
+      "occurrences": [
+        {"state": "baseline", "start_tag_index": 0, "end_tag_index": 1},
+        {"state": "stroop", "start_tag_index": 2, "end_tag_index": 3},
+        {"state": "first_rest", "start_tag_index": 3, "end_tag_index": 4},
+        {"state": "tmct", "start_tag_index": 4, "end_tag_index": 5},
+        {"state": "second_rest", "start_tag_index": 5, "end_tag_index": 6},
+        {"state": "real_opinion", "start_tag_index": 6, "end_tag_index": 7},
+        {"state": "opposite_opinion", "start_tag_index": 8, "end_tag_index": 9},
+        {"state": "subtract", "start_tag_index": 10, "end_tag_index": 11}
+      ],
+      "self_report_columns": {
+        "Baseline": "baseline",
+        "Stroop": "stroop",
+        "First Rest": "first_rest",
+        "TMCT": "tmct",
+        "Second Rest": "second_rest",
+        "Real Opinion": "real_opinion",
+        "Opposite Opinion": "opposite_opinion",
+        "Subtract": "subtract"
+      }
+    },
+    "v2": {
+      "occurrences": [
+        {"state": "baseline", "start_tag_index": 0, "end_tag_index": 1},
+        {"state": "tmct", "start_tag_index": 1, "end_tag_index": 2},
+        {"state": "first_rest", "start_tag_index": 2, "end_tag_index": 3},
+        {"state": "real_opinion", "start_tag_index": 3, "end_tag_index": 4},
+        {"state": "opposite_opinion", "start_tag_index": 5, "end_tag_index": 6},
+        {"state": "second_rest", "start_tag_index": 6, "end_tag_index": 7},
+        {"state": "subtract", "start_tag_index": 7, "end_tag_index": 8}
+      ],
+      "self_report_columns": {
+        "Baseline": "baseline",
+        "TMCT": "tmct",
+        "First Rest": "first_rest",
+        "Real Opinion": "real_opinion",
+        "Opposite Opinion": "opposite_opinion",
+        "Second Rest": "second_rest",
+        "Subtract": "subtract"
+      }
+    }
+  },
+  "exclusions": [
+    {
+      "subject_id": "S02",
+      "reason": "duplicated raw signals documented by the dataset authors"
+    },
+    {
+      "subject_id": "f07",
+      "reason": "PPG and temperature sensors covered by the protection dock"
+    },
+    {
+      "subject_id": "f14",
+      "reason": "protocol split across f14_a and f14_b after Bluetooth loss"
+    }
+  ],
+  "state_compiler": {
+    "version": "state-contract-v1",
+    "state_column": "protocol_state",
+    "group_by": "subject_id",
+    "events": {
+      "enter_protocol_state": {"type": "enter_label"},
+      "exit_protocol_state": {"type": "exit_label"}
+    }
+  },
+  "measurements": {
+    "sampling_policy": "preserve_native_rate",
+    "statistics": ["samples", "mean", "median", "min", "max"]
+  },
+  "joins": {
+    "self_reports": {
+      "keys": ["subject_id", "cohort", "protocol_state"],
+      "cardinality": "one_to_one"
+    }
+  },
+  "analysis": {
+    "stage_kinds": {
+      "rest_baseline": ["baseline", "first_rest", "second_rest"],
+      "task": ["stroop", "tmct", "real_opinion", "opposite_opinion", "subtract"]
+    }
+  },
+  "validations": {
+    "expected_eligible_subjects": 33,
+    "expected_declared_occurrences": 248,
+    "expected_compiler_checks": 99,
+    "require_exact_boundaries": true,
+    "require_positive_durations": true,
+    "require_complete_self_report_join": true,
+    "require_native_signal_coverage": true,
+    "require_cross_protocol_schema": true
+  },
+  "claim_boundaries": [
+    "Protocol states and their boundaries are externally declared.",
+    "FeatureGraph does not infer stress from physiological signals.",
+    "The study does not establish causality or physiological validity."
+  ]
+}
