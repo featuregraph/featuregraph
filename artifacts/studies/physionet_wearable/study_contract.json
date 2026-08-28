@@ -3,7 +3,7 @@
   "approval": {
     "status": "approved",
     "authority": "maintained researcher-authored PhysioNet wearable protocol study",
-    "contract_sha256": "2dab1861786b6c48cbf123770d8c5f466460c1331bd95a37590355ee50698880"
+    "contract_sha256": "ad4e1bd5be94dbba9f603c8b7941ca72e297838a8bd493bcc7b3c6a259d96a00"
   },
   "study": {
     "name": "PhysioNet wearable protocol representation",
@@ -140,5 +140,6 @@
     "Protocol states and their boundaries are externally declared.",
     "FeatureGraph does not infer stress from physiological signals.",
     "The study does not establish causality or physiological validity."
-  ]
+  ],
+  "unresolved_questions": []
 }

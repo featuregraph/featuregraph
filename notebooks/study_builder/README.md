@@ -6,7 +6,14 @@ schema-valid draft. A researcher reviews the draft, and deterministic local
 checks decide whether it is eligible for approval. The language model never
 executes the scientific study.
 
-Start with [`00_cohere_assisted_contract.ipynb`](00_cohere_assisted_contract.ipynb).
+Use the notebooks in order:
+
+1. [`00_cohere_assisted_contract.ipynb`](00_cohere_assisted_contract.ipynb)
+   profiles a synthetic file bundle, asks clarification questions, and drafts a
+   broad authoring contract.
+2. [`01_review_and_execute_physionet_contract.ipynb`](01_review_and_execute_physionet_contract.ipynb)
+   constrains an executable PhysioNet payload, exposes every difference,
+   requires explicit approval, and reproduces the protected cohort result.
 
 ## Setup
 
@@ -24,8 +31,18 @@ your Cohere account's usage and rate limits apply.
 
 The fixture resembles the completed PhysioNet wearable study but contains no
 source or participant data, so this authoring notebook stops before execution.
-The next layer is now implemented by the
+The review-and-execute notebook then uses the same payload consumed by the
 [`physionet-wearable-study-v1` contract](../../artifacts/studies/physionet_wearable/study_contract.json)
 and the [deterministic runner](../../scripts/run_physionet_wearable_protocol_study.py).
 A network-free protected test reconstructs all 33 eligible participants, 248
 declared occurrences, and 99 compiler checks from the approved contract.
+
+To open the complete vertical slice directly:
+
+```bash
+python -m jupyterlab notebooks/study_builder/01_review_and_execute_physionet_contract.ipynb
+```
+
+Leave `RESEARCHER_APPROVES = False` until the candidate, difference table, and
+validation table have been inspected. An unapproved candidate is never passed
+to the runner.

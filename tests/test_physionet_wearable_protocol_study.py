@@ -1,6 +1,8 @@
+from copy import deepcopy
 from pathlib import Path
 
 import pandas as pd
+import pytest
 
 import featuregraph as fg
 from scripts.run_physionet_wearable_protocol_study import (
@@ -13,6 +15,7 @@ from scripts.run_physionet_wearable_protocol_study import (
     STUDY_CONTRACT,
     STUDY_CONTRACT_SHA256,
     SUBJECTS,
+    _validate_physionet_contract,
     cohort_for,
     compiled_objects,
     declared_intervals,
@@ -116,6 +119,14 @@ def test_maintained_contract_is_approved_and_drives_runner_constants() -> None:
         "require_native_signal_coverage": True,
         "require_cross_protocol_schema": True,
     }
+
+
+def test_runner_rejects_unresolved_contract_questions() -> None:
+    candidate = deepcopy(STUDY_CONTRACT)
+    candidate["unresolved_questions"] = ["Which boundary applies?"]
+
+    with pytest.raises(ValueError, match="unresolved_questions must be empty"):
+        _validate_physionet_contract(candidate)
 
 
 def test_download_manifest_excludes_every_contract_exclusion(tmp_path) -> None:

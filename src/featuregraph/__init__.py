@@ -10,9 +10,12 @@ from .contracts import (
     CompiledStateResult,
     StateContractError,
     StudyContractApprovalError,
+    approve_study_contract,
     canonical_study_contract,
     compile_states,
     load_approved_study_contract,
+    study_contract_differences,
+    study_contract_payload,
     study_contract_sha256,
 )
 from .preprocessing.smoothing import smooth
@@ -32,8 +35,11 @@ __all__ = [
     "ApprovedStudyContract",
     "StudyContractApprovalError",
     "StateContractError",
+    "approve_study_contract",
     "canonical_study_contract",
     "compile_states",
     "load_approved_study_contract",
+    "study_contract_differences",
+    "study_contract_payload",
     "study_contract_sha256",
 ]

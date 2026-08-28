@@ -89,6 +89,10 @@ def _validate_physionet_contract(contract: Mapping[str, Any]) -> None:
         contract.get("contract_version") == "physionet-wearable-study-v1",
         "contract_version must be 'physionet-wearable-study-v1'",
     )
+    _require_contract(
+        contract.get("unresolved_questions") == [],
+        "unresolved_questions must be empty before execution",
+    )
     raw_cohorts = contract.get("participant_cohorts")
     _require_contract(
         isinstance(raw_cohorts, list) and bool(raw_cohorts), "missing cohorts"
