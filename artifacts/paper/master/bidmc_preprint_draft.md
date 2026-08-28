@@ -35,7 +35,7 @@ Because these rolling operations were computed offline rather than causally, the
 
 # 4. Cross-scale object comparison
 
-Objects were classified according to whether they could be matched across the two temporal scales. scales. Shared objects were constructed at both the 79 and 100-sample level, whereas shorter-scale or longer-scale objects were constructed at the shorter and longer scales respectively. Across all 53 records, 
+Objects were classified according to whether they could be matched across the two temporal scales. Shared objects were constructed at both the 79 and 100-sample level, whereas shorter-scale or longer-scale objects were constructed at the shorter and longer scales respectively. Across all 53 records, 
 
 - 7918 objects were matched across the two temporal scales and classified as shared.
 - An additional 862 objects were constructed only at 79 samples, while 8 objects were constructed only at 100 samples.
