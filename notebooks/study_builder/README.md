@@ -37,6 +37,15 @@ and the [deterministic runner](../../scripts/run_physionet_wearable_protocol_stu
 A network-free protected test reconstructs all 33 eligible participants, 248
 declared occurrences, and 99 compiler checks from the approved contract.
 
+## Conversational interface
+
+The bounded browser demonstration in
+[`apps/conversational_study_demo`](../../apps/conversational_study_demo) wraps
+this authoring and execution boundary in a small chat interface. It writes a
+Markdown conversation checkpoint, presents the candidate specification for
+explicit approval, runs the protected PhysioNet workflow, and supports a
+versioned measurement revision. See its README for the three-minute script.
+
 To open the complete vertical slice directly:
 
 ```bash

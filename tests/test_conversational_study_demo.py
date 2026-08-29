@@ -1,0 +1,137 @@
+from __future__ import annotations
+
+from copy import deepcopy
+from pathlib import Path
+
+import featuregraph as fg
+from featuregraph.study_builder import (
+    ConversationalStudySession,
+    ExecutionReport,
+    OfflineResearchAssistant,
+    SessionPhase,
+)
+from scripts.conversational_demo_backend import (
+    PhysioNetConversationalDemoExecutor,
+)
+from scripts.run_physionet_wearable_protocol_study import (
+    APPROVED_STUDY_CONTRACT,
+)
+
+
+class FakeExecutor:
+    def validate(self, candidate: dict[str, object]) -> dict[str, bool]:
+        statistics = candidate["measurements"]["statistics"]
+        return {
+            "supported": set(statistics) <= {"samples", "mean", "median", "min", "max"},
+            "required": {"samples", "median"} <= set(statistics),
+        }
+
+    def run(
+        self,
+        approved_contract: fg.ApprovedStudyContract,
+        run_directory: Path,
+    ) -> ExecutionReport:
+        (run_directory / "state_summary.md").write_text(
+            "# State summary\n", encoding="utf-8"
+        )
+        return ExecutionReport(
+            eligible_participants=33,
+            declared_occurrences=248,
+            compiler_checks=99,
+            all_checks_passed=True,
+            measurement_statistics=tuple(
+                approved_contract.contract["measurements"]["statistics"]
+            ),
+            validation_rows=(
+                {"check": "protected", "passed": True, "details": "fixture"},
+            ),
+            output_files=("state_summary.md",),
+        )
+
+
+def build_session(tmp_path: Path) -> ConversationalStudySession:
+    return ConversationalStudySession(
+        template_contract=APPROVED_STUDY_CONTRACT.contract,
+        assistant=OfflineResearchAssistant(),
+        executor=FakeExecutor(),
+        artifact_directory=tmp_path,
+        researcher_authority="test researcher",
+    )
+
+
+def prepare_first_candidate(
+    session: ConversationalStudySession,
+) -> None:
+    first = session.handle_message(
+        "How can the two protocol versions share one inspectable representation?"
+    )
+    assert first.phase is SessionPhase.CLARIFICATION
+    second = session.handle_message("Yes, exactly. Preserve those boundaries.")
+    assert second.phase is SessionPhase.AWAITING_APPROVAL
+    assert second.can_approve
+
+
+def test_conversation_creates_approved_results_and_checkpoint(tmp_path) -> None:
+    session = build_session(tmp_path)
+    prepare_first_candidate(session)
+
+    completed = session.approve_and_run()
+
+    assert completed.phase is SessionPhase.EXECUTED
+    assert "248 declared occurrences" in completed.message
+    assert (tmp_path / "conversation_checkpoint.md").exists()
+    assert (tmp_path / "specification_candidate_v1.md").exists()
+    assert (tmp_path / "specification_v1.md").exists()
+    assert (tmp_path / "results_v1.md").exists()
+    approved = fg.load_approved_study_contract(
+        tmp_path / "run_v1" / "study_contract_v1.json"
+    )
+    assert approved.contract["approval"]["authority"] == "test researcher"
+
+
+def test_conversational_revision_versions_contract_and_comparison(tmp_path) -> None:
+    session = build_session(tmp_path)
+    prepare_first_candidate(session)
+    session.approve_and_run()
+
+    revision = session.handle_message(
+        "For the next version, keep only sample counts and medians."
+    )
+    assert revision.phase is SessionPhase.AWAITING_APPROVAL
+    session.approve_and_run()
+
+    revised = fg.load_approved_study_contract(
+        tmp_path / "run_v2" / "study_contract_v2.json"
+    )
+    assert revised.contract["measurements"]["statistics"] == [
+        "samples",
+        "median",
+    ]
+    comparison = (tmp_path / "comparison_v1_to_v2.md").read_text()
+    assert "mean, min, max" in comparison
+    assert "248 | 248" in comparison
+
+
+def test_unbounded_revision_does_not_create_candidate(tmp_path) -> None:
+    session = build_session(tmp_path)
+    prepare_first_candidate(session)
+    session.approve_and_run()
+
+    response = session.handle_message("Diagnose which participants were stressed.")
+
+    assert response.phase is SessionPhase.EXECUTED
+    assert not (tmp_path / "specification_candidate_v2.md").exists()
+
+
+def test_physionet_backend_accepts_only_measurement_revision() -> None:
+    executor = PhysioNetConversationalDemoExecutor()
+    candidate = fg.study_contract_payload(APPROVED_STUDY_CONTRACT.contract)
+    candidate["measurements"]["statistics"] = ["samples", "median"]
+
+    assert all(executor.validate(candidate).values())
+
+    changed_boundary = deepcopy(candidate)
+    changed_boundary["sources"]["unassigned_label"] = "rest"
+    assert not executor.validate(changed_boundary)[
+        "only_measurement_statistics_changed"
+    ]
