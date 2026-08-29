@@ -27,7 +27,7 @@ The recordings were obtained from critically ill patients in the medical and sur
 
 # 3. Respiratory waveform construction
 
-The researcher input declares the 53-record BIDMC cohort, the raw respiration signal, and two rolling-envelope parameterizations at 79 and 100 samples. The two window lengths were treated as estimated temporal scales rather than optimal breath-detection parameters. Because a rolling maximum followed by a rolling mean has an effective support of (2W-1) samples, the 79- and 100-sample parameterizations correspond to effective supports of 157 and 199 samples, or approximately 1.256 and 1.592 seconds at 125 Hz. These scales specify shorter- and longer-scale constructions for comparison; we did not assume in advance which waveform structures either construction would preserve or what physiological processes those structures would represent.
+The researcher input declares the 53-record BIDMC cohort, the raw impedance respiratory signal, and two rolling-envelope parameterizations at 79 and 100 samples. The two window lengths were treated as estimated temporal scales rather than optimal breath-detection parameters. Because a rolling maximum followed by a rolling mean has an effective support of \(2W-1\) samples, the 79- and 100-sample parameterizations correspond to effective supports of 157 and 199 samples, or approximately 1.256 and 1.592 seconds at 125 Hz. These scales specify shorter- and longer-scale constructions for comparison; we did not assume in advance which waveform structures either construction would preserve or what physiological processes those structures would represent.
 
 For the first construction, the rolling envelope was set at 79 samples and consisted of a rolling maximum followed by a rolling mean and offline alignment of the rolling-envelope waveform to the input waveform. The process was repeated for the 100-sample construction. The resulting object populations could therefore differ because changing the rolling-window length altered which waveform reversals were preserved.
 
@@ -35,12 +35,12 @@ Because these rolling operations were computed offline rather than causally, the
 
 # 4. Cross-scale object comparison
 
-Shared objects were constructed at both the 79 and 100-sample level, whereas shorter-scale or longer-scale objects were constructed at the shorter and longer scales respectively. Objects were classified according to whether they could be matched across the two temporal scales. Complete objects were matched across scales by peak index using a tolerance of 63 samples, equivalent to 0.504 seconds at 125 Hz. The ordered one-to-one procedure first maximized the number of matches and then minimized the total absolute difference between matched peak indices, while preserving their temporal order. 
+Objects were classified according to whether they could be matched across the two temporal scales. Shared objects were constructed at both the 79- and 100-sample scales, whereas shorter-scale-only and longer-scale-only objects were constructed exclusively at 79 and 100 samples, respectively. Complete objects were matched across scales by peak index using a tolerance of 63 samples, equivalent to 0.504 seconds at 125 Hz. The ordered one-to-one procedure first maximized the number of matches and then minimized the total absolute difference between matched peak indices, while preserving their temporal order.
 
 A matched pair was classified as shared even when its start, peak, or end boundaries differed; retaining both sets of boundaries made these cross-scale shifts directly measurable. When one longer-scale object corresponded to several shorter-scale objects, the ordered one-to-one rule matched at most one pair, while the remaining shorter-scale objects were retained as shorter-scale-only objects.
 
-Across all 53 records, 
+Across all 53 records:
 
-- 7918 objects were matched across the two temporal scales and classified as shared.
+- 7,918 objects were matched across the two temporal scales and classified as shared.
 - An additional 862 objects were constructed only at 79 samples, while 8 objects were constructed only at 100 samples.
-- Thus, the shorter-scale construction produced 8780 objects in total, compared with 7926 at the longer scale.
+- Thus, the shorter-scale construction produced 8,780 objects in total, compared with 7,926 at the longer scale.
