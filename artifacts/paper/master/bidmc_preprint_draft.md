@@ -35,7 +35,7 @@ Because these rolling operations were computed offline rather than causally, the
 
 # 4. Cross-scale object comparison
 
-Objects were classified according to whether they could be matched across the two temporal scales. Shared objects were constructed at both the 79 and 100-sample level, whereas shorter-scale or longer-scale objects were constructed at the shorter and longer scales respectively. Complete objects were matched across scales by peak index using a tolerance of 63 samples, equivalent to 0.504 seconds at 125 Hz. The ordered one-to-one procedure first maximized the number of matches and then minimized the total absolute difference between matched peak indices, while preserving their temporal order. 
+Shared objects were constructed at both the 79 and 100-sample level, whereas shorter-scale or longer-scale objects were constructed at the shorter and longer scales respectively. Objects were classified according to whether they could be matched across the two temporal scales. Complete objects were matched across scales by peak index using a tolerance of 63 samples, equivalent to 0.504 seconds at 125 Hz. The ordered one-to-one procedure first maximized the number of matches and then minimized the total absolute difference between matched peak indices, while preserving their temporal order. 
 
 A matched pair was classified as shared even when its start, peak, or end boundaries differed; retaining both sets of boundaries made these cross-scale shifts directly measurable. When one longer-scale object corresponded to several shorter-scale objects, the ordered one-to-one rule matched at most one pair, while the remaining shorter-scale objects were retained as shorter-scale-only objects.
 
