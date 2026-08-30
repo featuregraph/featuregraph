@@ -349,8 +349,10 @@ The maintained template uses external protocol tags as boundaries, leaves
 undeclared time unassigned, treats self-reports and native-rate HR, EDA, and
 temperature as measurements, and initially reports samples, mean, median, min,
 and max. Preserve those decisions only when the clarification confirms them.
-Put uncertainty in unresolved_questions. The assistant_message should briefly
-reflect what was heard and say that a candidate is ready for review."""
+If the clarification explicitly confirms all of them, unresolved_questions must
+be empty. Otherwise, put the remaining uncertainty in unresolved_questions and
+ask for it in assistant_message. Say that a candidate is ready for review only
+when unresolved_questions is empty."""
         payload, provenance = self._json(prompt, schema)
         return _decision_from_payload(payload, provenance)
 
@@ -474,6 +476,11 @@ class ConversationalStudySession:
 
         if self.phase is SessionPhase.CLARIFICATION:
             decision = self.assistant.draft(self.research_goal, cleaned)
+            decision = _apply_explicit_initial_confirmation(
+                decision,
+                research_goal=self.research_goal,
+                clarification=cleaned,
+            )
             return self._prepare_candidate(decision)
 
         if self.phase is SessionPhase.AWAITING_APPROVAL:
@@ -781,6 +788,27 @@ class ConversationalStudySession:
 def _looks_affirmative(value: str) -> bool:
     tokens = set(re.findall(r"[a-z]+", value.lower()))
     return bool(tokens & {"yes", "correct", "agree", "confirmed", "exactly"})
+
+
+def _apply_explicit_initial_confirmation(
+    decision: DraftDecision,
+    *,
+    research_goal: str,
+    clarification: str,
+) -> DraftDecision:
+    """Bind an explicit confirmation to the maintained initial template."""
+
+    if not _looks_affirmative(clarification):
+        return decision
+    provenance = dict(decision.provenance)
+    provenance["confirmation_rule"] = "explicit_researcher_affirmation"
+    return DraftDecision(
+        assistant_message=decision.assistant_message,
+        research_question=decision.research_question or research_goal.strip(),
+        measurement_statistics=SUPPORTED_STATISTICS,
+        unresolved_questions=(),
+        provenance=provenance,
+    )
 
 
 def _statistics_from_revision(

@@ -9,6 +9,7 @@ from jsonschema import Draft202012Validator, ValidationError
 import featuregraph as fg
 from featuregraph.study_builder import (
     ConversationalStudySession,
+    DraftDecision,
     ExecutionReport,
     OfflineResearchAssistant,
     SessionPhase,
@@ -54,6 +55,18 @@ class FakeExecutor:
                 {"check": "protected", "passed": True, "details": "fixture"},
             ),
             output_files=("state_summary.md",),
+        )
+
+
+class OvercautiousAssistant(OfflineResearchAssistant):
+    def draft(self, research_goal: str, clarification: str) -> DraftDecision:
+        decision = super().draft(research_goal, clarification)
+        return DraftDecision(
+            assistant_message="A candidate decision packet is ready for review.",
+            research_question=decision.research_question,
+            measurement_statistics=(),
+            unresolved_questions=("Model uncertainty despite confirmation.",),
+            provenance={"mode": "test"},
         )
 
 
@@ -129,6 +142,30 @@ def test_unbounded_revision_does_not_create_candidate(tmp_path) -> None:
 
     assert response.phase is SessionPhase.EXECUTED
     assert not (tmp_path / "specification_candidate_v2.md").exists()
+
+
+def test_explicit_confirmation_controls_initial_candidate_state(tmp_path) -> None:
+    session = ConversationalStudySession(
+        template_contract=APPROVED_STUDY_CONTRACT.contract,
+        assistant=OvercautiousAssistant(),
+        executor=FakeExecutor(),
+        artifact_directory=tmp_path,
+        researcher_authority="test researcher",
+    )
+
+    session.handle_message(
+        "How can the two protocol versions share one inspectable representation?"
+    )
+    response = session.handle_message("Yes, exactly. Preserve those boundaries.")
+
+    assert response.phase is SessionPhase.AWAITING_APPROVAL
+    assert response.can_approve
+    assert (tmp_path / "specification_candidate_v1.md").exists()
+    assert session.candidate is not None
+    assert session.candidate["measurements"]["statistics"] == list(
+        ("samples", "mean", "median", "min", "max")
+    )
+    assert session.candidate["unresolved_questions"] == []
 
 
 def test_physionet_backend_accepts_only_measurement_revision() -> None:
