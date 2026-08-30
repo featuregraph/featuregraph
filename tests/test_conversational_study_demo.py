@@ -14,6 +14,7 @@ from featuregraph.study_builder import (
     SessionPhase,
 )
 from featuregraph.study_builder.conversation import (
+    _cohere_response_text,
     _cohere_transport_schema,
     _decision_schema,
 )
@@ -169,3 +170,19 @@ def test_full_schema_constraints_remain_locally_enforced() -> None:
 
     with pytest.raises(ValidationError):
         Draft202012Validator(_decision_schema()).validate(invalid_payload)
+
+
+def test_cohere_response_text_ignores_thinking_blocks() -> None:
+    content = [
+        {"type": "thinking", "thinking": "internal reasoning"},
+        {"type": "text", "text": '{"question":"What should be preserved?"}'},
+    ]
+
+    assert _cohere_response_text(content) == (
+        '{"question":"What should be preserved?"}'
+    )
+
+
+def test_cohere_response_text_requires_a_text_block() -> None:
+    with pytest.raises(ValueError, match="no text content"):
+        _cohere_response_text([{"type": "thinking", "thinking": "internal reasoning"}])

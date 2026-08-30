@@ -56,6 +56,24 @@ def _schema_sha256(schema: Mapping[str, Any]) -> str:
     return hashlib.sha256(encoded).hexdigest()
 
 
+def _cohere_response_text(content: Sequence[Any] | None) -> str:
+    """Extract text blocks while ignoring optional Cohere reasoning blocks."""
+
+    text_blocks: list[str] = []
+    for item in content or ():
+        if isinstance(item, Mapping):
+            item_type = item.get("type")
+            item_text = item.get("text")
+        else:
+            item_type = getattr(item, "type", None)
+            item_text = getattr(item, "text", None)
+        if item_type == "text" and isinstance(item_text, str):
+            text_blocks.append(item_text)
+    if not text_blocks:
+        raise ValueError("Cohere returned no text content.")
+    return "".join(text_blocks)
+
+
 class SessionPhase(str, Enum):
     """The explicit authority state of one conversational study session."""
 
@@ -281,7 +299,7 @@ class CohereResearchAssistant:
             },
             temperature=0,
         )
-        response_text = response.message.content[0].text
+        response_text = _cohere_response_text(response.message.content)
         payload = json.loads(response_text)
         Draft202012Validator(schema).validate(payload)
         return payload, {
