@@ -155,9 +155,15 @@ def test_cohere_transport_schema_removes_only_unsupported_constraints() -> None:
     assert "minLength" not in transport_schema["properties"]["assistant_message"]
     assert "uniqueItems" not in transport_schema["properties"]["measurement_statistics"]
     assert transport_schema["properties"]["measurement_statistics"]["items"] == {
-        "enum": list(("samples", "mean", "median", "min", "max"))
+        "type": "string",
+        "enum": list(("samples", "mean", "median", "min", "max")),
     }
     assert transport_schema["additionalProperties"] is False
+
+    for property_schema in transport_schema["properties"].values():
+        assert "type" in property_schema
+        if property_schema["type"] == "array":
+            assert "type" in property_schema["items"]
 
 
 def test_full_schema_constraints_remain_locally_enforced() -> None:

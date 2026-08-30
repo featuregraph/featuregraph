@@ -831,7 +831,10 @@ def _decision_schema() -> dict[str, Any]:
             "measurement_statistics": {
                 "type": "array",
                 "uniqueItems": True,
-                "items": {"enum": list(SUPPORTED_STATISTICS)},
+                "items": {
+                    "type": "string",
+                    "enum": list(SUPPORTED_STATISTICS),
+                },
             },
             "unresolved_questions": {
                 "type": "array",
