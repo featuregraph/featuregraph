@@ -21,6 +21,39 @@ from featuregraph.contracts.study_contract import (
 
 SUPPORTED_STATISTICS = ("samples", "mean", "median", "min", "max")
 REQUIRED_STATISTICS = ("samples", "median")
+COHERE_UNSUPPORTED_SCHEMA_KEYWORDS = frozenset(
+    {
+        "maximum",
+        "maxItems",
+        "maxLength",
+        "minimum",
+        "minItems",
+        "minLength",
+        "uniqueItems",
+    }
+)
+
+
+def _cohere_transport_schema(schema: Mapping[str, Any]) -> dict[str, Any]:
+    """Return Cohere's supported subset while preserving the source schema."""
+
+    def compatible(value: Any) -> Any:
+        if isinstance(value, Mapping):
+            return {
+                key: compatible(item)
+                for key, item in value.items()
+                if key not in COHERE_UNSUPPORTED_SCHEMA_KEYWORDS
+            }
+        if isinstance(value, list):
+            return [compatible(item) for item in value]
+        return deepcopy(value)
+
+    return compatible(schema)
+
+
+def _schema_sha256(schema: Mapping[str, Any]) -> str:
+    encoded = json.dumps(schema, sort_keys=True, separators=(",", ":")).encode()
+    return hashlib.sha256(encoded).hexdigest()
 
 
 class SessionPhase(str, Enum):
@@ -227,6 +260,7 @@ class CohereResearchAssistant:
         import cohere
         from jsonschema import Draft202012Validator
 
+        transport_schema = _cohere_transport_schema(schema)
         response = cohere.ClientV2(api_key=self.api_key).chat(
             model=self.model,
             messages=[
@@ -241,7 +275,10 @@ class CohereResearchAssistant:
                 },
                 {"role": "user", "content": prompt},
             ],
-            response_format={"type": "json_object", "json_schema": schema},
+            response_format={
+                "type": "json_object",
+                "json_schema": transport_schema,
+            },
             temperature=0,
         )
         response_text = response.message.content[0].text
@@ -253,6 +290,8 @@ class CohereResearchAssistant:
             "cohere_sdk_version": cohere.__version__,
             "prompt_sha256": hashlib.sha256(prompt.encode()).hexdigest(),
             "response_sha256": hashlib.sha256(response_text.encode()).hexdigest(),
+            "schema_sha256": _schema_sha256(schema),
+            "transport_schema_sha256": _schema_sha256(transport_schema),
             "response_id": getattr(response, "id", None),
         }
 

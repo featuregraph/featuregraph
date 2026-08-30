@@ -3,12 +3,19 @@ from __future__ import annotations
 from copy import deepcopy
 from pathlib import Path
 
+import pytest
+from jsonschema import Draft202012Validator, ValidationError
+
 import featuregraph as fg
 from featuregraph.study_builder import (
     ConversationalStudySession,
     ExecutionReport,
     OfflineResearchAssistant,
     SessionPhase,
+)
+from featuregraph.study_builder.conversation import (
+    _cohere_transport_schema,
+    _decision_schema,
 )
 from scripts.conversational_demo_backend import (
     PhysioNetConversationalDemoExecutor,
@@ -135,3 +142,30 @@ def test_physionet_backend_accepts_only_measurement_revision() -> None:
     assert not executor.validate(changed_boundary)[
         "only_measurement_statistics_changed"
     ]
+
+
+def test_cohere_transport_schema_removes_only_unsupported_constraints() -> None:
+    schema = _decision_schema()
+
+    transport_schema = _cohere_transport_schema(schema)
+
+    assert schema["properties"]["assistant_message"]["minLength"] == 1
+    assert schema["properties"]["measurement_statistics"]["uniqueItems"] is True
+    assert "minLength" not in transport_schema["properties"]["assistant_message"]
+    assert "uniqueItems" not in transport_schema["properties"]["measurement_statistics"]
+    assert transport_schema["properties"]["measurement_statistics"]["items"] == {
+        "enum": list(("samples", "mean", "median", "min", "max"))
+    }
+    assert transport_schema["additionalProperties"] is False
+
+
+def test_full_schema_constraints_remain_locally_enforced() -> None:
+    invalid_payload = {
+        "assistant_message": "",
+        "research_question": "question",
+        "measurement_statistics": ["samples", "samples"],
+        "unresolved_questions": [],
+    }
+
+    with pytest.raises(ValidationError):
+        Draft202012Validator(_decision_schema()).validate(invalid_payload)

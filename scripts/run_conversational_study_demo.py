@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import sys
 import threading
 import webbrowser
 from datetime import UTC, datetime
@@ -67,8 +68,17 @@ class DemoRequestHandler(BaseHTTPRequestHandler):
             try:
                 response = self.session.handle_message(message)
             except Exception as error:  # pragma: no cover - UI recovery boundary
+                print(
+                    f"Cohere assistant request failed: {error}",
+                    file=sys.stderr,
+                )
                 self._send_json(
-                    {"error": f"The assistant could not process this turn: {error}"},
+                    {
+                        "error": (
+                            "The assistant could not process this turn. "
+                            "Check the server console for details and retry."
+                        )
+                    },
                     status=HTTPStatus.INTERNAL_SERVER_ERROR,
                 )
                 return
