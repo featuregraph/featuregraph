@@ -1,0 +1,20 @@
+{
+  "all_checks_passed": true,
+  "checks": {
+    "all_53_subjects_completed": true,
+    "all_complete_objects_have_subject_identity": true,
+    "all_measured_periods_are_positive": true,
+    "all_signal_tables_have_60001_rows": true,
+    "complete_boundaries_ordered": true,
+    "contract_fingerprint_recorded": true,
+    "raw_respiration_unchanged": true,
+    "states_exclusive_and_exhaustive": true
+  },
+  "contract_sha256": "621f654c6160d533f35e16b0e13f65350307b64855ebf4e12eb7d6159c14e8bb",
+  "software": {
+    "numpy": "2.3.5",
+    "pandas": "2.2.3",
+    "python": "3.12.13",
+    "scipy": "1.17.0"
+  }
+}

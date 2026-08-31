@@ -1,0 +1,113 @@
+{
+  "claim_limits": [
+    "Constructed objects are not assumed to be clinically valid breaths.",
+    "The result estimates this cohort under this construction, not a universal human average.",
+    "Changing the window changes the observational scale and creates a new study version."
+  ],
+  "comparator": {
+    "low_pass_hz": 0.8,
+    "matching_tolerance_samples": 63,
+    "peak_distance_samples": 188,
+    "peak_prominence": 0.08
+  },
+  "construction": {
+    "boundaries": "ordered trough-peak-trough",
+    "completeness": "start < peak < end; ordered plateau intervals; not terminal",
+    "effective_support_samples": 169,
+    "id": "rolling-envelope-trough-peak-trough-v1",
+    "numerical_tolerance": 1e-12,
+    "preprocessing": [
+      {
+        "operator": "rolling_max",
+        "window_samples": 85
+      },
+      {
+        "operator": "rolling_mean",
+        "window_samples": 85
+      },
+      {
+        "operator": "shift",
+        "samples": -85
+      }
+    ],
+    "states": [
+      "rising",
+      "falling",
+      "inactive"
+    ]
+  },
+  "contract_sha256": "621f654c6160d533f35e16b0e13f65350307b64855ebf4e12eb7d6159c14e8bb",
+  "dataset": {
+    "name": "BIDMC PPG and Respiration Dataset",
+    "sampling_rate_hz": 125,
+    "subjects": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53
+    ],
+    "version": "1.0.0"
+  },
+  "execution_id": "bidmc-respiratory-objects-window-85-v1",
+  "measurements": [
+    "period_seconds",
+    "rate_bpm",
+    "full_excursion",
+    "temporal_symmetry"
+  ],
+  "parent_study_id": "bidmc-respiratory-objects",
+  "registered_comparison_windows": [
+    79,
+    100
+  ],
+  "schema_version": 1
+}

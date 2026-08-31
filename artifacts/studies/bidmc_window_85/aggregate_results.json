@@ -1,0 +1,54 @@
+{
+  "comparator_objects": 7168,
+  "comparator_only_objects": 70,
+  "complete_objects": 8489,
+  "detected_peaks": 8607,
+  "full_excursion": {
+    "count": 8489,
+    "maximum": 2.50121,
+    "mean": 0.7789650852974438,
+    "median": 0.89371864,
+    "minimum": 0.0012300000000000089,
+    "q25": 0.46943999999999997,
+    "q75": 1.0,
+    "standard_deviation": 0.40598118613806156
+  },
+  "invalidated_complete_objects": 93,
+  "matched_objects": 7098,
+  "period_measurements": 8437,
+  "period_seconds": {
+    "count": 8437,
+    "maximum": 8.44,
+    "mean": 2.9517705345501954,
+    "median": 3.088,
+    "minimum": 0.712,
+    "q25": 2.44,
+    "q75": 3.512,
+    "standard_deviation": 0.9461608665875474
+  },
+  "plateau_ambiguous_objects": 146,
+  "rate_bpm": {
+    "count": 8437,
+    "maximum": 84.26966292134831,
+    "mean": 23.75665415110339,
+    "median": 19.4300518134715,
+    "minimum": 7.109004739336493,
+    "q25": 17.084282460136674,
+    "q75": 24.59016393442623,
+    "standard_deviation": 12.197433334034471
+  },
+  "requested_only_excluded_by_both_annotations": 986,
+  "requested_only_objects": 1391,
+  "source_observations": 3180053,
+  "subjects": 53,
+  "temporal_symmetry": {
+    "count": 8489,
+    "maximum": 1.0,
+    "mean": 0.8236562381443541,
+    "median": 0.8899755501222494,
+    "minimum": 0.013559322033898313,
+    "q25": 0.7816091954022988,
+    "q75": 0.9523809523809523,
+    "standard_deviation": 0.1985676988941945
+  }
+}

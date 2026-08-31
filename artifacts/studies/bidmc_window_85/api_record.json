@@ -1,0 +1,93 @@
+{
+  "claim_limits": [
+    "Constructed objects are not assumed to be clinically valid breaths.",
+    "The result estimates this cohort under this construction, not a universal human average.",
+    "Changing the window changes the observational scale and creates a new study version."
+  ],
+  "construction_id": "rolling-envelope-trough-peak-trough-v1",
+  "execution_id": "bidmc-respiratory-objects-window-85-v1",
+  "measurements": {
+    "full_excursion": {
+      "count": 8489,
+      "maximum": 2.50121,
+      "mean": 0.7789650852974438,
+      "median": 0.89371864,
+      "minimum": 0.0012300000000000089,
+      "q25": 0.46943999999999997,
+      "q75": 1.0,
+      "standard_deviation": 0.40598118613806156
+    },
+    "period_seconds": {
+      "count": 8437,
+      "maximum": 8.44,
+      "mean": 2.9517705345501954,
+      "median": 3.088,
+      "minimum": 0.712,
+      "q25": 2.44,
+      "q75": 3.512,
+      "standard_deviation": 0.9461608665875474
+    },
+    "rate_bpm": {
+      "count": 8437,
+      "maximum": 84.26966292134831,
+      "mean": 23.75665415110339,
+      "median": 19.4300518134715,
+      "minimum": 7.109004739336493,
+      "q25": 17.084282460136674,
+      "q75": 24.59016393442623,
+      "standard_deviation": 12.197433334034471
+    },
+    "temporal_symmetry": {
+      "count": 8489,
+      "maximum": 1.0,
+      "mean": 0.8236562381443541,
+      "median": 0.8899755501222494,
+      "minimum": 0.013559322033898313,
+      "q25": 0.7816091954022988,
+      "q75": 0.9523809523809523,
+      "standard_deviation": 0.1985676988941945
+    }
+  },
+  "parameters": {
+    "effective_support_samples": 169,
+    "numerical_tolerance": 1e-12,
+    "sampling_rate_hz": 125,
+    "window_samples": 85
+  },
+  "population": {
+    "complete_objects": 8489,
+    "dataset": "BIDMC PPG and Respiration Dataset",
+    "measured_objects": 8437,
+    "participants": 53
+  },
+  "record_type": "parameterized_measurement",
+  "release_projection": {
+    "contains_direct_identifiers": false,
+    "contains_raw_observations": false,
+    "level": "aggregate_parameterized_result",
+    "source_terms_apply": true
+  },
+  "schema_version": "1.0",
+  "status": "completed",
+  "study_id": "bidmc-respiratory-objects",
+  "validation": {
+    "all_checks_passed": true,
+    "checks": {
+      "all_53_subjects_completed": true,
+      "all_complete_objects_have_subject_identity": true,
+      "all_measured_periods_are_positive": true,
+      "all_signal_tables_have_60001_rows": true,
+      "complete_boundaries_ordered": true,
+      "contract_fingerprint_recorded": true,
+      "raw_respiration_unchanged": true,
+      "states_exclusive_and_exhaustive": true
+    },
+    "contract_sha256": "621f654c6160d533f35e16b0e13f65350307b64855ebf4e12eb7d6159c14e8bb",
+    "software": {
+      "numpy": "2.3.5",
+      "pandas": "2.2.3",
+      "python": "3.12.13",
+      "scipy": "1.17.0"
+    }
+  }
+}
