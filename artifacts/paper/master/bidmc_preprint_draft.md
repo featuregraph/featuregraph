@@ -44,3 +44,11 @@ Across all 53 records:
 - 7,918 objects were matched across the two temporal scales and classified as shared.
 - An additional 862 objects were constructed only at 79 samples, while 8 objects were constructed only at 100 samples.
 - Thus, the shorter-scale construction produced 8,780 objects in total, compared with 7,926 at the longer scale.
+
+# 5. Development and held-out design
+
+The development subjects in this study were 13, 19, 23, and 33; the remaining 49 subjects formed the held-out set. In the development set, the 79-sample construction produced additional respiratory-waveform objects whose peaks were often concentrated at consistent phases of the cardiac cycle, as determined from the ECG signal. 
+
+These objects were used to define the object-matching, ECG-validation, cardiac-phase, annotation-comparison, and eligibility rules before those rules were applied unchanged to the 49 held-out records after the contract was frozen. 
+
+The first held-out run stopped because at least one record did not contain the expected AVR column; the schema-handling logic was corrected so that a missing secondary lead was handled explicitly and validation could use the other contract-approved secondary lead when available. In this case, Lead V was used as the secondary validation lead when AVR was unavailable. Lead II remained the primary ECG event series in every record. No scientific or analytical parameter was changed. 
