@@ -1,4 +1,4 @@
-Introduction
+## Introduction
 
 Research question: when different rolling-envelope parameter sets cause the same construction to produce different respiratory-waveform objects, how can the differences be made explicit, and what can their relationships to independent physiological signals reveal about the structure being represented?
 
@@ -24,7 +24,7 @@ The study uses all 53 eight-minute recordings in the public BIDMC dataset (link)
 
 The recordings were obtained from critically ill patients at the medical and surgical intensive care units of Beth Israel Deaconess Medical Center in Boston, Massachusetts. The BIDMC dataset was first reported by Pimentel et al. in Towards a Robust Estimation of Respiratory Rate from Pulse Oximeters (DOI: 10.1109/TBME.2016.2613124).
 
-Respiratory waveform construction
+## Respiratory waveform construction
 
 The researcher input declares the 53-record BIDMC cohort, the raw respiration signal, and the two rolling-envelope parameterizations at 79 and 100 samples. The 79-sample window was selected during exploratory analysis from the dataset's sampling frequency of 125 Hz. A target temporal support of 0.625 seconds, representing half of a 1.25-second respiratory cycle, corresponds to 78.125 samples, which we rounded up to 79, giving an implemented window duration of 0.632 seconds.
 
@@ -32,15 +32,20 @@ For the first construction, the rolling envelope is set at 79 samples, consistin
 
 Because these rolling operations were computed offline rather than causally, the resulting envelope was aligned with the original waveform to correct for the temporal displacement introduced by the rolling windows. The alignment rule was applied identically at both scales and was not fitted separately to individual records. Directional changes in each aligned envelope were used to classify states as rising, falling, or inactive. Boundaries marked the entry into and exit from each state, and ordered state transitions were composed into complete trough-peak-trough objects. 
 
-Cross-scale object comparison
+## Cross-scale object comparison
+
 Objects were classified according to whether they could be matched across the two temporal scales. Shared objects were constructed at both the 79 and 100-sample level, whereas shorter-scale or longer-scale objects were constructed at the shorter and longer scales respectively. Across all 53 records, 7918 objects were matched across the two temporal scales and classified as shared. An additional 862 objects were constructed only at 79 samples, while 8 objects were constructed only at 100 samples. Thus, the shorter-scale construction produced 8780 objects in total, compared with 7926 at the longer scale.
-Development and held-out design
+
+## Development and held-out design
+
 The development subjects in this study were 13, 19, 23, and 33; the remaining 49 subjects formed the held-out set. In the development set, the 79-sample construction produced additional respiratory-waveform objects whose peaks were often concentrated at consistent phases of the cardiac cycle, as determined from the ECG signal. 
 
 These objects were used to define the object-matching, ECG-validation, cardiac-phase, annotation-comparison, and eligibility rules before those rules were applied unchanged to the 49 held-out records after the contract was frozen. 
 
 The first held-out run stopped because at least one record did not contain the expected AVR column; the schema-handling logic was corrected so that a missing secondary lead was handled explicitly and validation could use the other contract-approved secondary lead when available. In this case, Lead V was used as the secondary validation lead when AVR was unavailable. Lead II remained the primary ECG event series in every record. No scientific or analytical parameter was changed. 
-6. ECG construction and validation
+
+## ECG construction and validation
+
 ECG events were used as timestamps for individual heartbeats so that the respiratory-waveform object peaks could be located within the cardiac cycle. Events detected from ECG lead II were checked against the available secondary leads and the physiological monitor heart rate using rules fixed during development; the complete detection and validation parameters are reported in the frozen analysis contract. Forty-one of the 49 held-out records passed these validation requirements. The other eight records were excluded from cardiac-phase analysis because of insufficient cross-lead agreement, heart rates outside the detector’s valid range, or disagreement between ECG-derived and monitor heart rate.
 
 
