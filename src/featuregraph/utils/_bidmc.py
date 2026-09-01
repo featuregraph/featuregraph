@@ -6,6 +6,7 @@ from typing import Literal
 import pandas as pd
 import requests
 
+from featuregraph.utils._source_integrity import load_manifest, verify
 
 BIDMC_VERSION = "1.0.0"
 BIDMC_BASE_URL = (
@@ -13,6 +14,29 @@ BIDMC_BASE_URL = (
 )
 
 FileKind = Literal["Signals", "Numerics", "Breaths", "Fix"]
+
+#: Recorded SHA-256 of each pinned source file. Seed or refresh it with
+#: ``python -m scripts.record_bidmc_manifest``. Files absent from it are not
+#: yet pinned and are used unverified.
+BIDMC_MANIFEST_PATH = (
+    Path(__file__).resolve().parent.parent / "datasets" / "bidmc_manifest.json"
+)
+
+
+def bidmc_manifest() -> dict:
+    """The recorded source fingerprints for this BIDMC version."""
+    return load_manifest(BIDMC_MANIFEST_PATH)
+
+
+def bidmc_source_fingerprint(subject: int, kind: FileKind) -> str | None:
+    """The recorded fingerprint for one source file, or None if unpinned.
+
+    A study runner records this alongside its contract fingerprint, so a result
+    is identified by both the rules applied and the bytes they were applied to.
+    """
+    from featuregraph.utils._source_integrity import expected_fingerprint
+
+    return expected_fingerprint(bidmc_manifest(), bidmc_filename(subject, kind))
 
 
 def get_cache_dir() -> Path:
@@ -57,10 +81,14 @@ def download_bidmc_file(
     filename = bidmc_filename(subject, kind)
     destination = get_cache_dir() / filename
 
+    url = f"{BIDMC_BASE_URL}/{filename}"
+
+    # A cached file is reused only if it still matches its recorded
+    # fingerprint. Size alone accepts a truncated or substituted download.
     if destination.exists() and destination.stat().st_size > 0 and not refresh:
+        verify(destination, bidmc_manifest(), source=url)
         return destination
 
-    url = f"{BIDMC_BASE_URL}/{filename}"
     temporary_path = destination.with_suffix(
         destination.suffix + ".part"
     )
@@ -86,6 +114,8 @@ def download_bidmc_file(
             )
 
         temporary_path.replace(destination)
+        # Verify what actually landed, not what was requested.
+        verify(destination, bidmc_manifest(), source=url)
 
     except Exception:
         temporary_path.unlink(missing_ok=True)

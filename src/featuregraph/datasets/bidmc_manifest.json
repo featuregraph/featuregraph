@@ -1,0 +1,8 @@
+{
+  "dataset": "bidmc",
+  "version": "1.0.0",
+  "source_base_url": "https://physionet.org/files/bidmc/1.0.0/bidmc_csv",
+  "algorithm": "sha256",
+  "note": "Recorded fingerprints of BIDMC source files. A cached or freshly downloaded file that does not match is refused rather than used. Files absent here are not yet pinned. Seed or refresh with: python -m scripts.record_bidmc_manifest",
+  "files": {}
+}
