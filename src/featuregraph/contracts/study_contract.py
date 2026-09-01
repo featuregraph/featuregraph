@@ -45,6 +45,12 @@ def canonical_study_contract(contract: Mapping[str, Any]) -> str:
     return json.dumps(payload, sort_keys=True, separators=(",", ":"))
 
 
+def _canonical_sha256(payload: Mapping[str, Any]) -> str:
+    """SHA-256 over a payload's canonical JSON."""
+    canonical = json.dumps(dict(payload), sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
 def study_contract_sha256(contract: Mapping[str, Any]) -> str:
     """Fingerprint every contract field except its approval record."""
 
@@ -98,6 +104,96 @@ def study_contract_differences(
 
     compare("", left, right)
     return differences
+
+
+@dataclass(frozen=True)
+class ContractIdentity:
+    """How one contract records its own fingerprint, and whether it holds.
+
+    Three states exist across the published studies, and conflating them is a
+    real hazard: a contract can be *verifiable* without being *approved*.
+
+    ``approval``
+        The fingerprint lives in an ``approval`` record alongside a named
+        authority. Only this state carries execution authority.
+    ``self_recorded``
+        A top-level ``contract_sha256`` over the remaining payload. Integrity
+        is checkable, but no authority is named, so it must not execute.
+    ``unfingerprinted``
+        No recorded fingerprint at all. Nothing to verify against.
+    """
+
+    convention: str
+    recorded: str | None
+    computed: str | None
+    authority: str | None
+
+    @property
+    def consistent(self) -> bool:
+        """Whether the payload still hashes to what it recorded."""
+        return self.recorded is not None and self.recorded == self.computed
+
+    @property
+    def carries_authority(self) -> bool:
+        return bool(self.authority and self.authority.strip())
+
+
+def inspect_contract(contract: Mapping[str, Any]) -> ContractIdentity:
+    """Report a contract's fingerprint convention without judging it.
+
+    Read-only and non-destructive. Published fingerprints are claims already
+    cited elsewhere -- the scientific API publishes one, and archived records
+    reference it -- so they are recognised as they are rather than rewritten
+    into a single convention.
+    """
+    if not isinstance(contract, Mapping):
+        raise StudyContractApprovalError("A study contract must be a mapping.")
+
+    approval = contract.get("approval")
+    if isinstance(approval, Mapping) and isinstance(
+        approval.get("contract_sha256"), str
+    ):
+        return ContractIdentity(
+            convention="approval",
+            recorded=approval["contract_sha256"],
+            computed=study_contract_sha256(contract),
+            authority=approval.get("authority"),
+        )
+
+    recorded = contract.get("contract_sha256")
+    if isinstance(recorded, str) and recorded:
+        payload = {k: v for k, v in contract.items() if k != "contract_sha256"}
+        return ContractIdentity(
+            convention="self_recorded",
+            recorded=recorded,
+            computed=_canonical_sha256(payload),
+            authority=None,
+        )
+
+    return ContractIdentity(
+        convention="unfingerprinted", recorded=None, computed=None, authority=None
+    )
+
+
+def verify_contract_integrity(contract: Mapping[str, Any]) -> ContractIdentity:
+    """Check a contract against its own recorded fingerprint, whichever it uses.
+
+    Integrity only. A contract can pass here and still be unexecutable, because
+    execution additionally requires a named approving authority.
+    """
+    identity = inspect_contract(contract)
+    if identity.convention == "unfingerprinted":
+        raise StudyContractApprovalError(
+            "This contract records no fingerprint, so its integrity cannot be "
+            "checked. Approve it, or record a 'contract_sha256'."
+        )
+    if not identity.consistent:
+        raise StudyContractApprovalError(
+            "Contract does not match its recorded fingerprint "
+            f"({identity.convention}): expected={identity.recorded!r} "
+            f"actual={identity.computed!r}."
+        )
+    return identity
 
 
 def approve_study_contract(
