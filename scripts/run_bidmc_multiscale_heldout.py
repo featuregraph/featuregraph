@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 from scipy.signal import butter, find_peaks, sosfiltfilt
+
+from featuregraph.studies import load_notebook_namespace
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -18,18 +19,19 @@ FS = 125
 DEVELOPMENT = {13, 19, 23, 33}
 TOLERANCE = 63
 
+# The generated study notebook's own development-record cells re-run its
+# functions against subject 1 for inline inspection; this runner only needs
+# the function and constant definitions that precede that record.
+DEFINITIONS_STOP_MARKER = "# Subject 1 development record"
+
 
 def load_study_namespace() -> dict[str, object]:
-    notebook = json.loads(NOTEBOOK.read_text())
-    source = "\n\n".join(
-        "".join(cell.get("source", []))
-        for cell in notebook["cells"]
-        if cell["cell_type"] == "code"
+    """Execute the generated study's definitions, without its development record."""
+    return load_notebook_namespace(
+        NOTEBOOK,
+        stop_marker=DEFINITIONS_STOP_MARKER,
+        name="bidmc_multiscale_audit",
     )
-    definitions = source.split("# Subject 1 development record", 1)[0]
-    namespace: dict[str, object] = {"__name__": "bidmc_multiscale_audit"}
-    exec(compile(definitions, str(NOTEBOOK), "exec"), namespace)
-    return namespace
 
 
 def ecg_events(signal: np.ndarray) -> np.ndarray:

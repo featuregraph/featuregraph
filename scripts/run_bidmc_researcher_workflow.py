@@ -6,20 +6,26 @@ choices belong in notebooks/bidmc_researcher_input.ipynb.
 
 from __future__ import annotations
 
-import ast
-import io
 import json
 import platform
-import subprocess
 import sys
-from contextlib import redirect_stdout
 from datetime import datetime, timezone
-from hashlib import sha256
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import scipy
+
+from featuregraph.studies import (
+    execute_notebook_sources,
+    file_sha256,
+    git_commit,
+    module_versions,
+    notebook_sources,
+    researcher_values,
+    value_sha256,
+    write_frames,
+)
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 INPUT_NOTEBOOK = (
@@ -29,50 +35,6 @@ EXECUTION_NOTEBOOK = (
     REPO_ROOT / "notebooks" / "generated_study" / "bidmc_generated_study.ipynb"
 )
 OUTPUT_ROOT = REPO_ROOT / "outputs" / "bidmc_researcher_workflow"
-
-
-def notebook_sources(path: Path) -> list[str]:
-    notebook = json.loads(path.read_text())
-    return [
-        "".join(cell.get("source", []))
-        for cell in notebook["cells"]
-        if cell["cell_type"] == "code"
-    ]
-
-
-def file_sha256(path: Path) -> str:
-    return sha256(path.read_bytes()).hexdigest()
-
-
-def canonical_json(value: object) -> str:
-    """Serialize a declarative artifact deterministically for storage and hashing."""
-    return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
-
-
-def value_sha256(value: object) -> str:
-    return sha256(canonical_json(value).encode("utf-8")).hexdigest()
-
-
-def researcher_values(source: str) -> dict[str, object]:
-    """Evaluate only declarative top-level assignments from the input cell."""
-    tree = ast.parse(source)
-    values: dict[str, object] = {}
-    safe_globals = {"__builtins__": {}, "list": list, "range": range}
-    for node in tree.body:
-        if not isinstance(node, ast.Assign) or len(node.targets) != 1:
-            continue
-        target = node.targets[0]
-        if not isinstance(target, ast.Name):
-            continue
-        try:
-            expression = ast.Expression(node.value)
-            value = eval(
-                compile(expression, str(INPUT_NOTEBOOK), "eval"), safe_globals, values
-            )
-        except Exception:
-            continue
-        values[target.id] = value
-    return values
 
 
 def validate_binding(
@@ -118,29 +80,6 @@ def validate_binding(
     )
 
 
-def git_commit() -> str:
-    return subprocess.check_output(
-        ["git", "rev-parse", "HEAD"], cwd=REPO_ROOT, text=True
-    ).strip()
-
-
-def execute_notebook_sources(
-    sources: list[str], initial_namespace: dict[str, object] | None = None
-) -> tuple[dict[str, object], str]:
-    namespace: dict[str, object] = {"__name__": "__main__"}
-    if initial_namespace:
-        namespace.update(initial_namespace)
-    output = io.StringIO()
-    with redirect_stdout(output):
-        for source in sources:
-            exec(compile(source, str(EXECUTION_NOTEBOOK), "exec"), namespace)
-    return namespace, output.getvalue()
-
-
-def save_dataframe(frame: pd.DataFrame, name: str) -> None:
-    frame.to_csv(OUTPUT_ROOT / f"{name}.csv.gz", index=False, compression="gzip")
-
-
 def main() -> None:
     OUTPUT_ROOT.mkdir(parents=True, exist_ok=True)
     input_sources = notebook_sources(INPUT_NOTEBOOK)
@@ -156,22 +95,28 @@ def main() -> None:
     namespace, console_output = execute_notebook_sources(
         execution_sources,
         initial_namespace={"BIDMC_STATE_CONTRACT": state_contract},
+        filename=str(EXECUTION_NOTEBOOK),
     )
     (OUTPUT_ROOT / "console_output.txt").write_text(console_output)
 
-    save_dataframe(namespace["subject_summary"], "subject_summary")
-    save_dataframe(namespace["matched_objects"], "matched_objects")
-    save_dataframe(namespace["featuregraph_only_objects"], "featuregraph_only_objects")
-    save_dataframe(namespace["baseline_only_objects"], "comparator_only_objects")
-    save_dataframe(namespace["invalidated_objects"], "invalidated_objects")
-    save_dataframe(namespace["annotation_summary"], "annotation_summary")
-    save_dataframe(namespace["cohort_summary"], "cohort_summary")
-    save_dataframe(namespace["window_sensitivity"], "window_sensitivity")
+    write_frames(
+        {
+            "subject_summary": namespace["subject_summary"],
+            "matched_objects": namespace["matched_objects"],
+            "featuregraph_only_objects": namespace["featuregraph_only_objects"],
+            "comparator_only_objects": namespace["baseline_only_objects"],
+            "invalidated_objects": namespace["invalidated_objects"],
+            "annotation_summary": namespace["annotation_summary"],
+            "cohort_summary": namespace["cohort_summary"],
+            "window_sensitivity": namespace["window_sensitivity"],
+        },
+        OUTPUT_ROOT,
+    )
 
     all_featuregraph_objects = []
     all_comparator_objects = []
     observation_directory = OUTPUT_ROOT / "observations"
-    observation_directory.mkdir(exist_ok=True)
+    per_subject_observations = {}
     for subject in values["subject_ids"]:
         observations, objects, _, _ = namespace["construct"](subject)
         comparator_objects, _ = namespace["baseline"](subject)
@@ -180,23 +125,26 @@ def main() -> None:
         comparator_objects["subject_id"] = subject
         all_featuregraph_objects.append(objects)
         all_comparator_objects.append(comparator_objects)
-        observations.to_csv(
-            observation_directory / f"subject_{subject:02d}.csv.gz",
-            index=False,
-            compression="gzip",
-        )
+        per_subject_observations[f"subject_{subject:02d}"] = observations
 
-    save_dataframe(
-        pd.concat(all_featuregraph_objects, ignore_index=True), "featuregraph_objects"
-    )
-    save_dataframe(
-        pd.concat(all_comparator_objects, ignore_index=True), "comparator_objects"
+    write_frames(per_subject_observations, observation_directory)
+
+    write_frames(
+        {
+            "featuregraph_objects": pd.concat(
+                all_featuregraph_objects, ignore_index=True
+            ),
+            "comparator_objects": pd.concat(
+                all_comparator_objects, ignore_index=True
+            ),
+        },
+        OUTPUT_ROOT,
     )
 
     cohort = namespace["cohort_summary"].iloc[0]
     provenance = {
         "created_utc": datetime.now(timezone.utc).isoformat(),
-        "repository_commit": git_commit(),
+        "repository_commit": git_commit(REPO_ROOT),
         "researcher_input_path": str(INPUT_NOTEBOOK.relative_to(REPO_ROOT)),
         "researcher_input_sha256": file_sha256(INPUT_NOTEBOOK),
         "execution_notebook_path": str(EXECUTION_NOTEBOOK.relative_to(REPO_ROOT)),
@@ -207,9 +155,7 @@ def main() -> None:
         "compiled_layer": "directional states and enter/exit boundaries",
         "python": sys.version,
         "platform": platform.platform(),
-        "pandas": pd.__version__,
-        "numpy": np.__version__,
-        "scipy": scipy.__version__,
+        **module_versions(pd, np, scipy),
         "subjects": int(cohort["subjects"]),
         "failures": int(cohort["failures"]),
         "featuregraph_complete_objects": int(cohort["featuregraph_complete_objects"]),

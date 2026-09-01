@@ -10,17 +10,21 @@ variants.
 from __future__ import annotations
 
 import argparse
-import hashlib
-import json
 import platform
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from datetime import datetime, timezone
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import scipy
 
+from featuregraph.studies import (
+    finite_summary,
+    markdown_table,
+    value_sha256,
+    write_csv_shards,
+    write_json,
+)
 from scripts.run_bidmc_multiscale_heldout import load_study_namespace
 
 
@@ -30,39 +34,6 @@ FS = 125
 SUBJECTS = tuple(range(1, 54))
 REGISTERED_WINDOWS = (79, 100)
 PAIR_TOLERANCE = 63
-
-
-def canonical_json(value: object) -> str:
-    return json.dumps(value, sort_keys=True, separators=(",", ":"))
-
-
-def sha256(value: object) -> str:
-    return hashlib.sha256(canonical_json(value).encode()).hexdigest()
-
-
-def finite_summary(values: pd.Series) -> dict[str, float | int]:
-    clean = values.replace([np.inf, -np.inf], np.nan).dropna().astype(float)
-    return {
-        "count": int(len(clean)),
-        "mean": float(clean.mean()),
-        "median": float(clean.median()),
-        "standard_deviation": float(clean.std()),
-        "q25": float(clean.quantile(0.25)),
-        "q75": float(clean.quantile(0.75)),
-        "minimum": float(clean.min()),
-        "maximum": float(clean.max()),
-    }
-
-
-def markdown_table(frame: pd.DataFrame) -> str:
-    headers = [str(column) for column in frame.columns]
-    rows = [[str(value) for value in row] for row in frame.itertuples(index=False, name=None)]
-    lines = [
-        "| " + " | ".join(headers) + " |",
-        "| " + " | ".join("---" for _ in headers) + " |",
-    ]
-    lines.extend("| " + " | ".join(row) + " |" for row in rows)
-    return "\n".join(lines)
 
 
 def complete(objects: pd.DataFrame) -> pd.DataFrame:
@@ -191,25 +162,6 @@ def run_subject(ns: dict[str, object], subject: int, requested_window: int) -> d
     }
 
 
-def write_json(path: Path, value: object) -> None:
-    path.write_text(json.dumps(value, indent=2, sort_keys=True) + "\n")
-
-
-def write_csv_shards(
-    frame: pd.DataFrame,
-    output: Path,
-    *,
-    stem: str,
-    rows_per_shard: int = 3_000,
-) -> list[str]:
-    names = []
-    for part, start in enumerate(range(0, len(frame), rows_per_shard), start=1):
-        name = f"{stem}_part_{part:03d}.csv"
-        frame.iloc[start : start + rows_per_shard].to_csv(output / name, index=False)
-        names.append(name)
-    return names
-
-
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--window", type=int, default=85)
@@ -263,8 +215,8 @@ def main() -> None:
             "Changing the window changes the observational scale and creates a new study version.",
         ],
     }
-    contract["contract_sha256"] = sha256(contract)
-    write_json(output / "study_contract.json", contract)
+    contract["contract_sha256"] = value_sha256(contract)
+    write_json(output / "study_contract.json", contract, sort_keys=True)
 
     results: dict[int, dict[str, object]] = {}
     with ThreadPoolExecutor(max_workers=8) as executor:
@@ -371,8 +323,8 @@ def main() -> None:
         "full_excursion": excursion,
         "temporal_symmetry": symmetry,
     }
-    write_json(output / "aggregate_results.json", aggregate)
-    write_json(output / "validation.json", validation)
+    write_json(output / "aggregate_results.json", aggregate, sort_keys=True)
+    write_json(output / "validation.json", validation, sort_keys=True)
 
     api_record = {
         "schema_version": "1.0",
@@ -408,7 +360,7 @@ def main() -> None:
             "source_terms_apply": True,
         },
     }
-    write_json(output / "api_record.json", api_record)
+    write_json(output / "api_record.json", api_record, sort_keys=True)
 
     subject_summary.to_csv(output / "subject_summary.csv", index=False)
     window_summary.to_csv(output / "window_summary.csv", index=False)
