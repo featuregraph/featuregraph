@@ -9,7 +9,6 @@ native Empatica signals within those externally declared occurrences.
 from __future__ import annotations
 
 import argparse
-import json
 from collections.abc import Mapping
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
@@ -21,6 +20,7 @@ import numpy as np
 import pandas as pd
 
 import featuregraph as fg
+from featuregraph.studies import write_frames, write_json
 
 DEFAULT_STUDY_CONTRACT_PATH = (
     Path(__file__).resolve().parents[1]
@@ -713,9 +713,7 @@ def write_outputs(
     output: Path,
     approved_contract: fg.ApprovedStudyContract = APPROVED_STUDY_CONTRACT,
 ) -> None:
-    output.mkdir(parents=True, exist_ok=True)
-    for name, frame in results.items():
-        frame.to_csv(output / f"{name}.csv.gz", index=False, compression="gzip")
+    write_frames(results, output)
     contract = approved_contract.contract
     provenance = {
         "dataset": contract["dataset"],
@@ -724,7 +722,7 @@ def write_outputs(
         "study_contract_source": str(approved_contract.source_path),
         "claim_boundaries": contract["claim_boundaries"],
     }
-    (output / "provenance.json").write_text(json.dumps(provenance, indent=2) + "\n")
+    write_json(output / "provenance.json", provenance)
 
 
 def main() -> None:

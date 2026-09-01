@@ -17,7 +17,12 @@ from .notebooks import (
     researcher_values,
 )
 from .outputs import markdown_table, write_csv_shards, write_frames, write_json
-from .provenance import git_commit, module_versions
+from .provenance import (
+    git_commit,
+    git_commit_or_none,
+    module_versions,
+    package_versions,
+)
 from .summaries import finite_summary
 
 __all__ = [
@@ -26,10 +31,12 @@ __all__ = [
     "file_sha256",
     "finite_summary",
     "git_commit",
+    "git_commit_or_none",
     "load_notebook_namespace",
     "markdown_table",
     "module_versions",
     "notebook_sources",
+    "package_versions",
     "researcher_values",
     "value_sha256",
     "write_csv_shards",

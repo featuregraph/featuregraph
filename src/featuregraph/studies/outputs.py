@@ -32,11 +32,17 @@ def write_frames(
 
 
 def write_json(
-    path: Path, value: Any, *, indent: int = 2, sort_keys: bool = False
+    path: Path,
+    value: Any,
+    *,
+    indent: int = 2,
+    sort_keys: bool = False,
+    encoding: str | None = None,
 ) -> None:
     """Write one JSON-serializable value, matching a study's recorded formatting."""
     Path(path).write_text(
-        json.dumps(value, indent=indent, sort_keys=sort_keys) + "\n"
+        json.dumps(value, indent=indent, sort_keys=sort_keys) + "\n",
+        encoding=encoding,
     )
 
 

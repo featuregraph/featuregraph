@@ -12,10 +12,12 @@ from featuregraph.studies import (
     execute_notebook_sources,
     file_sha256,
     finite_summary,
+    git_commit_or_none,
     load_notebook_namespace,
     markdown_table,
     module_versions,
     notebook_sources,
+    package_versions,
     researcher_values,
     value_sha256,
     write_csv_shards,
@@ -137,6 +139,16 @@ def test_module_versions_reads_dunder_version_by_module_name() -> None:
     assert versions == {"numpy": np.__version__, "pandas": pd.__version__}
 
 
+def test_package_versions_reads_installed_distribution_metadata() -> None:
+    versions = package_versions("numpy", "pandas")
+
+    assert versions == {"numpy": np.__version__, "pandas": pd.__version__}
+
+
+def test_git_commit_or_none_returns_none_outside_a_repository(tmp_path: Path) -> None:
+    assert git_commit_or_none(tmp_path) is None
+
+
 # --- outputs -------------------------------------------------------------------
 
 
@@ -164,6 +176,13 @@ def test_write_json_round_trips_and_respects_sort_keys(tmp_path: Path) -> None:
     text = path.read_text()
     assert text.index('"a"') < text.index('"b"')
     assert json.loads(text) == {"b": 1, "a": 2}
+
+
+def test_write_json_accepts_an_explicit_encoding(tmp_path: Path) -> None:
+    path = tmp_path / "value.json"
+    write_json(path, {"name": "café"}, encoding="utf-8")
+
+    assert json.loads(path.read_text(encoding="utf-8")) == {"name": "café"}
 
 
 def test_write_csv_shards_splits_by_row_count(tmp_path: Path) -> None:
