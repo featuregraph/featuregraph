@@ -197,3 +197,73 @@ def test_contract_is_copied_into_result():
     contract["parameters"]["eps"] = 99
 
     assert result.contract["parameters"]["eps"] == 0.1
+
+
+def _overlapping_contract():
+    return {
+        "version": "state-contract-v1",
+        "states": {
+            "low": {"op": "lt", "left": {"column": "x"}, "right": {"literal": 10}},
+            "high": {"op": "gt", "left": {"column": "x"}, "right": {"literal": 1}},
+        },
+    }
+
+
+def test_error_carries_a_code_and_locus_without_changing_its_message():
+    contract = _overlapping_contract()
+
+    with pytest.raises(StateContractError) as caught:
+        compile_states(pd.DataFrame({"x": [5, 5]}), contract)
+
+    error = caught.value
+    assert error.code == "states_overlap"
+    assert error.locus["observation_indices"] == [0, 1]
+    # The message is unchanged; the fields are additional, not a replacement.
+    assert str(error) == "States overlap at observation indices [0, 1]."
+    assert isinstance(error, ValueError)
+
+
+def test_gap_error_locates_the_unaccounted_observations():
+    contract = {
+        "version": "state-contract-v1",
+        "states": {
+            "high": {"op": "gt", "left": {"column": "x"}, "right": {"literal": 10}}
+        },
+    }
+
+    with pytest.raises(StateContractError) as caught:
+        compile_states(pd.DataFrame({"x": [1, 20]}), contract)
+
+    assert caught.value.code == "states_not_exhaustive"
+    assert caught.value.locus["observation_indices"] == [0]
+
+
+def test_unknown_column_names_the_column_it_could_not_find():
+    contract = {
+        "version": "state-contract-v1",
+        "states": {
+            "a": {"op": "gt", "left": {"column": "absent"}, "right": {"literal": 0}}
+        },
+    }
+
+    with pytest.raises(StateContractError) as caught:
+        compile_states(pd.DataFrame({"x": [1]}), contract)
+
+    assert caught.value.code == "unknown_column"
+    assert caught.value.locus == {"column": "absent"}
+
+
+def test_missing_input_values_are_a_data_failure_not_a_contract_failure():
+    with pytest.raises(StateContractError) as caught:
+        compile_states(pd.DataFrame({"rate": [float("nan")]}), _direction_contract())
+
+    assert caught.value.code == "missing_values_in_input"
+    assert caught.value.locus["column"] == "rate"
+
+
+def test_shape_errors_default_to_a_malformed_contract_code():
+    with pytest.raises(StateContractError) as caught:
+        compile_states(pd.DataFrame({"x": [1]}), {"version": "wrong"})
+
+    assert caught.value.code == "malformed_contract"
+    assert caught.value.locus == {}
