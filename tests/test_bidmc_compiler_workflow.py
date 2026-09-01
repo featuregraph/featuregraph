@@ -5,14 +5,13 @@ import numpy as np
 import pandas as pd
 
 from featuregraph import compile_states
-from scripts.run_bidmc_researcher_workflow import (
-    EXECUTION_NOTEBOOK,
-    INPUT_NOTEBOOK,
+from featuregraph.studies import (
     canonical_json,
     notebook_sources,
     researcher_values,
     value_sha256,
 )
+from scripts.run_bidmc_researcher_workflow import EXECUTION_NOTEBOOK, INPUT_NOTEBOOK
 
 
 def _workflow_contract() -> dict[str, object]:

@@ -3,11 +3,7 @@ from pathlib import Path
 import pandas as pd
 
 import featuregraph as fg
-from scripts.run_bidmc_researcher_workflow import (
-    notebook_sources,
-    researcher_values,
-)
-
+from featuregraph.studies import notebook_sources, researcher_values
 
 INPUT_NOTEBOOK = Path("notebooks/researcher_input/clap_researcher_input.ipynb")
 GENERATED_NOTEBOOK = Path("notebooks/generated_study/clap_generated_study.ipynb")
