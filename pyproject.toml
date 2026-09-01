@@ -74,6 +74,11 @@ nori-study = [
 [tool.setuptools.packages.find]
 where = ["src"]
 
+# The BIDMC source manifest must ship: without it an installed package would
+# verify nothing, silently.
+[tool.setuptools.package-data]
+featuregraph = ["datasets/*.json"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "--strict-markers --strict-config"
