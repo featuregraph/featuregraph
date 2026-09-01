@@ -14,7 +14,23 @@ from featuregraph.operators.events import enter_label, exit_label
 
 
 class StateContractError(ValueError):
-    """Raised when a state contract is invalid or fails declared validation."""
+    """Raised when a state contract is invalid or fails declared validation.
+
+    Carries a stable ``code`` and a ``locus`` mapping alongside the message, so a
+    caller can act on a failure without parsing prose. The message text is
+    unchanged and remains the human-readable account.
+    """
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        code: str = "malformed_contract",
+        locus: Mapping[str, Any] | None = None,
+    ) -> None:
+        super().__init__(message)
+        self.code = code
+        self.locus: dict[str, Any] = dict(locus or {})
 
 
 @dataclass(frozen=True)
@@ -26,9 +42,15 @@ class CompiledStateResult:
     contract: dict[str, Any]
 
 
-def _require(condition: bool, message: str) -> None:
+def _require(
+    condition: bool,
+    message: str,
+    *,
+    code: str = "malformed_contract",
+    locus: Mapping[str, Any] | None = None,
+) -> None:
     if not condition:
-        raise StateContractError(message)
+        raise StateContractError(message, code=code, locus=locus)
 
 
 def _group_keys(df: pd.DataFrame, group_by: list[str]) -> Any:
@@ -64,13 +86,20 @@ class _ExpressionEvaluator:
         if keys == {"column"}:
             column = expression["column"]
             _require(isinstance(column, str), "Column references must be strings.")
-            _require(column in self.observations, f"Unknown input column: {column!r}.")
+            _require(
+                column in self.observations,
+                f"Unknown input column: {column!r}.",
+                code="unknown_column",
+                locus={"column": column},
+            )
             values = self.observations[column]
             self.referenced_columns.add(column)
             if self.missing_policy == "error" and values.isna().any():
                 samples = _sample_indices(values.isna())
                 raise StateContractError(
-                    f"Input column {column!r} contains missing values at {samples}."
+                    f"Input column {column!r} contains missing values at {samples}.",
+                    code="missing_values_in_input",
+                    locus={"column": column, "observation_indices": samples},
                 )
             return values
         if keys == {"parameter"}:
@@ -81,13 +110,19 @@ class _ExpressionEvaluator:
             _require(
                 parameter in self.parameters,
                 f"Unknown contract parameter: {parameter!r}.",
+                code="unknown_parameter",
+                locus={"parameter": parameter},
             )
             return self.parameters[parameter]
         if keys == {"literal"}:
             return expression["literal"]
 
         op = expression.get("op")
-        _require(isinstance(op, str), "Expression must contain one known 'op'.")
+        _require(
+            isinstance(op, str),
+            "Expression must contain one known 'op'.",
+            code="malformed_expression",
+        )
         if op in {"abs", "neg", "not"}:
             _require(
                 keys == {"op", "value"},
@@ -124,7 +159,12 @@ class _ExpressionEvaluator:
             "eq": lambda left, right: left == right,
             "ne": lambda left, right: left != right,
         }
-        _require(op in comparisons, f"Unknown expression operator: {op!r}.")
+        _require(
+            op in comparisons,
+            f"Unknown expression operator: {op!r}.",
+            code="malformed_expression",
+            locus={"op": op},
+        )
         _require(
             keys == {"op", "left", "right"},
             f"Comparison {op!r} requires only 'op', 'left', and 'right'.",
@@ -158,7 +198,12 @@ def _normalize_group_by(contract: Mapping[str, Any], df: pd.DataFrame) -> list[s
         "Every 'group_by' entry must be a column name.",
     )
     missing = [column for column in group_by if column not in df]
-    _require(not missing, f"Unknown grouping columns: {missing}.")
+    _require(
+        not missing,
+        f"Unknown grouping columns: {missing}.",
+        code="unknown_grouping_column",
+        locus={"columns": missing},
+    )
     return group_by
 
 
@@ -238,11 +283,15 @@ def compile_states(
         )
         if exclusive and overlap.any():
             raise StateContractError(
-                f"States overlap at observation indices {_sample_indices(overlap)}."
+                f"States overlap at observation indices {_sample_indices(overlap)}.",
+                code="states_overlap",
+                locus={"observation_indices": _sample_indices(overlap)},
             )
         if exhaustive and gap.any():
             raise StateContractError(
-                f"No state is active at observation indices {_sample_indices(gap)}."
+                f"No state is active at observation indices {_sample_indices(gap)}.",
+                code="states_not_exhaustive",
+                locus={"observation_indices": _sample_indices(gap)},
             )
         # Object dtype keeps boundary comparisons two-valued. Pandas' nullable
         # string dtype propagates NA through the first shift comparison.
@@ -260,12 +309,22 @@ def compile_states(
         declared_labels: set[Any] | None = set(states)
     else:
         _require(isinstance(state_column, str), "'state_column' must be a string.")
-        _require(state_column in output, f"Unknown state column: {state_column!r}.")
+        _require(
+            state_column in output,
+            f"Unknown state column: {state_column!r}.",
+            code="unknown_state_column",
+            locus={"column": state_column},
+        )
         missing = output[state_column].isna()
         if missing.any():
             raise StateContractError(
                 f"State column {state_column!r} contains missing values at "
-                f"{_sample_indices(missing)}."
+                f"{_sample_indices(missing)}.",
+                code="missing_values_in_input",
+                locus={
+                    "column": state_column,
+                    "observation_indices": _sample_indices(missing),
+                },
             )
         output["state"] = output[state_column]
         report.append(
@@ -328,6 +387,8 @@ def compile_states(
                 _require(
                     label in declared_labels,
                     f"Event {event_name!r} names undeclared state {label!r}.",
+                    code="undeclared_state_in_event",
+                    locus={"event": event_name, "state": label},
                 )
             boundary_mask = entered if event_type == "enter_state" else exited
             output[event_name] = (
@@ -348,7 +409,11 @@ def compile_states(
             f"occurrences={output.groupby(occurrence_groups, dropna=False).ngroups}",
         )
     )
-    _require(bool(constant), "Occurrence IDs do not reconstruct constant state runs.")
+    _require(
+        bool(constant),
+        "Occurrence IDs do not reconstruct constant state runs.",
+        code="occurrence_reconstruction_failed",
+    )
     report.append(_validation_row("event_references", True, f"events={len(events)}"))
 
     return CompiledStateResult(
