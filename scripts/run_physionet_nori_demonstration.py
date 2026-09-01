@@ -12,14 +12,18 @@ reproduction of Synthefy's published benchmark suite.
 from __future__ import annotations
 
 import argparse
-import json
-import subprocess
-from importlib.metadata import version
 from pathlib import Path
 from typing import Any
 
 import numpy as np
 import pandas as pd
+
+from featuregraph.studies import (
+    git_commit_or_none,
+    package_versions,
+    write_frames,
+    write_json,
+)
 
 try:
     from scripts.run_physionet_wearable_protocol_study import (
@@ -388,36 +392,20 @@ def validate_predictions(objects: pd.DataFrame, predictions: pd.DataFrame) -> No
         raise AssertionError("A participant crossed fold boundaries")
 
 
-def package_versions() -> dict[str, str]:
-    packages = (
-        "featuregraph",
-        "lightgbm",
-        "numpy",
-        "pandas",
-        "scikit-learn",
-        "synthefy-nori",
-        "torch",
-        "xgboost-cpu",
-    )
-    return {package: version(package) for package in packages}
-
-
-def git_revision() -> str | None:
-    try:
-        return subprocess.run(
-            ["git", "rev-parse", "HEAD"],
-            check=True,
-            capture_output=True,
-            text=True,
-        ).stdout.strip()
-    except (OSError, subprocess.CalledProcessError):
-        return None
+DEMONSTRATION_PACKAGES = (
+    "featuregraph",
+    "lightgbm",
+    "numpy",
+    "pandas",
+    "scikit-learn",
+    "synthefy-nori",
+    "torch",
+    "xgboost-cpu",
+)
 
 
 def write_outputs(results: dict[str, pd.DataFrame], output: Path) -> None:
-    output.mkdir(parents=True, exist_ok=True)
-    for name, frame in results.items():
-        frame.to_csv(output / f"{name}.csv", index=False)
+    write_frames(results, output, compression=None)
     provenance = {
         "contract": STUDY_CONTRACT,
         "dataset": {
@@ -428,12 +416,10 @@ def write_outputs(results: dict[str, pd.DataFrame], output: Path) -> None:
             "version": "1.0.1",
             "doi": "10.13026/he0v-tf17",
         },
-        "package_versions": package_versions(),
-        "featuregraph_source_revision_before_result_commit": git_revision(),
+        "package_versions": package_versions(*DEMONSTRATION_PACKAGES),
+        "featuregraph_source_revision_before_result_commit": git_commit_or_none(),
     }
-    (output / "study_contract.json").write_text(
-        json.dumps(provenance, indent=2) + "\n"
-    )
+    write_json(output / "study_contract.json", provenance)
 
 
 def main() -> None:

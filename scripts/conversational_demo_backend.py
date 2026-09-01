@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 import tempfile
 from copy import deepcopy
 from pathlib import Path
@@ -11,6 +10,7 @@ from typing import Any
 import pandas as pd
 
 import featuregraph as fg
+from featuregraph.studies import write_json
 from featuregraph.study_builder import ExecutionReport
 from scripts.run_physionet_wearable_protocol_study import (
     APPROVED_STUDY_CONTRACT,
@@ -188,4 +188,4 @@ def write_demo_manifest(path: Path, *, mode: str, model: str | None) -> None:
         "execution": "deterministic protected PhysioNet fixture",
         "commercial_llm_in_execution_path": False,
     }
-    path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    write_json(path, payload, encoding="utf-8")
