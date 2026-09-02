@@ -74,6 +74,20 @@ artifacts/studies/*
 !artifacts/studies/physionet_nori_interoperability_study.md
 !artifacts/studies/physionet_nori/
 !artifacts/studies/physionet_nori/**
+!artifacts/studies/README.md
+!artifacts/studies/bidmc_multiscale_contract.md
+!artifacts/studies/bidmc_object_workflow_study.md
+!artifacts/studies/clap_state_object_study.md
+!artifacts/studies/clap_crop_object_construction.png
+!artifacts/studies/clap_crop_object_construction.svg
+!artifacts/studies/replica_mechanism_fidelity_study.md
+!artifacts/studies/tep_pressure_transfer_study.md
+!artifacts/studies/bidmc_multiscale_heldout/
+!artifacts/studies/bidmc_multiscale_heldout/**
+!artifacts/studies/bidmc_subject13_multiscale/
+!artifacts/studies/bidmc_subject13_multiscale/**
+!artifacts/studies/bidmc_window_85/
+!artifacts/studies/bidmc_window_85/**
 !artifacts/paper/
 artifacts/paper/*
 !artifacts/paper/framework/
@@ -94,6 +108,8 @@ artifacts/paper/discussion_and_limitations/*
 !artifacts/paper/abstract_and_conclusion/
 artifacts/paper/abstract_and_conclusion/*
 !artifacts/paper/abstract_and_conclusion/abstract_and_conclusion.md
+!artifacts/paper/master/
+!artifacts/paper/master/**
 /notebooks/.bidmc_notebook_cache/
 /notebooks/drafts/
 
