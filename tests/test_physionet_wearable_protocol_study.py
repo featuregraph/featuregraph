@@ -92,8 +92,7 @@ def test_external_boundaries_round_trip_through_compiler() -> None:
     assert mapped["boundary_exact"].all()
     assert "unassigned" in compiled["state"].unique()
     assert (
-        compiled["enter_protocol_state"].sum()
-        == compiled["exit_protocol_state"].sum()
+        compiled["enter_protocol_state"].sum() == compiled["exit_protocol_state"].sum()
     )
 
 

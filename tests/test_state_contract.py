@@ -63,9 +63,7 @@ def test_compiles_direction_states_events_and_occurrences():
 
 
 def test_group_boundaries_reset_occurrence_ids_and_events():
-    observations = pd.DataFrame(
-        {"record": ["a", "a", "b", "b"], "label": [1, 1, 1, 0]}
-    )
+    observations = pd.DataFrame({"record": ["a", "a", "b", "b"], "label": [1, 1, 1, 0]})
     contract = {
         "version": "state-contract-v1",
         "state_column": "label",

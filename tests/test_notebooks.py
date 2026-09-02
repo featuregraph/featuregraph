@@ -18,9 +18,7 @@ def is_maintained_notebook(path: Path) -> bool:
 
 
 NOTEBOOKS = sorted(
-    path
-    for path in NOTEBOOKS_ROOT.rglob("*.ipynb")
-    if is_maintained_notebook(path)
+    path for path in NOTEBOOKS_ROOT.rglob("*.ipynb") if is_maintained_notebook(path)
 )
 TRANSITION_API_NOTEBOOKS = sorted(
     path
@@ -33,12 +31,8 @@ TRANSITION_API_NOTEBOOKS = sorted(
 
 
 def test_notebook_discovery_excludes_unversioned_artifacts() -> None:
-    assert is_maintained_notebook(
-        NOTEBOOKS_ROOT / "tutorials" / "example.ipynb"
-    )
-    assert not is_maintained_notebook(
-        NOTEBOOKS_ROOT / "drafts" / "experiment.ipynb"
-    )
+    assert is_maintained_notebook(NOTEBOOKS_ROOT / "tutorials" / "example.ipynb")
+    assert not is_maintained_notebook(NOTEBOOKS_ROOT / "drafts" / "experiment.ipynb")
     assert not is_maintained_notebook(
         NOTEBOOKS_ROOT / ".ipynb_checkpoints" / "example.ipynb"
     )
@@ -63,15 +57,10 @@ def test_notebook_is_valid_and_has_no_saved_errors(path: Path) -> None:
     assert not errors
 
 
-@pytest.mark.parametrize(
-    "path", TRANSITION_API_NOTEBOOKS, ids=lambda path: path.name
-)
+@pytest.mark.parametrize("path", TRANSITION_API_NOTEBOOKS, ids=lambda path: path.name)
 def test_notebook_uses_current_transition_api(path: Path) -> None:
     notebook = json.loads(path.read_text(encoding="utf-8"))
-    source = "\n".join(
-        "".join(cell.get("source", []))
-        for cell in notebook["cells"]
-    )
+    source = "\n".join("".join(cell.get("source", [])) for cell in notebook["cells"])
 
     assert "fg.transition.Transition" in source
 

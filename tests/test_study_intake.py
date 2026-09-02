@@ -297,3 +297,29 @@ def test_checkpoint_is_rendered_from_the_intake():
     assert "Compiles today: yes" in done
     assert "Approvable today: yes" in done
     assert "- Preprocessing steps: declared as none" in done
+
+
+def test_a_constructed_timeline_is_an_ordering():
+    intake = StudyIntake.empty().declare(
+        **{
+            **COMPILABLE_DECLARATIONS,
+            "grouping_and_order": {
+                "group_by": ["series_id"],
+                "timeline": {"frequency": "1s", "closure": "left"},
+            },
+        }
+    )
+
+    # Placing observations on a regular timeline fixes their order at least as
+    # firmly as naming a sort column, and names no column at all. Demanding
+    # 'order_by' reported that choice as an omission.
+    assert intake.unstructured == ()
+    assert intake.to_state_contract()["group_by"] == ["series_id"]
+
+
+def test_an_ordering_declares_one_thing_or_the_other():
+    intake = StudyIntake.empty().declare(
+        **{**COMPILABLE_DECLARATIONS, "grouping_and_order": {"group_by": ["series_id"]}}
+    )
+
+    assert intake.unstructured == ("grouping_and_order",)

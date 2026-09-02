@@ -72,9 +72,7 @@ def test_candidate_approval_is_explicit_and_does_not_mutate_payload() -> None:
 
     assert "approval" not in candidate
     assert study_contract_payload(approved) == candidate
-    assert approved["approval"]["contract_sha256"] == study_contract_sha256(
-        candidate
-    )
+    assert approved["approval"]["contract_sha256"] == study_contract_sha256(candidate)
 
 
 def test_candidate_cannot_supply_its_own_approval() -> None:
