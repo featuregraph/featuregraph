@@ -2,17 +2,20 @@
 #
 # Deploy from the repository root:
 #   fly launch --no-deploy --copy-config --config apps/assistant/fly.toml
-#   fly secrets set COHERE_API_KEY=...
-#   fly deploy --config apps/assistant/fly.toml --dockerfile apps/assistant/Dockerfile
-#   fly certs add assistant.featuregraph.ai
+#   fly secrets set COHERE_API_KEY=... --config apps/assistant/fly.toml
+#   fly deploy . --config apps/assistant/fly.toml \
+#       --dockerfile apps/assistant/Dockerfile
+#   fly certs add assistant.featuregraph.ai --config apps/assistant/fly.toml
 #
 # Then point the `assistant` CNAME at <app>.fly.dev in the IONOS DNS panel.
 
 app = "featuregraph-assistant"
 primary_region = "sjc"
 
-[build]
-  dockerfile = "Dockerfile"
+# No [build] dockerfile key on purpose. The Dockerfile lives beside this file
+# but needs the repository root as its build context, and which of the two a
+# relative key is resolved against has varied between flyctl versions. Passing
+# both explicitly on the command line, as above, cannot be ambiguous.
 
 [env]
   PORT = "8080"
