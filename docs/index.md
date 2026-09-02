@@ -28,7 +28,9 @@ caption: Concepts
 ---
 
 concepts/behavioral-objects
+concepts/state-contracts
 behavior-architecture
+separating-proposals-from-execution
 ```
 
 ```{toctree}
@@ -38,7 +40,6 @@ caption: Reference
 ---
 
 api/index
-reproducibility
 ```
 
 ## Project resources
