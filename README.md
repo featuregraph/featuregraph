@@ -192,6 +192,41 @@ long_oscillations = (
 
 See the [beta demo notebook](https://github.com/featuregraph/featuregraph/blob/v0.1.0b1/notebooks/demo_notebook.ipynb) for oscillation, accumulation, query, BIDMC, and Tennessee Eastman examples.
 
+## Source data, caching, and air-gapped environments
+
+`fg.datasets.bidmc()` and `fg.datasets.eastman()` download on first use and
+cache the result. Two environment variables control where that cache lives and
+whether downloading is permitted at all.
+
+| Variable | Effect |
+| --- | --- |
+| `FEATUREGRAPH_CACHE_DIR` | Where cached source files live. Unset, `~/.cache/featuregraph`. |
+| `FEATUREGRAPH_OFFLINE` | When set, a loader that would download raises `SourceUnavailableError` instead. |
+
+Together these make the package usable where a home directory is not writable
+and outbound network access does not exist. Seed a directory from a machine
+that can reach the source, mount it, and point the variable at it:
+
+```bash
+# On a machine with network access:
+FEATUREGRAPH_CACHE_DIR=/data/featuregraph python -c "import featuregraph as fg; fg.datasets.bidmc(subject=1)"
+
+# Wherever the work actually runs, with no egress:
+export FEATUREGRAPH_CACHE_DIR=/data/featuregraph
+export FEATUREGRAPH_OFFLINE=1
+```
+
+`FEATUREGRAPH_OFFLINE` is not only a safeguard. Behind a route that drops
+packets rather than refusing them, an HTTP request does not fail — it hangs
+until the timeout, once per file. Declaring the environment offline turns that
+stall into an immediate error naming the file, the directory it belongs in, and
+the URL it came from.
+
+Seeding a cache is a way to avoid a download, never a way to avoid
+verification. A pre-seeded file is checked against
+`datasets/bidmc_manifest.json` exactly as a freshly downloaded one is, and one
+that does not match is refused.
+
 ## Beta research record
 
 The immutable beta software, evaluation artifacts, and reproduction tooling are
