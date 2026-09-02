@@ -3,6 +3,7 @@
 # Deploy from the repository root:
 #   fly launch --no-deploy --copy-config --config apps/assistant/fly.toml
 #   fly deploy . --config apps/assistant/fly.toml --remote-only
+#   fly scale count 1 --config apps/assistant/fly.toml
 #   fly certs add assistant.featuregraph.ai --config apps/assistant/fly.toml
 #
 # The trailing "." is the build context: the Dockerfile copies src/, scripts/
@@ -34,8 +35,15 @@ primary_region = "sjc"
   force_https = true
   auto_stop_machines = "stop"
   auto_start_machines = true
-  # One machine, deliberately. The call budget is a counter in this process, so
-  # a second machine would quietly double the ceiling it is there to enforce.
+  # A floor, not a cap: `fly launch` still creates two machines, and this key
+  # will not remove the second one. `fly scale count 1` is what does, and it
+  # has to be run once per app -- there is no fly.toml key for the count.
+  #
+  # Two machines break this app in two ways, because both the session registry
+  # and the call budget live in one process. Fly's proxy load-balances, so a
+  # visitor's next request can land on the other machine, find no session for
+  # their cookie, and start the conversation over. And the global ceiling is
+  # counted per process, so two machines make it twice what it says.
   min_machines_running = 1
 
   [[http_service.checks]]
