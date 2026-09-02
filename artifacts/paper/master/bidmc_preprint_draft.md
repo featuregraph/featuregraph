@@ -204,6 +204,13 @@ to 0.827.
 Median concentration was 0.382 for shared objects and 0.579 for W=79-only
 objects. Six records showed the opposite ordering.
 
+![Phase concentration for shared and W=79-only objects in each of the 20 eligible held-out records, ordered by their difference.](figures/fig2_phase_concentration_paired.png)
+
+**Figure 2.** Phase concentration by class in each eligible held-out record,
+ordered by difference. Pairing rather than differencing keeps visible that
+shared objects are themselves concentrated at about 0.38, which is what makes
+the comparison meaningful, and that six records run the other way.
+
 The result is descriptive. It says that in a majority of eligible held-out
 records, objects introduced by the shorter scale sit at more consistent cardiac
 phases than objects both scales agree on, and that the effect is not uniform.
@@ -233,6 +240,11 @@ They do not recur at cardiac frequency. The median monitor heart rate across
 the same 20 records was 89 beats per minute, a cardiac period of 0.674 seconds,
 and subject-level W=79-only rates ranged from 22.2 to 61.9 per minute. **No
 record had a W=79-only object rate within 10% of its own monitor heart rate.**
+
+![W=79-only object rate against monitor heart rate for each eligible record, with the equal-rate line and a plus or minus 10 percent band. Every record sits well below the band.](figures/fig3_rate_against_heart_rate.png)
+
+**Figure 3.** W=79-only object rate against monitor heart rate, with the
+equal-rate line and a ±10% band. No record falls inside the band.
 
 This distinguishes two claims that the development material does not separate.
 In subject 13 the shorter-scale peaks both recurred at a heart-rate-like
@@ -277,6 +289,13 @@ Matching each series independently:
 | Median fraction of annotated events matched | 0.993 | 0.993 |
 | Median fraction of detected peaks matched | 0.935 | 0.942 |
 
+![Fraction of detected peaks matched against fraction of annotated events matched, one point per record and annotator. Points are pinned to the right edge and spread vertically.](figures/fig4_annotation_agreement.png)
+
+**Figure 4.** The two matching directions against each other, one point per
+record and annotator. Points pin to the right and spread downward: annotated
+events are nearly always matched, detected peaks often are not. The isolated
+point is record 44, annotator 1, discussed below.
+
 The two fractions behave differently, and the asymmetry is the result. The
 construction rarely misses an annotated breath: only 7 of the 106
 record–annotator pairs matched fewer than 95% of annotated events. It routinely
@@ -302,3 +321,15 @@ matches 131. The construction and the event count are identical across the two
 comparisons, so the discrepancy is a property of that annotation series rather
 than of the objects. It is reported here rather than removed, and no result in
 this paper depends on it.
+
+# 11. Figures
+
+Figures 2 to 4 are regenerated from committed artifacts by
+`scripts/plot_bidmc_paper_figures.py`, which reads
+`artifacts/studies/bidmc_multiscale_heldout/subject_summary.csv` and
+`artifacts/studies/bidmc_window_85/annotation_summary.csv` and requires no
+network access or cached signal data.
+
+Figure 1, the construction on a single record, is produced by
+`scripts/analyze_bidmc_subject13_multiscale.py`, which needs the raw BIDMC
+signals and therefore runs only where those have been fetched.
