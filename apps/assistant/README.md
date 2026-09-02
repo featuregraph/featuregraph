@@ -57,5 +57,13 @@ instead, which is why that key is a bare filename.
 Build on Fly's builder with `--remote-only` unless a local Docker daemon is
 available; a Codespace generally has none.
 
-The global budget is a counter in one process, so the configuration pins a
-single machine; scaling out would multiply the ceiling rather than share it.
+Run `fly scale count 1` after the first deploy. `fly launch` creates two
+machines by default and `min_machines_running` will not reduce them -- it sets
+a floor, not a ceiling, and there is no fly.toml key for the count.
+
+This app must run on exactly one machine until its state moves out of the
+process. The session registry and the call budget are both in memory: with two
+machines behind Fly's load balancer a visitor's next request can land on the
+one that has never heard of them, and the global call ceiling is enforced twice
+over instead of once. Sharing state -- Redis for the counter, sticky sessions or
+a session store for the conversations -- is what a second machine needs first.
