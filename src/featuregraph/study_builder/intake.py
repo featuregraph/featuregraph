@@ -268,18 +268,37 @@ def _columns(value: Any) -> list[dict[str, Any]]:
 
 
 def _grouping(value: Any) -> dict[str, Any]:
+    """Read which columns separate series, and what establishes their order.
+
+    Order can be established two ways, and only one of them is a column. A study
+    may sort by a timestamp column, or it may construct a regular timeline and
+    place observations on it -- which fixes the order at least as firmly, and
+    names no column at all. Requiring 'order_by' treated the second as an
+    omission when it is a different and fully explicit choice.
+    """
     if not isinstance(value, Mapping):
         raise _ShapeError(
-            "grouping_and_order must be a mapping with 'group_by' and 'order_by'."
+            "grouping_and_order must be a mapping with 'group_by' and either "
+            "'order_by' or 'timeline'."
         )
     raw = value.get("group_by", [])
     group_by = [raw] if isinstance(raw, str) else list(raw or [])
     if not all(isinstance(column, str) for column in group_by):
         raise _ShapeError("Every 'group_by' entry must be a column name.")
     order_by = value.get("order_by")
-    if not isinstance(order_by, str) or not order_by:
-        raise _ShapeError("grouping_and_order must name an 'order_by' column.")
-    return {"group_by": group_by, "order_by": order_by}
+    timeline = value.get("timeline")
+    if isinstance(order_by, str) and order_by:
+        return {"group_by": group_by, "order_by": order_by, "timeline": None}
+    if isinstance(timeline, Mapping) and timeline.get("frequency"):
+        return {
+            "group_by": group_by,
+            "order_by": None,
+            "timeline": deepcopy(dict(timeline)),
+        }
+    raise _ShapeError(
+        "grouping_and_order must name an 'order_by' column or declare a "
+        "'timeline' with a frequency."
+    )
 
 
 def _states(value: Any) -> dict[str, Any]:
@@ -552,6 +571,7 @@ class StudyIntake:
             "group_by": fragments.pop("group_by"),
             "order_by": fragments.pop("order_by"),
         }
+        fragments.pop("timeline", None)
 
         contract: dict[str, Any] = {
             "version": STATE_CONTRACT_VERSION,
@@ -575,7 +595,9 @@ class StudyIntake:
         data is loaded. Catching it here means a researcher hears about a typo
         during intake rather than after a dataset fetch.
         """
-        used_columns: set[str] = set(grouping["group_by"]) | {grouping["order_by"]}
+        used_columns: set[str] = set(grouping["group_by"])
+        if isinstance(grouping["order_by"], str):
+            used_columns.add(grouping["order_by"])
         used_parameters: set[str] = set()
         if "state_column" in contract:
             used_columns.add(contract["state_column"])
@@ -793,16 +815,127 @@ def _states_from_compiler(compiler: Mapping[str, Any]) -> Any:
     return None
 
 
-def _grouping_from_compiler(compiler: Mapping[str, Any]) -> Any:
+def _grouping_from_compiler(
+    compiler: Mapping[str, Any], sources: Mapping[str, Any]
+) -> Any:
+    """Read what separates series, and what orders them -- column or timeline."""
     group_by = compiler.get("group_by")
     order_by = compiler.get("order_by")
-    if group_by is None and order_by is None:
+    frequency = sources.get("timeline_frequency")
+    if group_by is None and order_by is None and not frequency:
         return None
-    # Deliberately partial. A state contract does not have to name an ordering
-    # column -- the caller's adapter often supplies the order -- so this reads
-    # back what is there and leaves the field to fail its shape check if the
-    # ordering was never written down.
-    return {"group_by": group_by if group_by is not None else [], "order_by": order_by}
+    grouping: dict[str, Any] = {
+        "group_by": group_by if group_by is not None else [],
+    }
+    if isinstance(order_by, str) and order_by:
+        grouping["order_by"] = order_by
+    elif isinstance(frequency, str) and frequency:
+        timeline: dict[str, Any] = {"frequency": frequency}
+        closure = sources.get("interval_closure")
+        if isinstance(closure, str) and closure:
+            timeline["closure"] = closure
+        grouping["timeline"] = timeline
+    return grouping
+
+
+#: Validation flags that answer "what counts as a boundary", rather than
+#: "what counts as complete". Both are declarations; they answer different
+#: intake questions and are read into different fields.
+_BOUNDARY_VALIDATION_HINTS = ("boundar", "duration")
+
+
+def _observation_schema_from_contract(
+    sources: Mapping[str, Any], compiler: Mapping[str, Any]
+) -> Any:
+    """Read the inputs a contract declares, wherever it declares them.
+
+    A study contract does not have to carry a column table. This one names its
+    signals and their files under ``sources``, and names its grouping and state
+    columns under ``state_compiler``. Those are declarations of what the
+    observations contain, so they are read as the schema rather than reported
+    as an absence -- which is what happened when this only looked in one place.
+    """
+    entries: list[dict[str, Any]] = []
+    for signal in sources.get("signals", []) or []:
+        if isinstance(signal, Mapping) and isinstance(signal.get("name"), str):
+            entry: dict[str, Any] = {"column": signal["name"]}
+            if isinstance(signal.get("file"), str):
+                entry["file"] = signal["file"]
+            entries.append(entry)
+    for key, role in (("group_by", "grouping"), ("state_column", "state")):
+        value = compiler.get(key)
+        columns = [value] if isinstance(value, str) else list(value or [])
+        for column in columns:
+            if isinstance(column, str) and column not in {e["column"] for e in entries}:
+                entries.append({"column": column, "role": role})
+    return entries or None
+
+
+def _time_semantics_from_sources(sources: Mapping[str, Any]) -> Any:
+    """Read how a contract fixes the meaning of time, if it says."""
+    frequency = sources.get("timeline_frequency")
+    closure = sources.get("interval_closure")
+    parts = []
+    if isinstance(frequency, str) and frequency:
+        parts.append(f"observations placed on a regular {frequency} timeline")
+    if isinstance(closure, str) and closure:
+        parts.append(f"intervals closed on the {closure}")
+    return "; ".join(parts) or None
+
+
+def _preprocessing_from_contract(
+    sources: Mapping[str, Any], measurements: Mapping[str, Any]
+) -> Any:
+    """Read what a contract says was done to observations before compiling."""
+    steps: list[str] = []
+    policy = measurements.get("sampling_policy")
+    if isinstance(policy, str) and policy:
+        steps.append(f"sampling policy: {policy}")
+    label = sources.get("unassigned_label")
+    if isinstance(label, str) and label:
+        steps.append(f"time outside a declared state labelled {label!r}")
+    return steps or None
+
+
+def _split_validations(validations: Mapping[str, Any]) -> tuple[Any, Any]:
+    """Separate a contract's requirements into boundary and completeness rules."""
+    boundary: dict[str, Any] = {}
+    completeness: dict[str, Any] = {}
+    for key, value in validations.items():
+        if not key.startswith("require"):
+            continue
+        target = (
+            boundary
+            if any(hint in key for hint in _BOUNDARY_VALIDATION_HINTS)
+            else completeness
+        )
+        target[key] = value
+    return boundary or None, completeness or None
+
+
+def _with_events(boundary: Any, compiler: Mapping[str, Any]) -> Any:
+    """Fold a contract's declared enter and exit events into its boundary rules."""
+    events = compiler.get("events")
+    if not isinstance(events, Mapping) or not events:
+        return boundary
+    combined = dict(boundary or {})
+    combined["events"] = deepcopy(dict(events))
+    return combined
+
+
+def _parameters_from_compiler(compiler: Mapping[str, Any]) -> Any:
+    """Read declared parameters, or record that none can exist.
+
+    A contract that supplies labels in a column has no state expressions, so it
+    has no thresholds to name. That is "there are none", not "nobody said" --
+    the same distinction the v1 schema lost by writing [] for both.
+    """
+    parameters = compiler.get("parameters")
+    if parameters is not None:
+        return parameters
+    if isinstance(compiler.get("state_column"), str):
+        return []
+    return None
 
 
 def _provenance_from_contract(contract: Mapping[str, Any]) -> Any:
@@ -824,9 +957,13 @@ def intake_from_study_contract(contract: Mapping[str, Any]) -> StudyIntake:
     fields it never wrote down show up as open questions rather than as
     assumptions someone has to remember.
 
-    Only conventions the contracts in this repository actually use are read.
-    Anything a contract does not carry -- a research question, the observation
-    schema, what preprocessing ran -- is left unset. Guessing here would put
+    Every section these contracts use is read, including ``sources`` and the
+    ``require_*`` validation flags. That matters more than it sounds: a field
+    this function fails to look for is reported as undeclared, so a narrow
+    reader does not produce a smaller answer -- it produces a wrong one, and
+    says a researcher never wrote down something they did.
+
+    What a contract genuinely does not carry is left unset. Guessing would put
     words in a researcher's mouth and then present them as declared.
     """
     if not isinstance(contract, Mapping):
@@ -846,6 +983,15 @@ def intake_from_study_contract(contract: Mapping[str, Any]) -> StudyIntake:
         if isinstance(contract.get("measurements"), Mapping)
         else {}
     )
+    sources = (
+        contract.get("sources") if isinstance(contract.get("sources"), Mapping) else {}
+    )
+    validations = (
+        contract.get("validations")
+        if isinstance(contract.get("validations"), Mapping)
+        else {}
+    )
+    boundary, completeness = _split_validations(validations)
 
     declared: dict[str, Any] = {
         "title": study.get("name"),
@@ -857,10 +1003,14 @@ def intake_from_study_contract(contract: Mapping[str, Any]) -> StudyIntake:
         "claim_limits": contract.get("claim_boundaries"),
         "provenance": _provenance_from_contract(contract),
         "states_or_labels": _states_from_compiler(compiler),
-        "grouping_and_order": _grouping_from_compiler(compiler),
-        "operator_parameters": compiler.get("parameters"),
-        "boundary_rules": compiler.get("boundary_policy"),
-        "completeness_rules": compiler.get("validation"),
+        "grouping_and_order": _grouping_from_compiler(compiler, sources),
+        "operator_parameters": _parameters_from_compiler(compiler),
+        "observation_schema": _observation_schema_from_contract(sources, compiler),
+        "time_semantics": _time_semantics_from_sources(sources),
+        "preprocessing_steps": _preprocessing_from_contract(sources, measurements),
+        "boundary_rules": compiler.get("boundary_policy")
+        or _with_events(boundary, compiler),
+        "completeness_rules": compiler.get("validation") or completeness,
     }
     return StudyIntake.empty().declare(
         **{name: value for name, value in declared.items() if value is not None}

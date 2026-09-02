@@ -31,12 +31,12 @@ def test_external_state_compiler_matches_object_adapter_boundaries() -> None:
     objects = fg.from_state_sequence(states).observations
 
     assert compiled["state"].tolist() == states
-    assert compiled["state_occurrence_id"].tolist() == objects[
-        "occurrence_id"
-    ].tolist()
-    assert compiled["enter_state_occurrence"].tolist() == objects[
-        "enter_state_occurrence"
-    ].tolist()
-    assert compiled["exit_state_occurrence"].tolist() == objects[
-        "exit_state_occurrence"
-    ].tolist()
+    assert compiled["state_occurrence_id"].tolist() == objects["occurrence_id"].tolist()
+    assert (
+        compiled["enter_state_occurrence"].tolist()
+        == objects["enter_state_occurrence"].tolist()
+    )
+    assert (
+        compiled["exit_state_occurrence"].tolist()
+        == objects["exit_state_occurrence"].tolist()
+    )

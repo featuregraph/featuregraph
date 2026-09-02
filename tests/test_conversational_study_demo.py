@@ -266,10 +266,18 @@ def test_session_intake_is_seeded_from_the_template_contract(tmp_path) -> None:
         session.intake.get("claim_limits")
         == (APPROVED_STUDY_CONTRACT.contract["claim_boundaries"])
     )
-    # The published contract never wrote these down. They are reported as
-    # unstated rather than silently assumed.
-    assert "research_question" in session.intake.missing_information
-    assert "observation_schema" in session.intake.missing_information
+    # The contract declares its inputs under `sources`, not in a column table,
+    # and they are read from there. An earlier reader looked only at
+    # `state_compiler` and reported this as undeclared -- which is the failure
+    # worth a test: a reader that does not look somewhere does not return less,
+    # it returns something false.
+    assert "observation_schema" not in session.intake.missing_information
+    assert {"HR", "EDA", "TEMP"} <= {
+        entry["column"] for entry in session.intake.get("observation_schema")
+    }
+    # A construction contract genuinely does not state one; it is the single
+    # field of the seventeen this study leaves to the paper.
+    assert session.intake.missing_information == ("research_question",)
 
 
 def test_the_conversation_declares_onto_the_intake(tmp_path) -> None:

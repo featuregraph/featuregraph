@@ -47,7 +47,10 @@ These are tracked separately, because they lead to different conversations:
 `compilable`
 : `observation_schema`, `grouping_and_order`, `states_or_labels`,
   `operator_parameters`, `boundary_rules`, `completeness_rules`. Without these
-  no contract can be emitted at all.
+  no contract can be emitted at all. Ordering counts as declared whether it
+  names a sort column or places observations on a constructed timeline — the
+  second fixes order at least as firmly and names no column, and treating it
+  as an omission was a bug.
 
 `approvable`
 : the research question, the object definition, the measurements, the
@@ -55,10 +58,13 @@ These are tracked separately, because they lead to different conversations:
   A person putting their name to a study should have.
 
 A third state exists that the flat list could not express: a field answered in
-prose where the compiler needs a rule. It is not missing — someone answered —
-but it cannot execute. {py:attr}`~featuregraph.study_builder.intake.StudyIntake.unstructured`
-reports these separately, and the error raised on compilation names the two
-causes apart:
+a form the compiler cannot execute. It is not missing — someone answered — but
+it cannot compile. A study contract may declare its completeness requirements
+in its own vocabulary rather than as the compiler's `exclusive` and
+`exhaustive` flags; that is a declaration, not a gap.
+{py:attr}`~featuregraph.study_builder.intake.StudyIntake.unstructured` reports
+these separately, and the error raised on compilation names the two causes
+apart:
 
 ```python
 intake.to_state_contract()
@@ -100,8 +106,24 @@ intake. It is seeded from the template contract by
 {py:func}`~featuregraph.study_builder.intake.intake_from_study_contract`, so the
 fields a published study already declares are not asked again, and the fields it
 never wrote down are visible instead of assumed. The PhysioNet wearable protocol
-contract, for instance, carries ten of the seventeen; it states no research
-question, no observation schema, and no ordering column for its grouping.
+contract, for instance, carries sixteen of the seventeen. The one it leaves
+unstated is the research question, which lives in the paper rather than in a
+construction contract.
+
+```{note}
+An earlier version of this reader looked only at `study`, `dataset`,
+`state_compiler`, `measurements` and `validations`, and reported that same
+contract as carrying **ten** of seventeen. It never opened `sources`, where the
+contract declares its signals, its timeline frequency and its interval closure.
+
+That is the failure mode worth naming, because it is quiet and it is
+defamatory: a reader that does not look somewhere does not return a smaller
+answer, it returns a false one — and the false answer accuses a researcher of
+never having written down something they did write down. The fix is that the
+reader now reads every section these contracts use; the guard is
+`test_session_intake_is_seeded_from_the_template_contract`, which asserts the
+signals are found and that exactly one field is outstanding.
+```
 
 Every proposal the assistant makes is recorded as a declaration on that intake
 rather than written straight into a candidate. The candidate's

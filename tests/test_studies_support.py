@@ -161,9 +161,7 @@ def test_write_frames_defaults_to_gzip(tmp_path: Path) -> None:
 
 
 def test_write_frames_without_compression_writes_plain_csv(tmp_path: Path) -> None:
-    write_frames(
-        {"summary": pd.DataFrame({"a": [1]})}, tmp_path, compression=None
-    )
+    write_frames({"summary": pd.DataFrame({"a": [1]})}, tmp_path, compression=None)
 
     assert (tmp_path / "summary.csv").exists()
     assert not (tmp_path / "summary.csv.gz").exists()
