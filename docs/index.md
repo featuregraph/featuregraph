@@ -29,6 +29,7 @@ caption: Concepts
 
 concepts/behavioral-objects
 concepts/state-contracts
+concepts/study-intake
 behavior-architecture
 separating-proposals-from-execution
 ```
