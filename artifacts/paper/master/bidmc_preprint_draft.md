@@ -35,6 +35,32 @@ For each parameterization, the rolling envelope consisted of a rolling maximum f
 
 Directional changes in each aligned envelope were used to classify states as rising when the first difference exceeded \(10^{-12}\), falling when it was less than \(-10^{-12}\), and inactive when its absolute value was at most \(10^{-12}\). Boundaries marked entry into and exit from each state, and ordered state transitions were composed into trough–peak–trough objects. A complete object required an ordered start trough, peak, and end trough with nonoverlapping boundary intervals; partial objects at the rolling-window edges, the final open object, and objects with ambiguous plateau ordering were excluded.
 
+The tolerance of \(10^{-12}\) is not a rounding convenience. An earlier
+workflow study of the same construction at 100 samples found floating-point
+variation of approximately \(5.55 \times 10^{-17}\) in numerically flat
+regions of the envelope. Against an exact-zero boundary that variation produced
+repeated state changes and spurious object identities. Declaring the fixed
+tolerance removed 207 complete objects and changed none of the 7,086 objects
+matched against that study's comparator, which distinguishes the residue from a
+genuine envelope change of approximately \(9.7 \times 10^{-6}\).
+
+The mechanism that manufactures objects from numerical noise was therefore
+characterised and eliminated by declaration before any of the analysis reported
+here. Objects surviving at one scale and not another are not that residue.
+
+Three rolling-envelope parameterizations of this construction exist. The
+79- and 100-sample pair was registered before the cardiac-phase analysis and is
+the pair the frozen contract governs. An 85-sample construction was executed
+later under a separately approved change to the registered study, with the
+dataset, state contract, numerical tolerance, trough–peak–trough boundaries,
+completeness rules, comparator, matching tolerance, measurements and claim
+limits all unchanged; window length was again the only parameter that differed.
+Its effective support is 169 samples, or approximately 1.352 seconds at 125 Hz.
+
+The 85-sample construction contributes to the scale-dependence and
+annotation-comparison results only. No cardiac-phase quantity is computed from
+it, and the frozen primary outcome in Section 9 is unaffected by its existence.
+
 # 4. Cross-scale object comparison
 
 Objects were classified according to whether they could be matched across the two temporal scales. Shared objects were constructed at both the 79- and 100-sample scales, whereas shorter-scale-only and longer-scale-only objects were constructed exclusively at 79 and 100 samples, respectively. Complete objects were matched by peak index using a tolerance of 63 samples, equivalent to 0.504 seconds at 125 Hz.
@@ -59,3 +85,251 @@ The contract was frozen before those rules were applied unchanged to the 49 held
 ECG events were used as an independent timestamp series against which the respiratory-waveform object peaks could be positioned. Events detected from ECG lead II were checked against the available secondary ECG leads and the dataset's monitor heart-rate values using rules fixed during development. The complete event-detection and validation parameters are reported in the [frozen analysis contract](https://github.com/featuregraph/featuregraph/blob/main/artifacts/studies/bidmc_multiscale_contract.md) and reproduction code.
 
 Forty-one of the 49 held-out records passed the validation requirements. The other eight records were excluded from the ECG-relative analysis because they did not meet one or more prespecified checks: agreement between ECG leads, the event detector's supported rate range, or agreement between the event count and monitor heart rate. These exclusions remained visible in the published coverage table rather than being removed or corrected through record-specific parameter changes.
+
+# 7. Cardiac-phase calculation
+
+Every respiratory-object peak bracketed by two consecutive lead-II R events was
+assigned a position within that cardiac cycle:
+
+\[ \text{phase} = \frac{\text{respiratory peak} - \text{preceding } R}{\text{following } R - \text{preceding } R} \]
+
+The result is a value in [0, 1). Peaks not bracketed by two events, including
+those before the first and after the last detected event, contributed no phase.
+
+Phase is circular, so we summarised a set of phases by the resultant length of
+their unit vectors. The resultant length runs from zero, when phases are spread
+uniformly around the cycle, to one, when every object occupies the identical
+cardiac phase. It is a measure of concentration and carries no information
+about where in the cycle that concentration sits.
+
+We calculated the resultant length separately for shared objects and for
+W=79-only objects within each ECG-valid record. A class-specific estimate
+required at least five eligible objects of that class in that record. Records
+supplying fewer than five objects in either class contributed no difference and
+are reported in the coverage table rather than dropped.
+
+# 8. Annotation relationship
+
+The BIDMC dataset supplies two independent breath-annotation series. A W=79-only
+peak was recorded as annotation-supported when either series contained an event
+within 63 samples, the same tolerance used for cross-scale matching.
+
+This is a relationship, not a truth label. The two series disagree with each
+other in regions where shorter-scale objects occur, and one annotator marked a
+W=79-only peak that the other did not. Proximity to an annotation therefore does
+not establish the physiological identity of an object, and the absence of a
+nearby annotation does not establish that an object is spurious. We report the
+fraction and draw no inference from it about which objects are breaths.
+
+A second, separate comparison was made against the annotation series at the
+85-sample scale. Every detected object peak was matched against each annotation
+series independently, and two fractions were recorded for each record and
+annotator: the proportion of detected peaks with a nearby annotated event, and
+the proportion of annotated events with a nearby detected peak. These measure
+different things and are reported separately, because a construction can agree
+with an annotator about every breath the annotator marked while also
+constructing objects the annotator did not.
+
+# 9. Frozen outcomes and claim boundaries
+
+The primary held-out outcome was fixed before execution as the subject-level
+difference between class concentrations:
+
+\[ \Delta R = R(\text{W=79-only}) - R(\text{shared}) \]
+
+We report its distribution and the number of subjects for which it is positive.
+Secondary outcomes are W=79-only counts and concentration by subject, the
+annotation-supported fraction, and ECG-valid coverage with every exclusion
+reason. No parameter was tuned from the held-out result.
+
+The analysis tests one thing: whether objects introduced by the shorter temporal
+scale occupy more consistent positions in the cardiac cycle than objects shared
+by both scales. It does not assume that every W=79-only object is cardiogenic,
+that every shared object is a validated breath, or that phase concentration
+establishes a physiological mechanism. A positive difference is evidence that
+the two populations differ in their relationship to an independently recorded
+signal. It is not evidence of what either population is.
+
+# 10. Results
+
+## 10.1 Coverage and exclusions
+
+Forty-one of the 49 held-out records met every prespecified ECG gate. Eight did
+not, and remain in the coverage table:
+
+| Exclusion reason | Records |
+| --- | ---: |
+| Cross-lead agreement below 0.90 | 4 |
+| Monitor rate outside the refractory contract, derived-monitor difference above 5 beats/min, and cross-lead agreement below 0.90 | 2 |
+| Derived-monitor heart-rate difference above 5 beats/min | 1 |
+| Monitor rate outside the refractory contract | 1 |
+
+No alternative lead or parameter was substituted for an excluded record.
+
+## 10.2 Object populations
+
+Across all 53 records, the shorter scale constructed 8,780 complete objects and
+the longer scale 7,926. Matching produced 7,918 shared objects, 862 objects
+constructed only at W=79, and 8 constructed only at W=100. Shortening the window
+therefore added objects and almost never removed them: the two representations
+are close to nested, which is what makes the W=79-only population a coherent
+class rather than a mixture of gains and losses.
+
+Within the 49 held-out records the same construction produced 7,584 W=79 objects,
+7,192 W=100 objects, 7,186 shared, and 398 W=79-only. Restricting to the 41
+ECG-valid records leaves 6,407 W=79 objects, 6,074 shared, and 333 W=79-only.
+
+The four development records contributed 464 of the corpus total of 862
+W=79-only objects, and subject 13 alone contributed 194. The development set is
+therefore unusually rich in the phenomenon the contract was written to examine,
+which is a consequence of how those records were selected and a reason the
+held-out evaluation is the load-bearing one.
+
+## 10.3 Eligibility
+
+Of the 41 ECG-valid held-out records, 8 produced no W=79-only objects at all and
+13 produced between one and four, below the five required for a class-specific
+concentration estimate. Twenty records supplied at least five in both classes and
+yielded a difference. The primary outcome is therefore estimated on 20 of 49
+held-out records, and the 21 ECG-valid records that produced too few W=79-only
+objects are themselves a result: at most scales the shorter window adds nothing.
+
+## 10.4 Primary outcome
+
+Across the 20 eligible records the median difference in phase concentration was
+0.269, and 14 of the 20 differences were positive. The distribution is wide:
+the interquartile range runs from −0.038 to 0.459 and the full range from −0.287
+to 0.827.
+
+Median concentration was 0.382 for shared objects and 0.579 for W=79-only
+objects. Six records showed the opposite ordering.
+
+![Phase concentration for shared and W=79-only objects in each of the 20 eligible held-out records, ordered by their difference.](figures/fig2_phase_concentration_paired.png)
+
+**Figure 2.** Phase concentration by class in each eligible held-out record,
+ordered by difference. Pairing rather than differencing keeps visible that
+shared objects are themselves concentrated at about 0.38, which is what makes
+the comparison meaningful, and that six records run the other way.
+
+The result is descriptive. It says that in a majority of eligible held-out
+records, objects introduced by the shorter scale sit at more consistent cardiac
+phases than objects both scales agree on, and that the effect is not uniform.
+
+## 10.5 Annotation relationship
+
+Twenty-nine of the 333 W=79-only objects in ECG-valid held-out records, or 8.7%,
+had an event in either annotation series within 63 samples. Across all 49
+held-out records the count was 38 of 398.
+
+Most W=79-only objects are not near an annotated breath. Under the claim
+boundaries in Section 9 this neither confirms nor refutes a cardiogenic reading:
+the annotation series were not constructed to mark cardiac-frequency structure,
+and they disagree with each other where such structure occurs.
+
+## 10.6 Duration and recurrence rate of shorter-scale-only objects
+
+Object rate is the reciprocal of object period, at 60 divided by the period in
+seconds. Across the 20 eligible held-out records the median W=79-only object
+rate was 32.4 per minute, corresponding to a median object period of 1.85
+seconds. The median period of all W=79 objects is 3.196 seconds, or 18.8 per
+minute. Objects introduced by the shorter scale are therefore about half the
+duration of the objects both scales construct, which is the structure the
+longer window is expected to suppress.
+
+They do not recur at cardiac frequency. The median monitor heart rate across
+the same 20 records was 89 beats per minute, a cardiac period of 0.674 seconds,
+and subject-level W=79-only rates ranged from 22.2 to 61.9 per minute. **No
+record had a W=79-only object rate within 10% of its own monitor heart rate.**
+
+![W=79-only object rate against monitor heart rate for each eligible record, with the equal-rate line and a plus or minus 10 percent band. Every record sits well below the band.](figures/fig3_rate_against_heart_rate.png)
+
+**Figure 3.** W=79-only object rate against monitor heart rate, with the
+equal-rate line and a ±10% band. No record falls inside the band.
+
+This distinguishes two claims that the development material does not separate.
+In subject 13 the shorter-scale peaks both recurred at a heart-rate-like
+frequency and sat at consistent cardiac phase. In the held-out population only
+the second holds. Phase concentration and rate locking are separate properties,
+the frozen contract tests only the first, and the held-out result supports only
+the first. A reading in which every W=79-only object is one oscillation per
+heartbeat is not supported by these records.
+
+## 10.7 Scale dependence across three windows
+
+A third parameterization at 85 samples was executed separately under an
+approved change to the registered study, with the dataset, state contract,
+numerical tolerance, boundaries, completeness rules and measurements unchanged.
+Its comparison table places the two scales used here in a monotone sequence:
+
+| Window (samples) | Effective support | Complete objects | Mean period (s) | Median subject period (s) |
+| ---: | ---: | ---: | ---: | ---: |
+| 79 | 157 | 8,780 | 2.853 | 3.196 |
+| 85 | 169 | 8,489 | 2.952 | 3.224 |
+| 100 | 199 | 7,926 | 3.173 | 3.288 |
+
+Lengthening the window monotonically reduces the number of complete objects and
+lengthens their mean period. The relationship is not proportional: a 27% increase
+in effective support from 157 to 199 samples removes 10% of the objects and
+lengthens the mean period by 11%.
+
+The scale parameter is therefore not a cleaning choice made before the analysis.
+It selects which reversals survive to become objects, and every downstream count,
+period and rate is conditioned on it.
+
+## 10.8 Agreement with the breath annotations
+
+At the 85-sample scale the construction detected 8,607 peaks across the 53
+records. The first annotation series marks 7,288 events and the second 7,381.
+Matching each series independently:
+
+| | Annotator 1 | Annotator 2 |
+| --- | ---: | ---: |
+| Annotated events | 7,288 | 7,381 |
+| Matched | 7,018 | 7,303 |
+| Median fraction of annotated events matched | 0.993 | 0.993 |
+| Median fraction of detected peaks matched | 0.935 | 0.942 |
+
+![Fraction of detected peaks matched against fraction of annotated events matched, one point per record and annotator. Points are pinned to the right edge and spread vertically.](figures/fig4_annotation_agreement.png)
+
+**Figure 4.** The two matching directions against each other, one point per
+record and annotator. Points pin to the right and spread downward: annotated
+events are nearly always matched, detected peaks often are not. The isolated
+point is record 44, annotator 1, discussed below.
+
+The two fractions behave differently, and the asymmetry is the result. The
+construction rarely misses an annotated breath: only 7 of the 106
+record–annotator pairs matched fewer than 95% of annotated events. It routinely
+constructs objects the annotators did not mark: 57 of the 106 pairs matched
+fewer than 95% of detected peaks.
+
+This is the same asymmetry as the cross-scale comparison in Section 10.2, against
+a different comparator. Shortening the window adds objects and almost never
+removes them; the construction adds objects relative to the annotations and
+almost never misses one they marked.
+
+The annotators also disagree with each other. They report identical event counts
+in 22 of the 53 records. The median absolute difference is one event and the
+maximum is 28, in record 46, where one series marks 95 events and the other 123.
+Two records show the construction detecting far more peaks than either annotator
+marks: record 5, with 149 detected against 48 annotated by both series, and
+record 13, with 400 detected against 160 and 165. Record 13 is a development
+record and the subject examined in the multiscale audit.
+
+One record–annotator pair is anomalous rather than informative. In record 44
+both series mark 132 events, but the first matches 2 of them and the second
+matches 131. The construction and the event count are identical across the two
+comparisons, so the discrepancy is a property of that annotation series rather
+than of the objects. It is reported here rather than removed, and no result in
+this paper depends on it.
+
+# 11. Figures
+
+Figures 2 to 4 are regenerated from committed artifacts by
+`scripts/plot_bidmc_paper_figures.py`, which reads
+`artifacts/studies/bidmc_multiscale_heldout/subject_summary.csv` and
+`artifacts/studies/bidmc_window_85/annotation_summary.csv` and requires no
+network access or cached signal data.
+
+Figure 1, the construction on a single record, is produced by
+`scripts/analyze_bidmc_subject13_multiscale.py`, which needs the raw BIDMC
+signals and therefore runs only where those have been fetched.
