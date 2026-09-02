@@ -92,3 +92,37 @@ person calling `approve_study_contract`, and by nothing else.
 markdown summary a researcher reads between turns. It is rendered from the
 intake rather than written by the assistant, which means the summary on screen
 and the payload the compiler would receive can no longer disagree.
+
+## In the conversation
+
+{py:class}`~featuregraph.study_builder.ConversationalStudySession` holds a live
+intake. It is seeded from the template contract by
+{py:func}`~featuregraph.study_builder.intake.intake_from_study_contract`, so the
+fields a published study already declares are not asked again, and the fields it
+never wrote down are visible instead of assumed. The PhysioNet wearable protocol
+contract, for instance, carries ten of the seventeen; it states no research
+question, no observation schema, and no ordering column for its grouping.
+
+Every proposal the assistant makes is recorded as a declaration on that intake
+rather than written straight into a candidate. The candidate's
+`unresolved_questions` are then the model's own questions *plus* the holes
+derived from the intake, over the fields this session is answerable for —
+`governed_intake_fields`, by default the research question and the measurements.
+
+That last part is the point of the wiring. `unresolved_questions` used to come
+straight from the model, which meant an assistant that left a hole and did not
+notice it produced a candidate that looked complete. Now a hole in a governed
+field blocks approval whether or not the model mentioned it:
+
+```python
+session.state()["open_questions"]
+# ['measurements: The statistics computed over those objects.']
+```
+
+Fields outside `governed_intake_fields` are still reported — they appear in
+`session.state()["intake"]` and in the conversation checkpoint — but they do not
+block a study whose template already declares them.
+
+The intake is rendered into the conversation checkpoint that is written every
+turn, not into a file of its own. It changes on every turn, and a per-turn
+artifact for it would be one more thing to keep in step.

@@ -726,26 +726,33 @@ def _render_value(field: IntakeField, value: Any) -> list[str]:
     return [f"- {field.heading}:"] + [f"  - {entry}" for entry in value]
 
 
-def render_checkpoint(intake: StudyIntake) -> str:
+def render_checkpoint(intake: StudyIntake, *, level: int = 1) -> str:
     """Render an intake as the markdown checkpoint, derived from the intake.
 
     The deployed v1 assistant wrote this text itself, which meant the summary a
     researcher read and the payload the compiler would receive were two
     separate model outputs that could disagree. Rendering it here makes the
     text a view of the data rather than a second claim about it.
+
+    ``level`` shifts every heading down, so the same renderer can stand alone
+    or sit inside a larger checkpoint without two copies of it existing.
     """
+    if level < 1:
+        raise StudyIntakeError("Heading level must be 1 or greater.")
+    top = "#" * level
+    sub = "#" * (level + 1)
     title = intake.get("title") or "Untitled study"
     lines = [
-        f"# {title}: intake checkpoint v{INTAKE_SCHEMA_VERSION}",
+        f"{top} {title}: intake checkpoint v{INTAKE_SCHEMA_VERSION}",
         "",
         f"Status: **{intake.status.replace('_', ' ')}**",
     ]
     for heading, names in _SECTIONS:
-        lines += ["", f"## {heading}"]
+        lines += ["", f"{sub} {heading}"]
         for name in names:
             lines += _render_value(FIELDS_BY_NAME[name], intake.get(name))
 
-    lines += ["", "## Completeness"]
+    lines += ["", f"{sub} Completeness"]
     for tier in (COMPILABLE, APPROVABLE):
         outstanding = intake.missing_in_tier(tier)
         detail = ", ".join(outstanding) if outstanding else "complete"
@@ -756,7 +763,7 @@ def render_checkpoint(intake: StudyIntake) -> str:
 
     lines += [
         "",
-        "## Execution boundary",
+        f"{sub} Execution boundary",
         "",
         f"- Executor registered: {'yes' if intake.executor_registered else 'no'}",
         f"- Compiles today: {'yes' if intake.is_compilable else 'no'}",
@@ -765,3 +772,96 @@ def render_checkpoint(intake: StudyIntake) -> str:
         _EXECUTION_BOUNDARY,
     ]
     return "\n".join(lines) + "\n"
+
+
+def _dataset_reference(dataset: Mapping[str, Any]) -> str | None:
+    parts = [
+        str(dataset[key])
+        for key in ("name", "version", "doi", "source_url")
+        if isinstance(dataset.get(key), str) and dataset[key]
+    ]
+    return ", ".join(parts) or None
+
+
+def _states_from_compiler(compiler: Mapping[str, Any]) -> Any:
+    column = compiler.get("state_column")
+    if isinstance(column, str) and column:
+        return {"state_column": column}
+    states = compiler.get("states")
+    if isinstance(states, Mapping) and states:
+        return [{"name": name, "when": rule} for name, rule in states.items()]
+    return None
+
+
+def _grouping_from_compiler(compiler: Mapping[str, Any]) -> Any:
+    group_by = compiler.get("group_by")
+    order_by = compiler.get("order_by")
+    if group_by is None and order_by is None:
+        return None
+    # Deliberately partial. A state contract does not have to name an ordering
+    # column -- the caller's adapter often supplies the order -- so this reads
+    # back what is there and leaves the field to fail its shape check if the
+    # ordering was never written down.
+    return {"group_by": group_by if group_by is not None else [], "order_by": order_by}
+
+
+def _provenance_from_contract(contract: Mapping[str, Any]) -> Any:
+    approval = contract.get("approval")
+    if not isinstance(approval, Mapping):
+        return None
+    return {
+        key: approval[key]
+        for key in ("authority", "status", "contract_sha256")
+        if key in approval
+    }
+
+
+def intake_from_study_contract(contract: Mapping[str, Any]) -> StudyIntake:
+    """Read an existing study contract back into an intake.
+
+    This is the bridge for a study that already exists: a published contract
+    becomes the starting point of a conversation about changing it, and the
+    fields it never wrote down show up as open questions rather than as
+    assumptions someone has to remember.
+
+    Only conventions the contracts in this repository actually use are read.
+    Anything a contract does not carry -- a research question, the observation
+    schema, what preprocessing ran -- is left unset. Guessing here would put
+    words in a researcher's mouth and then present them as declared.
+    """
+    if not isinstance(contract, Mapping):
+        raise StudyIntakeError("A study contract must be a mapping.")
+
+    study = contract.get("study") if isinstance(contract.get("study"), Mapping) else {}
+    dataset = (
+        contract.get("dataset") if isinstance(contract.get("dataset"), Mapping) else {}
+    )
+    compiler = (
+        contract.get("state_compiler")
+        if isinstance(contract.get("state_compiler"), Mapping)
+        else {}
+    )
+    measurements = (
+        contract.get("measurements")
+        if isinstance(contract.get("measurements"), Mapping)
+        else {}
+    )
+
+    declared: dict[str, Any] = {
+        "title": study.get("name"),
+        "object_definition": study.get("unit_of_analysis"),
+        "data_source": _dataset_reference(dataset),
+        "measurements": measurements.get("statistics"),
+        "validations": contract.get("validations"),
+        "exclusions": contract.get("exclusions"),
+        "claim_limits": contract.get("claim_boundaries"),
+        "provenance": _provenance_from_contract(contract),
+        "states_or_labels": _states_from_compiler(compiler),
+        "grouping_and_order": _grouping_from_compiler(compiler),
+        "operator_parameters": compiler.get("parameters"),
+        "boundary_rules": compiler.get("boundary_policy"),
+        "completeness_rules": compiler.get("validation"),
+    }
+    return StudyIntake.empty().declare(
+        **{name: value for name, value in declared.items() if value is not None}
+    )

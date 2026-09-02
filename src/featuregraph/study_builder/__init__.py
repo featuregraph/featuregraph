@@ -21,6 +21,7 @@ from featuregraph.study_builder.intake import (
     IntakeIncompleteError,
     StudyIntake,
     StudyIntakeError,
+    intake_from_study_contract,
     render_checkpoint,
 )
 
@@ -43,5 +44,6 @@ __all__ = [
     "StudyExecutor",
     "StudyIntake",
     "StudyIntakeError",
+    "intake_from_study_contract",
     "render_checkpoint",
 ]

@@ -18,6 +18,17 @@ from featuregraph.contracts.study_contract import (
     load_approved_study_contract,
     study_contract_payload,
 )
+from featuregraph.study_builder.intake import (
+    FIELDS_BY_NAME,
+    StudyIntake,
+    intake_from_study_contract,
+    render_checkpoint,
+)
+
+#: Intake fields this conversation is answerable for. The template contract
+#: supplies the rest, and a hole in one of these blocks approval no matter what
+#: the assistant claims about its own completeness.
+GOVERNED_INTAKE_FIELDS = ("research_question", "measurements")
 
 SUPPORTED_STATISTICS = ("samples", "mean", "median", "min", "max")
 REQUIRED_STATISTICS = ("samples", "median")
@@ -422,8 +433,17 @@ class ConversationalStudySession:
         executor: StudyExecutor,
         artifact_directory: Path,
         researcher_authority: str,
+        governed_intake_fields: Sequence[str] = GOVERNED_INTAKE_FIELDS,
     ) -> None:
         self.template_payload = study_contract_payload(template_contract)
+        unknown = sorted(set(governed_intake_fields) - set(FIELDS_BY_NAME))
+        if unknown:
+            raise ValueError(f"Unknown intake fields to govern: {unknown}.")
+        self.governed_intake_fields = tuple(governed_intake_fields)
+        # Seeded from the template rather than started empty, so the fields a
+        # published contract already declares are not re-asked, and the ones it
+        # never wrote down are visible instead of assumed.
+        self.intake: StudyIntake = intake_from_study_contract(template_contract)
         self.assistant = assistant
         self.executor = executor
         self.artifact_directory = artifact_directory.resolve()
@@ -458,6 +478,8 @@ class ConversationalStudySession:
             "can_approve": self.phase is SessionPhase.AWAITING_APPROVAL,
             "version": self.version,
             "artifacts": [asdict(link) for link in self._current_artifact_links()],
+            "intake": self.intake.to_payload(),
+            "open_questions": self._governed_gaps(),
         }
 
     def handle_message(self, message: str) -> ConversationResponse:
@@ -526,6 +548,9 @@ class ConversationalStudySession:
         self.version = next_version
         self.reports.append(report)
         self.approved_payloads.append(study_contract_payload(approved))
+        self.intake = self.intake.declare(
+            provenance=intake_from_study_contract(approved).get("provenance")
+        )
         self._write_specification(
             self.approved_payloads[-1],
             self.version,
@@ -552,19 +577,48 @@ class ConversationalStudySession:
         )
         return self._respond(reply)
 
+    def _declare_from(self, decision: DraftDecision) -> None:
+        """Record a proposal as intake declarations, not as settled fact."""
+        statistics = list(decision.measurement_statistics)
+        self.intake = self.intake.declare(
+            research_question=decision.research_question.strip() or None,
+            # An empty list is a researcher saying "there are none". Coming from
+            # an assistant that named no statistics it means the opposite -- the
+            # question was not answered -- so it is recorded as unanswered.
+            measurements=statistics or None,
+        )
+
+    def _governed_gaps(self) -> list[str]:
+        """Open questions derived from the intake, in this session's own fields.
+
+        The assistant reports its own unresolved questions, and an assistant
+        that fails to notice a hole reports none. These are computed from what
+        is actually declared, so the two cannot quietly disagree.
+        """
+        outstanding = set(self.intake.missing_information) | set(
+            self.intake.unstructured
+        )
+        return [
+            f"{name}: {FIELDS_BY_NAME[name].prompt}"
+            for name in self.governed_intake_fields
+            if name in outstanding
+        ]
+
     def _prepare_candidate(self, decision: DraftDecision) -> ConversationResponse:
+        self._declare_from(decision)
         candidate = deepcopy(
             self.approved_payloads[-1]
             if self.approved_payloads
             else self.template_payload
         )
         candidate["measurements"]["statistics"] = list(decision.measurement_statistics)
-        candidate["unresolved_questions"] = list(decision.unresolved_questions)
+        unresolved = list(decision.unresolved_questions) + self._governed_gaps()
+        candidate["unresolved_questions"] = unresolved
         self.candidate = candidate
         self.candidate_provenance = decision.provenance
         self.research_question = decision.research_question
 
-        if decision.unresolved_questions:
+        if unresolved:
             self.candidate = None
             return self._respond(decision.assistant_message)
 
@@ -615,6 +669,10 @@ class ConversationalStudySession:
         for message in self.messages:
             speaker = "Researcher" if message["role"] == "user" else "Assistant"
             lines.extend([f"### {speaker}", "", message["content"], ""])
+        # Rendered into the checkpoint that is already written every turn,
+        # rather than into a file of its own. The intake changes on every turn,
+        # and a per-turn artifact for it would be one more thing to reconcile.
+        lines.extend(["", render_checkpoint(self.intake, level=2)])
         (self.artifact_directory / "conversation_checkpoint.md").write_text(
             "\n".join(lines).rstrip() + "\n",
             encoding="utf-8",
