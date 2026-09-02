@@ -55,7 +55,9 @@ INTERFACE_PATH = Path(__file__).resolve().parent / "index.html"
 COOKIE_NAME = "fg_session"
 
 DEFAULT_SESSION_CALL_LIMIT = 10
-DEFAULT_GLOBAL_CALL_LIMIT = 40
+DEFAULT_GLOBAL_CALL_LIMIT = 1000
+#: The global ceiling refills on this cadence rather than being a lifetime cap.
+DEFAULT_GLOBAL_WINDOW_SECONDS = 24 * 60 * 60
 DEFAULT_SESSION_TTL_SECONDS = 60 * 60
 DEFAULT_MAX_SESSIONS = 200
 
@@ -65,27 +67,56 @@ class BudgetExceeded(RuntimeError):
 
 
 class CallBudget:
-    """Count model calls against a per-session and a process-wide ceiling.
+    """Count model calls against a per-session ceiling and a rolling global one.
 
-    The process-wide ceiling is exactly that: per process. Running more than one
-    machine multiplies it, so the deployment pins a single machine rather than
-    pretending this coordinates across them.
+    The global ceiling refills. A lifetime cap on a machine that stays up would
+    make the demonstration die permanently the first time it was popular, which
+    is the wrong failure: the point of a ceiling here is to bound a day's spend,
+    not to spend the site.
+
+    It is still per process. Running more than one machine multiplies it, so the
+    deployment pins a single machine rather than pretending this coordinates
+    across them.
     """
 
-    def __init__(self, *, session_limit: int, global_limit: int) -> None:
+    def __init__(
+        self,
+        *,
+        session_limit: int,
+        global_limit: int,
+        window_seconds: int = DEFAULT_GLOBAL_WINDOW_SECONDS,
+    ) -> None:
         self.session_limit = session_limit
         self.global_limit = global_limit
+        self.window_seconds = window_seconds
         self._global_used = 0
+        self._window_started = time.monotonic()
         self._lock = threading.Lock()
+
+    def _roll_window(self) -> None:
+        """Start a fresh window if the current one has run out. Holds the lock."""
+        now = time.monotonic()
+        if now - self._window_started >= self.window_seconds:
+            self._global_used = 0
+            self._window_started = now
 
     @property
     def global_used(self) -> int:
         with self._lock:
+            self._roll_window()
             return self._global_used
+
+    @property
+    def window_remaining(self) -> int:
+        """Seconds until the global ceiling refills."""
+        with self._lock:
+            elapsed = time.monotonic() - self._window_started
+            return max(0, int(self.window_seconds - elapsed))
 
     def charge(self, usage: SessionUsage) -> None:
         """Reserve one call, or refuse before anything is spent."""
         with self._lock:
+            self._roll_window()
             if usage.calls >= self.session_limit:
                 raise BudgetExceeded(
                     "This session has used its "
@@ -93,10 +124,22 @@ class CallBudget:
                     "new one."
                 )
             if self._global_used >= self.global_limit:
+                hours = max(
+                    1,
+                    round(
+                        (
+                            self.window_seconds
+                            - (time.monotonic() - self._window_started)
+                        )
+                        / 3600
+                    ),
+                )
                 raise BudgetExceeded(
-                    "This demonstration has used its assistant calls for now. "
-                    "The conversation is still readable, and the offline "
-                    "example remains available in the repository."
+                    "This demonstration has used its assistant calls for now, "
+                    f"and will accept more in about {hours} hour"
+                    f"{'s' if hours != 1 else ''}. The conversation is still "
+                    "readable, and the offline example remains available in "
+                    "the repository."
                 )
             self._global_used += 1
             usage.calls += 1
@@ -355,6 +398,7 @@ def build_handler(
                 "session_call_limit": registry.budget.session_limit,
                 "global_calls_reserved": registry.budget.global_used,
                 "global_call_limit": registry.budget.global_limit,
+                "global_window_resets_in_seconds": registry.budget.window_remaining,
             }
             if error is not None:
                 state["error"] = error

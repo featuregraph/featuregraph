@@ -29,6 +29,9 @@ primary_region = "sjc"
 [env]
   PORT = "8080"
   FEATUREGRAPH_SESSION_DIR = "/var/lib/featuregraph-sessions"
+  # Per day, not for the lifetime of the machine. Raise it here rather than as
+  # a secret: it is a published property of the demonstration, not a credential.
+  FEATUREGRAPH_GLOBAL_CALL_LIMIT = "1000"
 
 [http_service]
   internal_port = 8080
