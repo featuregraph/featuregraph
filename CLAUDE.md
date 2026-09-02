@@ -25,19 +25,36 @@ Nothing in this repository should erode that boundary. In particular:
   session id in the public one. It must never be a site owner's name on a page
   where anonymous visitors can click Approve.
 
-## Name collision — read this before debugging anything
-
-**`featuregraph/featuregraph` and `featuregraph/featuregraph-research` both
-ship a Python package called `featuregraph`.** They are different packages with
-different modules at the same import path.
+## Two Read the Docs projects, and the short name is not this one
 
 - This repo (`featuregraph`) publishes docs at
   **`featuregraph-framework.readthedocs.io`**.
 - `featuregraph-research` publishes at `featuregraph.readthedocs.io`.
 
-That collision has already produced a wrong docs link on the live marketing
-site and a false bug report. If an import or a doc URL surprises you, check
-which package you are in first.
+The shorter, more obvious URL belongs to the research record rather than to
+this framework. That mismatch put a wrong "Documentation" link across the live
+marketing site, in the nav, the resource card, and `documentation.html`'s
+canonical URL and meta refresh. Nothing 404s when it happens — readers simply
+land on the research record — so check where a docs link *goes*, not whether it
+resolves.
+
+## The package name collision is resolved
+
+Both repositories once declared `name = "featuregraph"` at the same version
+with the same description, so pip treated them as one distribution and
+installing either clobbered the other. That is the root of the docs mix-up
+above and of a bug report filed against a module that was never imported.
+
+The research package is now importable as `featuregraph_research` and
+distributed as `featuregraph-research`. **`featuregraph` belongs to this
+repository** — it is what the papers cite, what the install lines name, and
+what `import featuregraph` should mean.
+
+Two things in the research repository deliberately keep the old string, so
+seeing `featuregraph` there is not necessarily a leftover: it is a
+representation label in the RL and TEP experiments, where it names a column in
+published results rather than a module, and it is the dataset cache directory
+at `~/.cache/featuregraph/`, which the two packages share on purpose.
 
 ## Layout
 
