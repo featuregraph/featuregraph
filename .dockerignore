@@ -1,0 +1,16 @@
+# The image COPYs only what it needs, so this exists to keep the build context
+# small rather than to control the image contents. .venv alone is ~750MB.
+.venv
+.git
+.github
+**/__pycache__
+*.py[cod]
+*.egg-info
+.pytest_cache
+.ruff_cache
+.mypy_cache
+.coverage
+htmlcov
+docs/_build
+notebooks
+tests
