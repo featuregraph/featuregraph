@@ -48,6 +48,14 @@ plain HTTP — leave it unset in the deployment.
 
 ## Deploying
 
-See the header of `fly.toml`. The global budget is a counter in one process, so
-the configuration pins a single machine; scaling out would multiply the ceiling
-rather than share it.
+See the header of `fly.toml`. Run every command from the repository root: the
+Dockerfile copies `src/`, `scripts/` and `artifacts/`, so the build context is
+the root even though the Dockerfile lives here. Paths inside `fly.toml` — the
+`[build] dockerfile` key included — resolve against `fly.toml`'s own directory
+instead, which is why that key is a bare filename.
+
+Build on Fly's builder with `--remote-only` unless a local Docker daemon is
+available; a Codespace generally has none.
+
+The global budget is a counter in one process, so the configuration pins a
+single machine; scaling out would multiply the ceiling rather than share it.

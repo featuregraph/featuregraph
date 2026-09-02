@@ -1,12 +1,14 @@
 # Fly.io configuration for the public FeatureGraph study assistant.
 #
 # Deploy from the repository root:
-#   fly launch --no-deploy --copy-config --config apps/assistant/fly.toml \
-#       --dockerfile apps/assistant/Dockerfile
-#   fly secrets set COHERE_API_KEY=... --config apps/assistant/fly.toml
-#   fly deploy . --config apps/assistant/fly.toml \
-#       --dockerfile apps/assistant/Dockerfile
+#   fly launch --no-deploy --copy-config --config apps/assistant/fly.toml
+#   fly deploy . --config apps/assistant/fly.toml --remote-only
 #   fly certs add assistant.featuregraph.ai --config apps/assistant/fly.toml
+#
+# The trailing "." is the build context: the Dockerfile copies src/, scripts/
+# and artifacts/, so it needs the repository root even though it lives here.
+# Set COHERE_API_KEY as a secret to move off the offline example:
+#   fly secrets set COHERE_API_KEY=... --config apps/assistant/fly.toml
 #
 # Then point the `assistant` CNAME at <app>.fly.dev in the IONOS DNS panel.
 
@@ -15,10 +17,13 @@
 app = "featuregraph-assistant"
 primary_region = "sjc"
 
-# No [build] dockerfile key on purpose. The Dockerfile lives beside this file
-# but needs the repository root as its build context, and which of the two a
-# relative key is resolved against has varied between flyctl versions. Passing
-# both explicitly on the command line, as above, cannot be ambiguous.
+[build]
+  # Relative to this file, not to the working directory. flyctl resolves both
+  # this key and the --dockerfile flag against the config file's directory, so
+  # passing "apps/assistant/Dockerfile" from the repository root asks for
+  # apps/assistant/apps/assistant/Dockerfile and fails. Verified on
+  # flyctl v0.4.97.
+  dockerfile = "Dockerfile"
 
 [env]
   PORT = "8080"
