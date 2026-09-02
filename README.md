@@ -8,6 +8,11 @@ contains and what should be grouped, measured, compared, and checked;
 FeatureGraph executes those declared steps and retains the evidence behind each
 result. Scientific interpretation remains with researchers and domain experts.
 
+Maintained by Nazia Habib ([@habibdraft](https://github.com/habibdraft)).
+FeatureGraph grew out of a decade of work on representing dynamics in
+observational data — see
+[Origins](https://github.com/featuregraph/featuregraph-research#origins).
+
 FeatureGraph welcomes open-source contributions. To learn how to use
 FeatureGraph, follow the [tutorial learning path](notebooks/tutorials/README.md).
 
