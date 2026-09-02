@@ -12,7 +12,9 @@ only matter once the page is public:
   either approve the other's study.
 - **Model calls are budgeted**, per session and per process, and charged before
   the call is made. The counters are reported in `/api/state` so the page can
-  show what is left.
+  show what is left. The global ceiling refills daily rather than being a
+  lifetime cap: a limit that never refills takes the demonstration down for
+  good the first time it is popular, which is the wrong way for it to fail.
 - **The approving authority is the session, not a person.** A visitor clicking
   "Approve and run" is not a researcher approving a study, and the approval
   record in the contract says so. Set `FEATUREGRAPH_ASSISTANT_AUTHORITY` for a
@@ -40,7 +42,8 @@ plain HTTP — leave it unset in the deployment.
 | `FEATUREGRAPH_ASSISTANT_MODEL` | `command-a-plus-05-2026` | Proposer model. |
 | `FEATUREGRAPH_ASSISTANT_AUTHORITY` | `public demonstration session {session}` | Approval authority; `{session}` is substituted. |
 | `FEATUREGRAPH_SESSION_CALL_LIMIT` | `10` | Model calls one visitor may spend. |
-| `FEATUREGRAPH_GLOBAL_CALL_LIMIT` | `40` | Model calls this process may spend. |
+| `FEATUREGRAPH_GLOBAL_CALL_LIMIT` | `1000` | Model calls this process may spend per window. |
+| `FEATUREGRAPH_GLOBAL_WINDOW_SECONDS` | `86400` | How often the global ceiling refills. |
 | `FEATUREGRAPH_SESSION_TTL` | `3600` | Seconds before an idle session is swept. |
 | `FEATUREGRAPH_MAX_SESSIONS` | `200` | Concurrent sessions before the oldest is evicted. |
 | `FEATUREGRAPH_SESSION_DIR` | system temp | Where per-session artifacts are written. |

@@ -25,7 +25,7 @@ from featuregraph.study_builder import OfflineResearchAssistant
 @pytest.fixture
 def registry(tmp_path: Path) -> SessionRegistry:
     return SessionRegistry(
-        budget=CallBudget(session_limit=3, global_limit=5),
+        budget=CallBudget(session_limit=3, global_limit=5, window_seconds=3600),
         base_directory=tmp_path,
         assistant_factory=OfflineResearchAssistant,
         authority_template="public demonstration session {session}",
@@ -164,6 +164,24 @@ def test_a_visitor_cannot_read_outside_their_own_artifacts(client) -> None:
 
 def test_health_check_answers_without_a_session(client) -> None:
     assert client().request("/healthz")["ok"] is True
+
+
+def test_the_global_ceiling_refills_rather_than_expiring_for_good() -> None:
+    budget = CallBudget(session_limit=10, global_limit=2, window_seconds=3600)
+    first, second = SessionUsage(), SessionUsage()
+    budget.charge(first)
+    budget.charge(second)
+
+    with pytest.raises(BudgetExceeded, match="about 1 hour"):
+        budget.charge(SessionUsage())
+
+    # A ceiling that never refills would take the demonstration down for good
+    # the first time it was popular. Winding the window back is what a day
+    # passing does.
+    budget._window_started -= 3600
+    budget.charge(SessionUsage())
+
+    assert budget.global_used == 1
 
 
 def test_budget_charges_calls_not_turns() -> None:
