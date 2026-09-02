@@ -35,6 +35,19 @@ For each parameterization, the rolling envelope consisted of a rolling maximum f
 
 Directional changes in each aligned envelope were used to classify states as rising when the first difference exceeded \(10^{-12}\), falling when it was less than \(-10^{-12}\), and inactive when its absolute value was at most \(10^{-12}\). Boundaries marked entry into and exit from each state, and ordered state transitions were composed into trough–peak–trough objects. A complete object required an ordered start trough, peak, and end trough with nonoverlapping boundary intervals; partial objects at the rolling-window edges, the final open object, and objects with ambiguous plateau ordering were excluded.
 
+Three rolling-envelope parameterizations of this construction exist. The
+79- and 100-sample pair was registered before the cardiac-phase analysis and is
+the pair the frozen contract governs. An 85-sample construction was executed
+later under a separately approved change to the registered study, with the
+dataset, state contract, numerical tolerance, trough–peak–trough boundaries,
+completeness rules, comparator, matching tolerance, measurements and claim
+limits all unchanged; window length was again the only parameter that differed.
+Its effective support is 169 samples, or approximately 1.352 seconds at 125 Hz.
+
+The 85-sample construction contributes to the scale-dependence and
+annotation-comparison results only. No cardiac-phase quantity is computed from
+it, and the frozen primary outcome in Section 9 is unaffected by its existence.
+
 # 4. Cross-scale object comparison
 
 Objects were classified according to whether they could be matched across the two temporal scales. Shared objects were constructed at both the 79- and 100-sample scales, whereas shorter-scale-only and longer-scale-only objects were constructed exclusively at 79 and 100 samples, respectively. Complete objects were matched by peak index using a tolerance of 63 samples, equivalent to 0.504 seconds at 125 Hz.
@@ -94,6 +107,15 @@ W=79-only peak that the other did not. Proximity to an annotation therefore does
 not establish the physiological identity of an object, and the absence of a
 nearby annotation does not establish that an object is spurious. We report the
 fraction and draw no inference from it about which objects are breaths.
+
+A second, separate comparison was made against the annotation series at the
+85-sample scale. Every detected object peak was matched against each annotation
+series independently, and two fractions were recorded for each record and
+annotator: the proportion of detected peaks with a nearby annotated event, and
+the proportion of annotated events with a nearby detected peak. These measure
+different things and are reported separately, because a construction can agree
+with an annotator about every breath the annotator marked while also
+constructing objects the annotator did not.
 
 # 9. Frozen outcomes and claim boundaries
 
@@ -228,3 +250,42 @@ lengthens the mean period by 11%.
 The scale parameter is therefore not a cleaning choice made before the analysis.
 It selects which reversals survive to become objects, and every downstream count,
 period and rate is conditioned on it.
+
+## 10.8 Agreement with the breath annotations
+
+At the 85-sample scale the construction detected 8,607 peaks across the 53
+records. The first annotation series marks 7,288 events and the second 7,381.
+Matching each series independently:
+
+| | Annotator 1 | Annotator 2 |
+| --- | ---: | ---: |
+| Annotated events | 7,288 | 7,381 |
+| Matched | 7,018 | 7,303 |
+| Median fraction of annotated events matched | 0.993 | 0.993 |
+| Median fraction of detected peaks matched | 0.935 | 0.942 |
+
+The two fractions behave differently, and the asymmetry is the result. The
+construction rarely misses an annotated breath: only 7 of the 106
+record–annotator pairs matched fewer than 95% of annotated events. It routinely
+constructs objects the annotators did not mark: 57 of the 106 pairs matched
+fewer than 95% of detected peaks.
+
+This is the same asymmetry as the cross-scale comparison in Section 10.2, against
+a different comparator. Shortening the window adds objects and almost never
+removes them; the construction adds objects relative to the annotations and
+almost never misses one they marked.
+
+The annotators also disagree with each other. They report identical event counts
+in 22 of the 53 records. The median absolute difference is one event and the
+maximum is 28, in record 46, where one series marks 95 events and the other 123.
+Two records show the construction detecting far more peaks than either annotator
+marks: record 5, with 149 detected against 48 annotated by both series, and
+record 13, with 400 detected against 160 and 165. Record 13 is a development
+record and the subject examined in the multiscale audit.
+
+One record–annotator pair is anomalous rather than informative. In record 44
+both series mark 132 events, but the first matches 2 of them and the second
+matches 131. The construction and the event count are identical across the two
+comparisons, so the discrepancy is a property of that annotation series rather
+than of the objects. It is reported here rather than removed, and no result in
+this paper depends on it.
