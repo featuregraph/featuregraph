@@ -59,3 +59,127 @@ The contract was frozen before those rules were applied unchanged to the 49 held
 ECG events were used as an independent timestamp series against which the respiratory-waveform object peaks could be positioned. Events detected from ECG lead II were checked against the available secondary ECG leads and the dataset's monitor heart-rate values using rules fixed during development. The complete event-detection and validation parameters are reported in the [frozen analysis contract](https://github.com/featuregraph/featuregraph/blob/main/artifacts/studies/bidmc_multiscale_contract.md) and reproduction code.
 
 Forty-one of the 49 held-out records passed the validation requirements. The other eight records were excluded from the ECG-relative analysis because they did not meet one or more prespecified checks: agreement between ECG leads, the event detector's supported rate range, or agreement between the event count and monitor heart rate. These exclusions remained visible in the published coverage table rather than being removed or corrected through record-specific parameter changes.
+
+# 7. Cardiac-phase calculation
+
+Every respiratory-object peak bracketed by two consecutive lead-II R events was
+assigned a position within that cardiac cycle:
+
+\[ \text{phase} = \frac{\text{respiratory peak} - \text{preceding } R}{\text{following } R - \text{preceding } R} \]
+
+The result is a value in [0, 1). Peaks not bracketed by two events, including
+those before the first and after the last detected event, contributed no phase.
+
+Phase is circular, so we summarised a set of phases by the resultant length of
+their unit vectors. The resultant length runs from zero, when phases are spread
+uniformly around the cycle, to one, when every object occupies the identical
+cardiac phase. It is a measure of concentration and carries no information
+about where in the cycle that concentration sits.
+
+We calculated the resultant length separately for shared objects and for
+W=79-only objects within each ECG-valid record. A class-specific estimate
+required at least five eligible objects of that class in that record. Records
+supplying fewer than five objects in either class contributed no difference and
+are reported in the coverage table rather than dropped.
+
+# 8. Annotation relationship
+
+The BIDMC dataset supplies two independent breath-annotation series. A W=79-only
+peak was recorded as annotation-supported when either series contained an event
+within 63 samples, the same tolerance used for cross-scale matching.
+
+This is a relationship, not a truth label. The two series disagree with each
+other in regions where shorter-scale objects occur, and one annotator marked a
+W=79-only peak that the other did not. Proximity to an annotation therefore does
+not establish the physiological identity of an object, and the absence of a
+nearby annotation does not establish that an object is spurious. We report the
+fraction and draw no inference from it about which objects are breaths.
+
+# 9. Frozen outcomes and claim boundaries
+
+The primary held-out outcome was fixed before execution as the subject-level
+difference between class concentrations:
+
+\[ \Delta R = R(\text{W=79-only}) - R(\text{shared}) \]
+
+We report its distribution and the number of subjects for which it is positive.
+Secondary outcomes are W=79-only counts and concentration by subject, the
+annotation-supported fraction, and ECG-valid coverage with every exclusion
+reason. No parameter was tuned from the held-out result.
+
+The analysis tests one thing: whether objects introduced by the shorter temporal
+scale occupy more consistent positions in the cardiac cycle than objects shared
+by both scales. It does not assume that every W=79-only object is cardiogenic,
+that every shared object is a validated breath, or that phase concentration
+establishes a physiological mechanism. A positive difference is evidence that
+the two populations differ in their relationship to an independently recorded
+signal. It is not evidence of what either population is.
+
+# 10. Results
+
+## 10.1 Coverage and exclusions
+
+Forty-one of the 49 held-out records met every prespecified ECG gate. Eight did
+not, and remain in the coverage table:
+
+| Exclusion reason | Records |
+| --- | ---: |
+| Cross-lead agreement below 0.90 | 4 |
+| Monitor rate outside the refractory contract, derived-monitor difference above 5 beats/min, and cross-lead agreement below 0.90 | 2 |
+| Derived-monitor heart-rate difference above 5 beats/min | 1 |
+| Monitor rate outside the refractory contract | 1 |
+
+No alternative lead or parameter was substituted for an excluded record.
+
+## 10.2 Object populations
+
+Across all 53 records, the shorter scale constructed 8,780 complete objects and
+the longer scale 7,926. Matching produced 7,918 shared objects, 862 objects
+constructed only at W=79, and 8 constructed only at W=100. Shortening the window
+therefore added objects and almost never removed them: the two representations
+are close to nested, which is what makes the W=79-only population a coherent
+class rather than a mixture of gains and losses.
+
+Within the 49 held-out records the same construction produced 7,584 W=79 objects,
+7,192 W=100 objects, 7,186 shared, and 398 W=79-only. Restricting to the 41
+ECG-valid records leaves 6,407 W=79 objects, 6,074 shared, and 333 W=79-only.
+
+The four development records contributed 464 of the corpus total of 862
+W=79-only objects, and subject 13 alone contributed 194. The development set is
+therefore unusually rich in the phenomenon the contract was written to examine,
+which is a consequence of how those records were selected and a reason the
+held-out evaluation is the load-bearing one.
+
+## 10.3 Eligibility
+
+Of the 41 ECG-valid held-out records, 8 produced no W=79-only objects at all and
+13 produced between one and four, below the five required for a class-specific
+concentration estimate. Twenty records supplied at least five in both classes and
+yielded a difference. The primary outcome is therefore estimated on 20 of 49
+held-out records, and the 21 ECG-valid records that produced too few W=79-only
+objects are themselves a result: at most scales the shorter window adds nothing.
+
+## 10.4 Primary outcome
+
+Across the 20 eligible records the median difference in phase concentration was
+0.269, and 14 of the 20 differences were positive. The distribution is wide:
+the interquartile range runs from −0.038 to 0.459 and the full range from −0.287
+to 0.827.
+
+Median concentration was 0.382 for shared objects and 0.579 for W=79-only
+objects. Six records showed the opposite ordering.
+
+The result is descriptive. It says that in a majority of eligible held-out
+records, objects introduced by the shorter scale sit at more consistent cardiac
+phases than objects both scales agree on, and that the effect is not uniform.
+
+## 10.5 Annotation relationship
+
+Twenty-nine of the 333 W=79-only objects in ECG-valid held-out records, or 8.7%,
+had an event in either annotation series within 63 samples. Across all 49
+held-out records the count was 38 of 398.
+
+Most W=79-only objects are not near an annotated breath. Under the claim
+boundaries in Section 9 this neither confirms nor refutes a cardiogenic reading:
+the annotation series were not constructed to mark cardiac-frequency structure,
+and they disagree with each other where such structure occurs.
