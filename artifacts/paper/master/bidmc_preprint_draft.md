@@ -183,3 +183,48 @@ Most W=79-only objects are not near an annotated breath. Under the claim
 boundaries in Section 9 this neither confirms nor refutes a cardiogenic reading:
 the annotation series were not constructed to mark cardiac-frequency structure,
 and they disagree with each other where such structure occurs.
+
+## 10.6 Duration and recurrence rate of shorter-scale-only objects
+
+Object rate is the reciprocal of object period, at 60 divided by the period in
+seconds. Across the 20 eligible held-out records the median W=79-only object
+rate was 32.4 per minute, corresponding to a median object period of 1.85
+seconds. The median period of all W=79 objects is 3.196 seconds, or 18.8 per
+minute. Objects introduced by the shorter scale are therefore about half the
+duration of the objects both scales construct, which is the structure the
+longer window is expected to suppress.
+
+They do not recur at cardiac frequency. The median monitor heart rate across
+the same 20 records was 89 beats per minute, a cardiac period of 0.674 seconds,
+and subject-level W=79-only rates ranged from 22.2 to 61.9 per minute. **No
+record had a W=79-only object rate within 10% of its own monitor heart rate.**
+
+This distinguishes two claims that the development material does not separate.
+In subject 13 the shorter-scale peaks both recurred at a heart-rate-like
+frequency and sat at consistent cardiac phase. In the held-out population only
+the second holds. Phase concentration and rate locking are separate properties,
+the frozen contract tests only the first, and the held-out result supports only
+the first. A reading in which every W=79-only object is one oscillation per
+heartbeat is not supported by these records.
+
+## 10.7 Scale dependence across three windows
+
+A third parameterization at 85 samples was executed separately under an
+approved change to the registered study, with the dataset, state contract,
+numerical tolerance, boundaries, completeness rules and measurements unchanged.
+Its comparison table places the two scales used here in a monotone sequence:
+
+| Window (samples) | Effective support | Complete objects | Mean period (s) | Median subject period (s) |
+| ---: | ---: | ---: | ---: | ---: |
+| 79 | 157 | 8,780 | 2.853 | 3.196 |
+| 85 | 169 | 8,489 | 2.952 | 3.224 |
+| 100 | 199 | 7,926 | 3.173 | 3.288 |
+
+Lengthening the window monotonically reduces the number of complete objects and
+lengthens their mean period. The relationship is not proportional: a 27% increase
+in effective support from 157 to 199 samples removes 10% of the objects and
+lengthens the mean period by 11%.
+
+The scale parameter is therefore not a cleaning choice made before the analysis.
+It selects which reversals survive to become objects, and every downstream count,
+period and rate is conditioned on it.
