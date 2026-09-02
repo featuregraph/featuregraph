@@ -1,0 +1,58 @@
+# Fly.io configuration for the public FeatureGraph study assistant.
+#
+# Deploy from the repository root:
+#   fly launch --no-deploy --copy-config --config apps/assistant/fly.toml
+#   fly deploy . --config apps/assistant/fly.toml --remote-only
+#   fly scale count 1 --config apps/assistant/fly.toml
+#   fly certs add assistant.featuregraph.ai --config apps/assistant/fly.toml
+#
+# The trailing "." is the build context: the Dockerfile copies src/, scripts/
+# and artifacts/, so it needs the repository root even though it lives here.
+# Set COHERE_API_KEY as a secret to move off the offline example:
+#   fly secrets set COHERE_API_KEY=... --config apps/assistant/fly.toml
+#
+# Then point the `assistant` CNAME at <app>.fly.dev in the IONOS DNS panel.
+
+# Fly app names are globally unique, not per account. If this one is taken,
+# `fly launch` offers another; change it here so later commands still match.
+app = "featuregraph-assistant"
+primary_region = "sjc"
+
+[build]
+  # Relative to this file, not to the working directory. flyctl resolves both
+  # this key and the --dockerfile flag against the config file's directory, so
+  # passing "apps/assistant/Dockerfile" from the repository root asks for
+  # apps/assistant/apps/assistant/Dockerfile and fails. Verified on
+  # flyctl v0.4.97.
+  dockerfile = "Dockerfile"
+
+[env]
+  PORT = "8080"
+  FEATUREGRAPH_SESSION_DIR = "/var/lib/featuregraph-sessions"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  # A floor, not a cap: `fly launch` still creates two machines, and this key
+  # will not remove the second one. `fly scale count 1` is what does, and it
+  # has to be run once per app -- there is no fly.toml key for the count.
+  #
+  # Two machines break this app in two ways, because both the session registry
+  # and the call budget live in one process. Fly's proxy load-balances, so a
+  # visitor's next request can land on the other machine, find no session for
+  # their cookie, and start the conversation over. And the global ceiling is
+  # counted per process, so two machines make it twice what it says.
+  min_machines_running = 1
+
+  [[http_service.checks]]
+    grace_period = "10s"
+    interval = "30s"
+    method = "GET"
+    path = "/healthz"
+    timeout = "5s"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"
