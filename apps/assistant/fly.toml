@@ -1,0 +1,42 @@
+# Fly.io configuration for the public FeatureGraph study assistant.
+#
+# Deploy from the repository root:
+#   fly launch --no-deploy --copy-config --config apps/assistant/fly.toml
+#   fly secrets set COHERE_API_KEY=... --config apps/assistant/fly.toml
+#   fly deploy . --config apps/assistant/fly.toml \
+#       --dockerfile apps/assistant/Dockerfile
+#   fly certs add assistant.featuregraph.ai --config apps/assistant/fly.toml
+#
+# Then point the `assistant` CNAME at <app>.fly.dev in the IONOS DNS panel.
+
+app = "featuregraph-assistant"
+primary_region = "sjc"
+
+# No [build] dockerfile key on purpose. The Dockerfile lives beside this file
+# but needs the repository root as its build context, and which of the two a
+# relative key is resolved against has varied between flyctl versions. Passing
+# both explicitly on the command line, as above, cannot be ambiguous.
+
+[env]
+  PORT = "8080"
+  FEATUREGRAPH_SESSION_DIR = "/var/lib/featuregraph-sessions"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "suspend"
+  auto_start_machines = true
+  # One machine, deliberately. The call budget is a counter in this process, so
+  # a second machine would quietly double the ceiling it is there to enforce.
+  min_machines_running = 1
+
+  [[http_service.checks]]
+    grace_period = "10s"
+    interval = "30s"
+    method = "GET"
+    path = "/healthz"
+    timeout = "5s"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"
