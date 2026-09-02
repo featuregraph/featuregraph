@@ -6,6 +6,11 @@ from typing import Literal
 import pandas as pd
 import requests
 
+from featuregraph.utils._cache import (
+    dataset_cache_dir,
+    dataset_cache_path,
+    require_fetch_allowed,
+)
 from featuregraph.utils._source_integrity import load_manifest, verify
 
 BIDMC_VERSION = "1.0.0"
@@ -42,16 +47,25 @@ def bidmc_source_fingerprint(subject: int, kind: FileKind) -> str | None:
 def get_cache_dir() -> Path:
     """
     Return the BIDMC cache directory outside the Git repository.
+
+    Honours ``FEATUREGRAPH_CACHE_DIR`` so a deployment can point this at a
+    mounted volume seeded from a machine that can reach PhysioNet.
     """
-    cache_dir = (
-        Path.home()
-        / ".cache"
-        / "featuregraph"
-        / "bidmc"
-        / BIDMC_VERSION
-    )
-    cache_dir.mkdir(parents=True, exist_ok=True)
-    return cache_dir
+    return dataset_cache_dir("bidmc", BIDMC_VERSION)
+
+
+def is_bidmc_file_cached(subject: int, kind: FileKind) -> bool:
+    """Whether one source file is already present locally. Never fetches.
+
+    Answers "will resolving this need the network", which is what a caller
+    needs before deciding to try. It deliberately does not verify: hashing is
+    the loader's job at the point of use, and an availability probe that reads
+    every byte of 53 files is not a probe.
+    """
+    # dataset_cache_path, not get_cache_dir: a probe must not create anything,
+    # and on a read-only mount with no cache yet, creating is not possible.
+    path = dataset_cache_path("bidmc", BIDMC_VERSION) / bidmc_filename(subject, kind)
+    return path.is_file() and path.stat().st_size > 0
 
 
 def bidmc_filename(subject: int, kind: FileKind) -> str:
@@ -88,6 +102,15 @@ def download_bidmc_file(
     if destination.exists() and destination.stat().st_size > 0 and not refresh:
         verify(destination, bidmc_manifest(), source=url)
         return destination
+
+    # Nothing is cached and a fetch is about to happen. In an environment
+    # declared offline, say so now: behind a blackhole route the request below
+    # does not fail, it hangs for the full timeout, once per file.
+    require_fetch_allowed(
+        f"BIDMC file {filename!r}",
+        url=url,
+        expected_at=destination,
+    )
 
     temporary_path = destination.with_suffix(
         destination.suffix + ".part"

@@ -5,6 +5,7 @@ from pathlib import Path
 import pandas as pd
 import requests
 
+from featuregraph.utils._cache import dataset_cache_dir
 
 GITHUB_OWNER = "mv-per"
 GITHUB_REPOSITORY = "tennessee-eastman-dataset"
@@ -24,16 +25,10 @@ def get_tep_cache_dir() -> Path:
     """
     Return the external cache used for Tennessee Eastman run files.
 
-    The cache is stored outside the Git repository.
+    The cache is stored outside the Git repository, and honours
+    ``FEATUREGRAPH_CACHE_DIR`` so a deployment can mount a seeded volume.
     """
-    cache_dir = (
-        Path.home()
-        / ".cache"
-        / "featuregraph"
-        / "tennessee_eastman"
-    )
-    cache_dir.mkdir(parents=True, exist_ok=True)
-    return cache_dir
+    return dataset_cache_dir("tennessee_eastman")
 
 
 def tep_run_filename(
