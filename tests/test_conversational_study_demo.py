@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from collections.abc import Sequence
 from copy import deepcopy
 from pathlib import Path
@@ -284,9 +285,9 @@ def test_a_hole_the_model_did_not_report_still_blocks_approval(tmp_path) -> None
     session = build_session(tmp_path)
     prepare_first_candidate(session)
     session.approve_and_run()
-    # Tested on the revision path: an explicit initial confirmation deliberately
-    # substitutes the maintained template's statistics, so the first candidate
-    # never has this hole to begin with.
+    # Tested on the revision path: on the initial one an explicit confirmation
+    # inherits the statistics the template already declares, so that candidate
+    # has no hole to begin with.
     session.assistant = SilentlyIncompleteAssistant()
 
     response = session.handle_message("Drop the statistics for the next version.")
@@ -336,3 +337,82 @@ def test_governed_fields_are_checked_for_existence(tmp_path) -> None:
             researcher_authority="test researcher",
             governed_intake_fields=("sample_rate",),
         )
+
+
+class NarrowAssistant(OfflineResearchAssistant):
+    """Proposes two statistics, and means it."""
+
+    def draft(self, research_goal: str, clarification: str) -> DraftDecision:
+        decision = super().draft(research_goal, clarification)
+        return DraftDecision(
+            assistant_message=decision.assistant_message,
+            research_question=decision.research_question,
+            measurement_statistics=("samples", "median"),
+            unresolved_questions=(),
+            provenance={"mode": "test"},
+        )
+
+
+def build_session_with(
+    tmp_path,
+    assistant,
+    *,
+    contract=None,
+) -> ConversationalStudySession:
+    return ConversationalStudySession(
+        template_contract=contract or APPROVED_STUDY_CONTRACT.contract,
+        assistant=assistant,
+        executor=FakeExecutor(),
+        artifact_directory=tmp_path,
+        researcher_authority="test researcher",
+    )
+
+
+def test_confirmation_does_not_overwrite_what_the_assistant_proposed(tmp_path) -> None:
+    session = build_session_with(tmp_path, NarrowAssistant())
+    session.handle_message("How should the protocol versions be represented?")
+
+    response = session.handle_message("Yes, exactly. Preserve those boundaries.")
+
+    assert response.phase is SessionPhase.AWAITING_APPROVAL
+    # The researcher confirmed a construction policy, not three extra statistics.
+    assert session.candidate["measurements"]["statistics"] == ["samples", "median"]
+    assert session.intake.get("measurements") == ["samples", "median"]
+    specification = (tmp_path / "specification_candidate_v1.md").read_text()
+    assert "samples, median" in specification
+
+
+def test_confirmation_records_the_questions_it_settled(tmp_path) -> None:
+    session = build_session_with(tmp_path, OvercautiousAssistant())
+    session.handle_message("How should the protocol versions be represented?")
+    session.handle_message("Yes, exactly. Preserve those boundaries.")
+
+    provenance = json.loads(
+        (tmp_path / "model_provenance_v1.json").read_text(encoding="utf-8")
+    )
+
+    assert provenance["confirmation_rule"] == "explicit_researcher_affirmation"
+    assert provenance["questions_settled_by_confirmation"] == [
+        "Model uncertainty despite confirmation."
+    ]
+    # This assistant named none, so the template's are inherited -- and said to be.
+    assert provenance["inherited_statistics_from"] == "template_contract"
+    assert session.candidate["measurements"]["statistics"] == list(SUPPORTED_STATISTICS)
+
+
+def test_confirmation_invents_nothing_when_the_template_declares_nothing(
+    tmp_path,
+) -> None:
+    contract = deepcopy(APPROVED_STUDY_CONTRACT.contract)
+    contract["measurements"]["statistics"] = []
+    session = build_session_with(tmp_path, OvercautiousAssistant(), contract=contract)
+    session.handle_message("How should the protocol versions be represented?")
+
+    response = session.handle_message("Yes, exactly. Preserve those boundaries.")
+
+    assert response.phase is not SessionPhase.AWAITING_APPROVAL
+    assert session.candidate is None
+    assert any(
+        question.startswith("measurements:")
+        for question in session.state()["open_questions"]
+    )

@@ -444,6 +444,11 @@ class ConversationalStudySession:
         # published contract already declares are not re-asked, and the ones it
         # never wrote down are visible instead of assumed.
         self.intake: StudyIntake = intake_from_study_contract(template_contract)
+        # What the template already declares, so a confirmation can inherit it
+        # instead of a module-level constant standing in for every study.
+        self._inherited_statistics: tuple[str, ...] = tuple(
+            self.intake.get("measurements") or ()
+        )
         self.assistant = assistant
         self.executor = executor
         self.artifact_directory = artifact_directory.resolve()
@@ -502,6 +507,7 @@ class ConversationalStudySession:
                 decision,
                 research_goal=self.research_goal,
                 clarification=cleaned,
+                inherited_statistics=self._inherited_statistics,
             )
             return self._prepare_candidate(decision)
 
@@ -853,17 +859,43 @@ def _apply_explicit_initial_confirmation(
     *,
     research_goal: str,
     clarification: str,
+    inherited_statistics: Sequence[str] = (),
 ) -> DraftDecision:
-    """Bind an explicit confirmation to the maintained initial template."""
+    """Settle the clarification the assistant asked, using the researcher's answer.
+
+    A researcher outranks a hedging model on the question they were actually
+    asked, so an affirmative answer clears the assistant's unresolved questions.
+    Two things it does not do:
+
+    It does not overwrite what the assistant proposed. This used to substitute
+    a module-level list of statistics on every confirmation, so an assistant
+    that named two of them silently got five, and the specification a
+    researcher approved was not the one they had been shown.
+
+    It does not invent content nobody proposed. When the assistant named no
+    statistics at all, the ones the template already declares are inherited --
+    and when the template declares none either, the field stays empty and the
+    intake reports it as the hole it is, rather than a default filling in for
+    an answer.
+    """
 
     if not _looks_affirmative(clarification):
         return decision
     provenance = dict(decision.provenance)
     provenance["confirmation_rule"] = "explicit_researcher_affirmation"
+    if decision.unresolved_questions:
+        # Settled, not deleted. The researcher's answer outranks the hedge, but
+        # the hedge is part of how this candidate came to exist.
+        provenance["questions_settled_by_confirmation"] = list(
+            decision.unresolved_questions
+        )
+    statistics = decision.measurement_statistics or tuple(inherited_statistics)
+    if not decision.measurement_statistics and statistics:
+        provenance["inherited_statistics_from"] = "template_contract"
     return DraftDecision(
         assistant_message=decision.assistant_message,
         research_question=decision.research_question or research_goal.strip(),
-        measurement_statistics=SUPPORTED_STATISTICS,
+        measurement_statistics=statistics,
         unresolved_questions=(),
         provenance=provenance,
     )

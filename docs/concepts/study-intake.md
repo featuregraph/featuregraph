@@ -126,3 +126,25 @@ block a study whose template already declares them.
 The intake is rendered into the conversation checkpoint that is written every
 turn, not into a file of its own. It changes on every turn, and a per-turn
 artifact for it would be one more thing to keep in step.
+
+### What confirmation settles
+
+The demo session asks one construction question and reads the answer for
+assent. An affirmative answer clears the assistant's unresolved questions,
+which is right: a researcher outranks a hedging model on the question they were
+asked. It used to do two further things that it should not have.
+
+It replaced the assistant's proposed statistics with a module-level list on
+every confirmation, so an assistant that named two of them silently got five,
+and the specification a researcher approved was not the one they had been
+shown. It now leaves a proposal alone.
+
+And when the assistant named none, it filled them in from that same constant —
+a default standing in for an answer. It now inherits what the template contract
+already declares, and records that it did so in the candidate's provenance. If
+the template declares none either, the field stays empty and the intake reports
+it as a hole.
+
+Questions settled by a confirmation are written to provenance as
+`questions_settled_by_confirmation` rather than dropped. The researcher's answer
+outranks the hedge; the hedge is still part of how the candidate came to exist.
