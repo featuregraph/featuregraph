@@ -1,7 +1,8 @@
 # Fly.io configuration for the public FeatureGraph study assistant.
 #
 # Deploy from the repository root:
-#   fly launch --no-deploy --copy-config --config apps/assistant/fly.toml
+#   fly launch --no-deploy --copy-config --config apps/assistant/fly.toml \
+#       --dockerfile apps/assistant/Dockerfile
 #   fly secrets set COHERE_API_KEY=... --config apps/assistant/fly.toml
 #   fly deploy . --config apps/assistant/fly.toml \
 #       --dockerfile apps/assistant/Dockerfile
@@ -9,6 +10,8 @@
 #
 # Then point the `assistant` CNAME at <app>.fly.dev in the IONOS DNS panel.
 
+# Fly app names are globally unique, not per account. If this one is taken,
+# `fly launch` offers another; change it here so later commands still match.
 app = "featuregraph-assistant"
 primary_region = "sjc"
 
@@ -24,7 +27,7 @@ primary_region = "sjc"
 [http_service]
   internal_port = 8080
   force_https = true
-  auto_stop_machines = "suspend"
+  auto_stop_machines = "stop"
   auto_start_machines = true
   # One machine, deliberately. The call budget is a counter in this process, so
   # a second machine would quietly double the ceiling it is there to enforce.
