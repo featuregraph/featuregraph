@@ -35,6 +35,19 @@ For each parameterization, the rolling envelope consisted of a rolling maximum f
 
 Directional changes in each aligned envelope were used to classify states as rising when the first difference exceeded \(10^{-12}\), falling when it was less than \(-10^{-12}\), and inactive when its absolute value was at most \(10^{-12}\). Boundaries marked entry into and exit from each state, and ordered state transitions were composed into trough–peak–trough objects. A complete object required an ordered start trough, peak, and end trough with nonoverlapping boundary intervals; partial objects at the rolling-window edges, the final open object, and objects with ambiguous plateau ordering were excluded.
 
+The tolerance of \(10^{-12}\) is not a rounding convenience. An earlier
+workflow study of the same construction at 100 samples found floating-point
+variation of approximately \(5.55 \times 10^{-17}\) in numerically flat
+regions of the envelope. Against an exact-zero boundary that variation produced
+repeated state changes and spurious object identities. Declaring the fixed
+tolerance removed 207 complete objects and changed none of the 7,086 objects
+matched against that study's comparator, which distinguishes the residue from a
+genuine envelope change of approximately \(9.7 \times 10^{-6}\).
+
+The mechanism that manufactures objects from numerical noise was therefore
+characterised and eliminated by declaration before any of the analysis reported
+here. Objects surviving at one scale and not another are not that residue.
+
 Three rolling-envelope parameterizations of this construction exist. The
 79- and 100-sample pair was registered before the cardiac-phase analysis and is
 the pair the frozen contract governs. An 85-sample construction was executed
