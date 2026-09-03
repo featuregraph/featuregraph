@@ -20,6 +20,7 @@ from .outputs import markdown_table, write_csv_shards, write_frames, write_json
 from .provenance import (
     git_commit,
     git_commit_or_none,
+    git_status_clean,
     module_versions,
     package_versions,
 )
@@ -32,6 +33,7 @@ __all__ = [
     "finite_summary",
     "git_commit",
     "git_commit_or_none",
+    "git_status_clean",
     "load_notebook_namespace",
     "markdown_table",
     "module_versions",

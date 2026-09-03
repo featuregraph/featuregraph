@@ -52,3 +52,22 @@ def package_versions(*names: str) -> dict[str, str]:
     ``__version__`` attribute and does not require importing it first.
     """
     return {name: _distribution_version(name) for name in names}
+
+
+def git_status_clean(repo_root: Path | None = None) -> bool | None:
+    """Whether the working tree has no uncommitted changes.
+
+    ``None`` when the answer cannot be established, for the same reasons
+    :func:`git_commit_or_none` returns ``None``. A provenance record that says
+    ``False`` names a commit the outputs were not produced from exactly.
+    """
+    try:
+        status = subprocess.check_output(
+            ["git", "status", "--porcelain"],
+            cwd=repo_root or Path.cwd(),
+            text=True,
+            stderr=subprocess.DEVNULL,
+        )
+    except (OSError, subprocess.CalledProcessError):
+        return None
+    return status.strip() == ""
