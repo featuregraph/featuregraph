@@ -1,0 +1,54 @@
+{
+  "version": "state-contract-v2",
+  "group_by": "subject_id",
+  "missing_policy": "exclude",
+  "parameters": {
+    "smooth_window": 100,
+    "numerical_atol": 1e-12
+  },
+  "derive": {
+    "respiration_smooth": {
+      "op": "shift",
+      "value": {
+        "op": "rolling_mean",
+        "value": {
+          "op": "rolling_max",
+          "value": {"column": "respiration"},
+          "window": {"parameter": "smooth_window"}
+        },
+        "window": {"parameter": "smooth_window"}
+      },
+      "periods": {"op": "neg", "value": {"parameter": "smooth_window"}}
+    },
+    "respiration_change": {
+      "op": "diff",
+      "value": {"column": "respiration_smooth"}
+    }
+  },
+  "states": {
+    "rising": {
+      "op": "gt",
+      "left": {"column": "respiration_change"},
+      "right": {"parameter": "numerical_atol"}
+    },
+    "falling": {
+      "op": "lt",
+      "left": {"column": "respiration_change"},
+      "right": {"op": "neg", "value": {"parameter": "numerical_atol"}}
+    },
+    "inactive": {
+      "op": "le",
+      "left": {"op": "abs", "value": {"column": "respiration_change"}},
+      "right": {"parameter": "numerical_atol"}
+    }
+  },
+  "events": {
+    "enter_respiration_rising": {"type": "enter_state", "state": "rising"},
+    "exit_respiration_rising": {"type": "exit_state", "state": "rising"}
+  },
+  "boundary_policy": {
+    "include_first_entry": true,
+    "include_last_exit": false
+  },
+  "validation": {"exclusive": true, "exhaustive": true}
+}

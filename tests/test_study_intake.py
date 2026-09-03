@@ -323,3 +323,46 @@ def test_an_ordering_declares_one_thing_or_the_other():
     )
 
     assert intake.unstructured == ("grouping_and_order",)
+
+
+def test_reader_reports_a_v2_derivation_as_preprocessing():
+    """A derivation the contract carries is preprocessing the fingerprint covers."""
+    from featuregraph.study_builder.intake import intake_from_study_contract
+
+    contract = {
+        "contract_version": "study-contract-v1",
+        "study": {"name": "envelope", "unit_of_analysis": "occurrence"},
+        "state_compiler": {
+            "version": "state-contract-v2",
+            "missing_policy": "exclude",
+            "parameters": {"window": 100, "atol": 1e-12},
+            "derive": {
+                "smooth": {
+                    "op": "shift",
+                    "value": {
+                        "op": "rolling_max",
+                        "value": {"column": "respiration"},
+                        "window": {"parameter": "window"},
+                    },
+                    "periods": {"op": "neg", "value": {"parameter": "window"}},
+                },
+                "change": {"op": "diff", "value": {"column": "smooth"}},
+            },
+            "states": {
+                "rising": {
+                    "op": "gt",
+                    "left": {"column": "change"},
+                    "right": {"parameter": "atol"},
+                }
+            },
+        },
+    }
+
+    intake = intake_from_study_contract(contract)
+
+    assert intake.values["preprocessing_steps"] == [
+        "smooth = shift(rolling_max(respiration, window=window), periods=-window)",
+        "change = diff(smooth)",
+        "observations a derivation leaves undefined are excluded from the "
+        "partition and counted in the validation report",
+    ]

@@ -59,7 +59,13 @@ at `~/.cache/featuregraph/`, which the two packages share on purpose.
 ## Layout
 
 - `src/featuregraph/contracts/` — `state_contract.py` compiles; `study_contract.py`
-  fingerprints and approves.
+  fingerprints and approves. `state-contract-v1` is frozen: published
+  fingerprints depend on it compiling exactly as it does. `state-contract-v2`
+  adds `derive` and `missing_policy: "exclude"`, and anything v2 added is
+  refused under v1 rather than silently accepted.
+- `artifacts/contracts/` — the BIDMC and TEP constructions expressed entirely
+  in v2 contracts, with `scripts/verify_derived_contracts.py` checking them
+  row by row against the published preprocess-then-compile path.
 - `src/featuregraph/study_builder/` — `intake.py` is the study contract with
   holes in it; `conversation.py` is the bounded session over it.
 - `apps/assistant/` — the deployable public assistant. See its README.

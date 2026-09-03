@@ -884,7 +884,9 @@ def _time_semantics_from_sources(sources: Mapping[str, Any]) -> Any:
 
 
 def _preprocessing_from_contract(
-    sources: Mapping[str, Any], measurements: Mapping[str, Any]
+    sources: Mapping[str, Any],
+    measurements: Mapping[str, Any],
+    compiler: Mapping[str, Any],
 ) -> Any:
     """Read what a contract says was done to observations before compiling."""
     steps: list[str] = []
@@ -894,7 +896,61 @@ def _preprocessing_from_contract(
     label = sources.get("unassigned_label")
     if isinstance(label, str) and label:
         steps.append(f"time outside a declared state labelled {label!r}")
+    steps.extend(_derivations_from_compiler(compiler))
     return steps or None
+
+
+def _describe_expression(expression: Any) -> str:
+    """Render one contract expression as a readable line."""
+    if not isinstance(expression, Mapping):
+        return repr(expression)
+    keys = set(expression)
+    if keys == {"column"}:
+        return str(expression["column"])
+    if keys == {"parameter"}:
+        return str(expression["parameter"])
+    if keys == {"literal"}:
+        return repr(expression["literal"])
+    op = expression.get("op")
+    if op in {"and", "or"}:
+        parts = [f"({_describe_expression(v)})" for v in expression.get("values", [])]
+        return f" {op} ".join(parts)
+    if op == "neg":
+        return f"-{_describe_expression(expression.get('value'))}"
+    if "left" in expression and "right" in expression:
+        left = _describe_expression(expression["left"])
+        right = _describe_expression(expression["right"])
+        return f"{op}({left}, {right})"
+    arguments = [_describe_expression(expression.get("value"))]
+    arguments.extend(
+        f"{key}={_describe_expression(value)}"
+        for key, value in expression.items()
+        if key not in {"op", "value"}
+    )
+    return f"{op}({', '.join(arguments)})"
+
+
+def _derivations_from_compiler(compiler: Mapping[str, Any]) -> list[str]:
+    """Read the columns a v2 contract derives before it evaluates its states.
+
+    A derivation declared in the contract is preprocessing the fingerprint
+    covers, so it is reported as a preprocessing step in the researcher's
+    own terms rather than left for the reader to discover in the compiler
+    section.
+    """
+    derive = compiler.get("derive")
+    if not isinstance(derive, Mapping):
+        return []
+    steps = [
+        f"{name} = {_describe_expression(expression)}"
+        for name, expression in derive.items()
+    ]
+    if compiler.get("missing_policy") == "exclude":
+        steps.append(
+            "observations a derivation leaves undefined are excluded from the "
+            "partition and counted in the validation report"
+        )
+    return steps
 
 
 def _split_validations(validations: Mapping[str, Any]) -> tuple[Any, Any]:
@@ -1007,7 +1063,9 @@ def intake_from_study_contract(contract: Mapping[str, Any]) -> StudyIntake:
         "operator_parameters": _parameters_from_compiler(compiler),
         "observation_schema": _observation_schema_from_contract(sources, compiler),
         "time_semantics": _time_semantics_from_sources(sources),
-        "preprocessing_steps": _preprocessing_from_contract(sources, measurements),
+        "preprocessing_steps": _preprocessing_from_contract(
+            sources, measurements, compiler
+        ),
         "boundary_rules": compiler.get("boundary_policy")
         or _with_events(boundary, compiler),
         "completeness_rules": compiler.get("validation") or completeness,
