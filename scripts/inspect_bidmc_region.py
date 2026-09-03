@@ -13,6 +13,15 @@ one sample axis:
 It also prints the occurrences that touch the region for each window, with
 their rise/fall asymmetry, so the shape measures sit beside the picture.
 
+With ``--peaks`` it measures every object peak of the finest window over the
+whole record, not only the region: whether a peak of the coarsest window lies
+within the paper's matching tolerance, the lag from the preceding R-peak, the
+cardiac phase, and the breath phase taken from the coarsest window's own
+peaks. The table goes to a csv beside the image; the unmatched peaks inside
+the region are printed and ringed on the plot. Those are the objects the
+paper calls W=79-only, and the table is what a lag-against-breath-phase plot
+is drawn from.
+
 Nothing here re-detects anything. The states come from ``compile_states``
 under ``artifacts/contracts/bidmc_respiration_states_v2.json`` with only the
 window changed, which is the construction the paper reports.
@@ -22,6 +31,7 @@ Usage::
     python -m scripts.inspect_bidmc_region --subject 13 --start 650 --end 1200
     python -m scripts.inspect_bidmc_region --subject 4 --start 0 --end 3000 \\
         --window 79 100 120
+    python -m scripts.inspect_bidmc_region --subject 13 --start 0 --end 1200 --peaks
 
 Needs the subject's Signals and Breaths files under
 ``notebooks/.bidmc_notebook_cache``; they are fetched from PhysioNet on first
@@ -58,6 +68,9 @@ OUTPUT = ROOT / "outputs" / "inspect"
 BASE = "https://physionet.org/files/bidmc/1.0.0/bidmc_csv"
 FS = 125
 DOWNLOAD_ATTEMPTS = 4
+# A fine-window peak counts as matched when a coarse-window peak lies within
+# this many samples of it, the tolerance the multiscale study uses.
+MATCH_TOLERANCE = 63
 
 # The paper's palette for the first two windows; further windows take
 # neutral tones so the two the paper discusses stay recognisable.
@@ -115,6 +128,80 @@ def object_peaks(compiled: pd.DataFrame) -> np.ndarray:
     return np.flatnonzero(compiled["exit_respiration_rising"].to_numpy())
 
 
+def _cycle_phase(positions: np.ndarray, marks: np.ndarray) -> np.ndarray:
+    """Position of each sample inside the cycle of marks that brackets it.
+
+    Zero at the preceding mark, approaching one at the next; NaN where no
+    mark precedes or none follows. With R-peaks as marks this is the cardiac
+    phase the multiscale study reports; with the coarse window's object peaks
+    it is a breath phase.
+    """
+    marks = np.asarray(marks, dtype=int)
+    positions = np.asarray(positions, dtype=int)
+    phase = np.full(len(positions), np.nan)
+    if len(marks) < 2:
+        return phase
+    after = np.searchsorted(marks, positions, side="right")
+    inside = (after >= 1) & (after < len(marks))
+    start = marks[after[inside] - 1]
+    end = marks[after[inside]]
+    phase[inside] = (positions[inside] - start) / (end - start)
+    return phase
+
+
+def peak_measures(
+    fine: pd.DataFrame,
+    coarse: pd.DataFrame,
+    r_peaks: np.ndarray,
+    *,
+    tolerance: int = MATCH_TOLERANCE,
+) -> pd.DataFrame:
+    """One row per object peak of the fine window, over the whole record.
+
+    ``matched`` says whether a coarse-window peak lies within ``tolerance``
+    samples; the unmatched rows are the fine-window-only objects. ``r_lag``
+    is the distance in samples from the preceding R-peak, ``cardiac_phase``
+    that lag as a fraction of the RR interval, and ``breath_phase`` the
+    position between the bracketing coarse-window peaks.
+    """
+    fine_peaks = object_peaks(fine)
+    coarse_peaks = object_peaks(coarse)
+    r_peaks = np.asarray(r_peaks, dtype=int)
+
+    if len(coarse_peaks):
+        slot = np.searchsorted(coarse_peaks, fine_peaks)
+        before = coarse_peaks[np.clip(slot - 1, 0, len(coarse_peaks) - 1)]
+        after = coarse_peaks[np.clip(slot, 0, len(coarse_peaks) - 1)]
+        nearest = np.minimum(np.abs(fine_peaks - before), np.abs(fine_peaks - after))
+    else:
+        nearest = np.full(len(fine_peaks), np.iinfo(int).max)
+
+    preceding = np.searchsorted(r_peaks, fine_peaks, side="right") - 1
+    r_lag = np.full(len(fine_peaks), np.nan)
+    has_r = preceding >= 0
+    r_lag[has_r] = fine_peaks[has_r] - r_peaks[preceding[has_r]]
+
+    return pd.DataFrame(
+        {
+            "position": fine_peaks,
+            "nearest_coarse_peak": nearest,
+            "matched": nearest <= tolerance,
+            "r_lag": r_lag,
+            "cardiac_phase": _cycle_phase(fine_peaks, r_peaks),
+            "breath_phase": _cycle_phase(fine_peaks, coarse_peaks),
+        }
+    )
+
+
+def phase_resultant(phase: pd.Series | np.ndarray) -> float:
+    """Length of the mean phase vector, NaN below five phases as in the study."""
+    values = np.asarray(phase, dtype=float)
+    values = values[~np.isnan(values)]
+    if len(values) < 5:
+        return float("nan")
+    return float(np.abs(np.mean(np.exp(2j * np.pi * values))))
+
+
 def draw(
     subject: int,
     start: int,
@@ -123,7 +210,9 @@ def draw(
     *,
     cache: Path = CACHE,
     output: Path = OUTPUT,
+    highlight: np.ndarray | None = None,
 ) -> tuple[Path, dict[int, pd.DataFrame]]:
+    """Draw the region; ``highlight`` rings those sample positions on the raw."""
     signals = fetch(subject, "Signals", cache)
     breaths = fetch(subject, "Breaths", cache)
     raw = signals["RESP"].astype(float)
@@ -194,6 +283,20 @@ def draw(
             linewidth=1.0,
             label=f"object peaks, W = {w}",
         )
+    if highlight is not None:
+        highlight = np.asarray(highlight, dtype=int)
+        highlight = highlight[(highlight >= start) & (highlight <= end)]
+        if len(highlight):
+            top.scatter(
+                highlight,
+                raw.loc[highlight],
+                s=140,
+                facecolor="none",
+                edgecolor=INK,
+                linewidth=1.2,
+                zorder=5,
+                label=f"W = {min(windows)} only",
+            )
     y_top = top.get_ylim()[1]
     for (name, values), style_ in zip(marks.items(), ("-", (0, (2, 2))), strict=True):
         for j, value in enumerate(values):
@@ -275,7 +378,31 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--window", type=int, nargs="+", default=[79, 100])
     parser.add_argument("--cache", type=Path, default=CACHE)
     parser.add_argument("--output", type=Path, default=OUTPUT)
+    parser.add_argument(
+        "--peaks",
+        action="store_true",
+        help="measure every peak of the finest window against the coarsest, "
+        "over the whole record; write the table and ring the unmatched peaks",
+    )
     args = parser.parse_args(argv)
+    if args.peaks and len(set(args.window)) < 2:
+        parser.error("--peaks needs two different windows")
+
+    measures = None
+    if args.peaks:
+        signals = fetch(args.subject, "Signals", args.cache)
+        raw = signals["RESP"].astype(float)
+        fine_w, coarse_w = min(args.window), max(args.window)
+        measures = peak_measures(
+            compile_window(raw, args.subject, fine_w),
+            compile_window(raw, args.subject, coarse_w),
+            ecg_events(signals["II"].astype(float).to_numpy()),
+        )
+    unmatched = (
+        None
+        if measures is None
+        else measures.loc[~measures["matched"], "position"].to_numpy()
+    )
 
     path, tables = draw(
         args.subject,
@@ -284,6 +411,7 @@ def main(argv: list[str] | None = None) -> int:
         args.window,
         cache=args.cache,
         output=args.output,
+        highlight=unmatched,
     )
     pd.set_option("display.width", 160)
     for w, table in tables.items():
@@ -291,6 +419,34 @@ def main(argv: list[str] | None = None) -> int:
         summary = f"{len(table)} occurrences touch the region, {len(rising)} rising"
         print(f"\nW = {w}: {summary}")
         print(table.to_string(index=False))
+
+    if measures is not None:
+        table_path = path.with_name(
+            f"bidmc_{args.subject:02d}_peaks_W{fine_w}_{coarse_w}.csv"
+        )
+        measures.to_csv(table_path, index=False)
+        only = measures[~measures["matched"]]
+        in_region = only[
+            (only["position"] >= args.start) & (only["position"] <= args.end)
+        ]
+        print(
+            f"\nW = {fine_w} peaks over the record: {len(measures)}, "
+            f"of which {len(only)} have no W = {coarse_w} peak within "
+            f"{MATCH_TOLERANCE} samples"
+        )
+        matched = measures.loc[measures["matched"], "cardiac_phase"]
+        print(
+            "cardiac phase resultant: "
+            f"unmatched {phase_resultant(only['cardiac_phase']):.3f}, "
+            f"matched {phase_resultant(matched):.3f}"
+        )
+        print(f"unmatched W = {fine_w} peaks in the region: {len(in_region)}")
+        if len(in_region):
+            print(in_region.to_string(index=False))
+        if table_path.is_relative_to(ROOT):
+            table_path = table_path.relative_to(ROOT)
+        print(f"wrote {table_path}")
+
     print(f"\nwrote {path.relative_to(ROOT) if path.is_relative_to(ROOT) else path}")
     return 0
 
