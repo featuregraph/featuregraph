@@ -6,9 +6,10 @@ observations into traceable intervals and result tables that software can
 inspect and query, while leaving scientific interpretation to domain experts.
 
 ```{important}
-The `main` branch contains an unreleased architectural redesign. It is not API
-compatible with FeatureGraph `v0.1.0a1`. Use the released alpha documentation
-for reproducible work and treat development documentation as provisional.
+`main` is the compiler lineage, released as `v0.2.0b1`. It is not API
+compatible with the 0.1 releases. Reproduce 0.1 results from their own tags;
+reproduce compiler-lineage results from `v0.2.0b1` or the commit a study
+records.
 ```
 
 ```{toctree}
@@ -46,6 +47,7 @@ api/index
 ## Project resources
 
 - [Source repository](https://github.com/featuregraph/featuregraph)
+- [Released 0.2 beta](https://github.com/featuregraph/featuregraph/releases/tag/v0.2.0b1)
 - [Released alpha](https://github.com/featuregraph/featuregraph/releases/tag/v0.1.0a1)
 - [Alpha demonstration notebook](https://github.com/featuregraph/featuregraph/blob/v0.1.0a1/notebooks/demo_notebook.ipynb)
 - [FeatureGraph website](https://featuregraph.ai)

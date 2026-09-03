@@ -1,5 +1,15 @@
 # Installation
 
+## Released 0.2 beta
+
+The compiler lineage, with `compile_states`, state contracts and the study
+builder:
+
+```bash
+python -m pip install \
+  "featuregraph @ git+https://github.com/featuregraph/featuregraph.git@v0.2.0b1"
+```
+
 ## Released alpha
 
 The released alpha is the supported choice for demonstrations, reproduction,
