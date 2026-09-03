@@ -420,45 +420,35 @@ year fields in particular have not been verified.
 7. Mardia KV, Jupp PE. *Directional Statistics*. Wiley, 2000.
 8. Fisher NI. *Statistical Analysis of Circular Data*. Cambridge University
    Press, 1993.
-9. Habib N. FeatureGraph, `main` lineage, commit
-   `6560077bd41509506b596081225cdea03f7ab927`.
-   https://github.com/featuregraph/featuregraph. A Zenodo version DOI for
-   this lineage is to be minted before submission; see the note below.
+9. Habib N. FeatureGraph 0.2.0b1. Zenodo, 2026. DOI: 10.5281/zenodo.22286856.
+   Release tag `v0.2.0b1`, commit `23d79ac551c41926c50bb2ac683af428f15ee9ba`.
+   All versions: 10.5281/zenodo.21939317.
 
 ## A note on the software citation
 
-FeatureGraph has three archived releases on Zenodo, each an immutable
-snapshot: `10.5281/zenodo.21535662` (`v0.1.0a1`), `10.5281/zenodo.21939319`
-(`v0.1.0a2`) and `10.5281/zenodo.21984186` (`v0.1.0b1`), grouped under two
-all-versions records, `10.5281/zenodo.21535661` and `10.5281/zenodo.21939317`.
-All three releases are tags on the `alpha/v0.1.x` and `beta/v0.1.x` branches.
+FeatureGraph has four archived releases on Zenodo, each an immutable snapshot
+of a tagged tree. Three are tags on the `alpha/v0.1.x` and `beta/v0.1.x`
+branches: `10.5281/zenodo.21535662` (`v0.1.0a1`), `10.5281/zenodo.21939318`
+(`v0.1.0a2`) and `10.5281/zenodo.21984186` (`v0.1.0b1`). Those branches share
+no history with `main`, and their trees contain none of the software this
+paper describes: no state-contract compiler, no fingerprinted study contracts,
+and none of the frozen held-out artifacts, which reached `main` on 2026-09-01.
 
-None of them contains the software this paper describes. The state-contract
-compiler, the fingerprinted study contracts, the multiscale scripts and the
-frozen held-out artifacts live on `main`, which shares no history with the
-released branches, and they were first committed on 2026-09-01, after the
-beta was tagged on 2026-08-17. The beta tree has no `contracts` package at
-all.
+The fourth, `10.5281/zenodo.22286856`, is `v0.2.0b1`, the first release of
+the `main` lineage, tagged on 2026-09-03 at commit `23d79ac`. Its archive
+holds the compiler, the frozen contract, the scripts, every per-record result
+reported here, and `artifacts/studies/bidmc_multiscale_heldout/provenance.json`,
+which records that the held-out result was reproduced byte for byte at
+`fedf2c8`, the commit immediately preceding the tag, with no source changes
+between them. Reference 9 cites that version DOI. The all-versions record
+`10.5281/zenodo.21939317` groups `v0.1.0a2`, `v0.1.0b1` and `v0.2.0b1`, and
+is the citation for FeatureGraph as a project; `10.5281/zenodo.21984186`
+remains the citation for the released 0.1 beta and nothing more.
 
-The rule for this paper therefore has two parts:
-
-- Cite the commit. Reference 9 names the commit on `main` whose tree holds the
-  compiler, the contract, the scripts and every per-record result reported
-  here. Update it to the commit current at submission.
-- Mint the DOI before submission. Cut a release from `main`, archive it on
-  Zenodo, and replace the commit reference with that version DOI, so a reader
-  can retrieve the exact code and evidence from one record. Until that
-  release exists, no Zenodo identifier may be cited as the software used
-  here.
-
-`10.5281/zenodo.21984186` remains the correct citation for the released beta
-of the alpha-lineage behaviours, and for FeatureGraph as a project through
-its all-versions record. It is not a citation for this study.
-
-The environment the equivalence check recorded, and which the reproducibility
-statement should carry, is Python 3.12.11, pandas 3.0.5 and numpy 2.5.2. The
-declared-derivation form of the construction (section 13) carries the
-contract fingerprint `3c991d8298a8db4f4feb02a67219a31eb20586057e7932baba301fe1a45f5b01`.
+The environment the provenance record names is Python 3.12.11, pandas 3.0.5,
+numpy 2.5.2 and scipy 1.18.1. The declared-derivation form of the
+construction (section 13) carries the contract fingerprint
+`3c991d8298a8db4f4feb02a67219a31eb20586057e7932baba301fe1a45f5b01`.
 
 # 13. Availability
 
@@ -479,4 +469,4 @@ observations excluded per subject and none interior;
 `artifacts/contracts/verification/bidmc_equivalence.csv` records it per
 subject.
 
-Cite the commit, not the branch.
+Cite the version DOI and the tag, `v0.2.0b1` at commit `23d79ac`, not a branch.

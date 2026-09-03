@@ -51,4 +51,5 @@ api/index
 - [Released alpha](https://github.com/featuregraph/featuregraph/releases/tag/v0.1.0a1)
 - [Alpha demonstration notebook](https://github.com/featuregraph/featuregraph/blob/v0.1.0a1/notebooks/demo_notebook.ipynb)
 - [FeatureGraph website](https://featuregraph.ai)
-- [Archived research record](https://doi.org/10.5281/zenodo.21535661)
+- [Archived 0.2 beta](https://doi.org/10.5281/zenodo.22286856)
+- [Archived alpha research record](https://doi.org/10.5281/zenodo.21535661)

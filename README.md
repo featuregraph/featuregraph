@@ -1,6 +1,6 @@
 # FeatureGraph
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21984186.svg)](https://doi.org/10.5281/zenodo.21984186)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22286856.svg)](https://doi.org/10.5281/zenodo.22286856)
 
 FeatureGraph is an open framework for deterministic, inspectable, and
 reproducible scientific data analysis. A researcher declares what the data
@@ -128,7 +128,11 @@ FeatureGraph `v0.2.0b1` is the compiler lineage: `compile_states` and the
 state-contract language (v1 frozen, v2 with declared derivations), fingerprinted
 and approvable study contracts, the study intake and conversational builder,
 shape measures over compiled occurrences, and the frozen study records under
-`artifacts/studies`. Install it with:
+`artifacts/studies`. It is archived on Zenodo as
+[10.5281/zenodo.22286856](https://doi.org/10.5281/zenodo.22286856); cite that
+DOI for this release, and
+[10.5281/zenodo.21939317](https://doi.org/10.5281/zenodo.21939317) for all
+versions. Install it with:
 
 ```bash
 python -m pip install \
