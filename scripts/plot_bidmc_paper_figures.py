@@ -81,6 +81,9 @@ def style() -> None:
             "font.family": "DejaVu Sans",
             "pdf.fonttype": 42,
             "svg.fonttype": "none",
+            # Fixed salt for SVG element ids; the default salts with object
+            # addresses, which differ on every run.
+            "svg.hashsalt": "featuregraph",
         }
     )
 
@@ -99,8 +102,20 @@ def save(fig: plt.Figure, name: str) -> None:
     and a vector figure survives the printer at any scale.
     """
     FIGURES.mkdir(parents=True, exist_ok=True)
+    # No creation date in the file: regenerating a figure from unchanged
+    # artifacts then yields byte-identical output, and a clean tree says so.
+    metadata = {
+        "png": {"Software": None},
+        "svg": {"Date": None},
+        "pdf": {"CreationDate": None, "ModDate": None, "Producer": None},
+    }
     for suffix in ("png", "svg", "pdf"):
-        fig.savefig(FIGURES / f"{name}.{suffix}", dpi=300, bbox_inches="tight")
+        fig.savefig(
+            FIGURES / f"{name}.{suffix}",
+            dpi=300,
+            bbox_inches="tight",
+            metadata=metadata[suffix],
+        )
     plt.close(fig)
     print(f"  wrote {name}.png, {name}.svg and {name}.pdf")
 

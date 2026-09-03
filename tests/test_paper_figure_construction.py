@@ -64,3 +64,29 @@ def test_figure_1_is_skipped_without_the_cache(tmp_path: Path, monkeypatch, caps
     assert drawn is False
     assert "skipping fig1" in capsys.readouterr().out
     assert not out.exists()
+
+
+def test_regenerated_figure_files_are_byte_identical(tmp_path: Path, monkeypatch):
+    """No timestamp in any output, so a re-run leaves a clean tree."""
+    import hashlib
+    import time
+
+    cache = _synthetic_cache(tmp_path / "cache")
+    out = tmp_path / "figures"
+    monkeypatch.setattr(figures, "FIGURES", out)
+    figures.style()
+
+    def digests() -> dict[str, str]:
+        return {
+            suffix: hashlib.sha256(
+                (out / f"fig1_subject13_construction.{suffix}").read_bytes()
+            ).hexdigest()
+            for suffix in ("png", "svg", "pdf")
+        }
+
+    figures.figure_construction(cache)
+    first = digests()
+    time.sleep(1.1)  # a creation date would differ at second resolution
+    figures.figure_construction(cache)
+
+    assert digests() == first
