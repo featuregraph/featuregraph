@@ -1,0 +1,31 @@
+{
+  "run_at": "2026-09-03T19:30:42.910396+00:00",
+  "git_commit": "fedf2c84d33438b58c8992067833dedf6748615e",
+  "git_tree_clean": true,
+  "featuregraph_version": "0.2.0b1",
+  "python_version": "3.12.11",
+  "numpy_version": "2.5.2",
+  "pandas_version": "3.0.5",
+  "scipy_version": "1.18.1",
+  "platform": "Linux-6.8.0-1052-azure-x86_64-with-glibc2.36",
+  "outputs": {
+    "subject_summary.csv": "5f01c949583591df7e919c3eba2ae4eef7bfd7ddae068c1fb17c301b0730b8a3",
+    "report.md": "4b89982a05e9e7cbd3e12b5cdef205211cb6aa9d699c4190dffcb40dee81f631"
+  },
+  "check": {
+    "compared_against": "artifacts/studies/bidmc_multiscale_heldout",
+    "files": {
+      "subject_summary.csv": {
+        "produced": "5f01c949583591df7e919c3eba2ae4eef7bfd7ddae068c1fb17c301b0730b8a3",
+        "committed": "5f01c949583591df7e919c3eba2ae4eef7bfd7ddae068c1fb17c301b0730b8a3",
+        "identical": true
+      },
+      "report.md": {
+        "produced": "4b89982a05e9e7cbd3e12b5cdef205211cb6aa9d699c4190dffcb40dee81f631",
+        "committed": "4b89982a05e9e7cbd3e12b5cdef205211cb6aa9d699c4190dffcb40dee81f631",
+        "identical": true
+      }
+    },
+    "identical": true
+  }
+}
