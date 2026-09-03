@@ -7,7 +7,6 @@ import numpy as np
 import pandas as pd
 from scipy.signal import butter, find_peaks, sosfiltfilt
 
-
 ROOT = Path(__file__).resolve().parents[1]
 CACHE = ROOT / "notebooks" / ".bidmc_notebook_cache"
 OUTPUT = ROOT / "artifacts" / "studies" / "bidmc_subject13_multiscale"
@@ -26,11 +25,23 @@ def envelope(raw: pd.Series, window: int) -> pd.Series:
     )
 
 
-def main() -> None:
-    OUTPUT.mkdir(parents=True, exist_ok=True)
-    signals = pd.read_csv(CACHE / "bidmc_13_Signals.csv")
+def cache_available(cache: Path = CACHE) -> bool:
+    """Whether the two subject 13 source files this audit needs are present."""
+    return all(
+        (cache / f"bidmc_13_{kind}.csv").exists() for kind in ("Signals", "Breaths")
+    )
+
+
+def region_construction(cache: Path = CACHE) -> dict:
+    """Everything the audit and the paper's Figure 1 draw, from the cached files.
+
+    The object peaks are the ones the frozen construction recovered in this
+    region and are stated, not re-detected, so the figure shows the published
+    objects rather than a fresh detection.
+    """
+    signals = pd.read_csv(cache / "bidmc_13_Signals.csv")
     signals.columns = signals.columns.str.strip()
-    breaths = pd.read_csv(CACHE / "bidmc_13_Breaths.csv")
+    breaths = pd.read_csv(cache / "bidmc_13_Breaths.csv")
     breaths.columns = breaths.columns.str.strip()
 
     raw = signals["RESP"].astype(float)
@@ -50,7 +61,9 @@ def main() -> None:
     # Exact object peaks recovered by the frozen construction in this region.
     peaks_79 = np.array([731, 848, 951, 1069])
     peaks_100 = np.array([848])
-    preceding_r = np.array([region_r_peaks[region_r_peaks <= peak][-1] for peak in peaks_79])
+    preceding_r = np.array(
+        [region_r_peaks[region_r_peaks <= peak][-1] for peak in peaks_79]
+    )
     cardiac_lag_samples = peaks_79 - preceding_r
 
     annotation_1 = (
@@ -61,6 +74,29 @@ def main() -> None:
     )
     annotation_1 = annotation_1[(annotation_1 >= START) & (annotation_1 <= END)]
     annotation_2 = annotation_2[(annotation_2 >= START) & (annotation_2 <= END)]
+    return {
+        "raw": raw,
+        "smooth_79": smooth_79,
+        "smooth_100": smooth_100,
+        "ecg_filtered": ecg_filtered,
+        "region_r_peaks": region_r_peaks,
+        "peaks_79": peaks_79,
+        "peaks_100": peaks_100,
+        "preceding_r": preceding_r,
+        "cardiac_lag_samples": cardiac_lag_samples,
+        "annotation_1": annotation_1,
+        "annotation_2": annotation_2,
+    }
+
+
+def main() -> None:
+    OUTPUT.mkdir(parents=True, exist_ok=True)
+    c = region_construction()
+    raw, smooth_79, smooth_100 = c["raw"], c["smooth_79"], c["smooth_100"]
+    ecg_filtered, region_r_peaks = c["ecg_filtered"], c["region_r_peaks"]
+    peaks_79, peaks_100, preceding_r = c["peaks_79"], c["peaks_100"], c["preceding_r"]
+    cardiac_lag_samples = c["cardiac_lag_samples"]
+    annotation_1, annotation_2 = c["annotation_1"], c["annotation_2"]
 
     peak_table = pd.DataFrame(
         {
@@ -75,19 +111,31 @@ def main() -> None:
 
     region = np.arange(START, END + 1)
     fig, axes = plt.subplots(3, 1, figsize=(14, 9), sharex=True)
-    axes[0].plot(region, raw.loc[START:END], color="0.55", linewidth=1.2, label="raw RESP")
+    axes[0].plot(
+        region, raw.loc[START:END], color="0.55", linewidth=1.2, label="raw RESP"
+    )
     axes[0].plot(region, smooth_79.loc[START:END], linewidth=2, label="envelope W=79")
     axes[0].plot(region, smooth_100.loc[START:END], linewidth=2, label="envelope W=100")
-    axes[0].scatter(peaks_79, smooth_79.loc[peaks_79], marker="o", s=55, label="W=79 peaks")
-    axes[0].scatter(peaks_100, smooth_100.loc[peaks_100], marker="X", s=85, label="W=100 peak")
+    axes[0].scatter(
+        peaks_79, smooth_79.loc[peaks_79], marker="o", s=55, label="W=79 peaks"
+    )
+    axes[0].scatter(
+        peaks_100, smooth_100.loc[peaks_100], marker="X", s=85, label="W=100 peak"
+    )
     for index, value in enumerate(annotation_1):
         axes[0].axvline(
-            value, color="tab:green", linestyle="--", alpha=0.8,
+            value,
+            color="tab:green",
+            linestyle="--",
+            alpha=0.8,
             label="annotator 1" if index == 0 else None,
         )
     for index, value in enumerate(annotation_2):
         axes[0].axvline(
-            value, color="tab:purple", linestyle=":", alpha=0.9,
+            value,
+            color="tab:purple",
+            linestyle=":",
+            alpha=0.9,
             label="annotator 2" if index == 0 else None,
         )
     axes[0].set_ylabel("RESP")
@@ -103,7 +151,7 @@ def main() -> None:
         s=45,
         label="detected ECG R-peaks",
     )
-    for respiratory_peak, r_peak in zip(peaks_79, preceding_r):
+    for respiratory_peak, r_peak in zip(peaks_79, preceding_r, strict=True):
         axes[1].axvspan(r_peak, respiratory_peak, color="tab:orange", alpha=0.16)
     axes[1].set_ylabel("filtered ECG II")
     axes[1].legend()
@@ -121,6 +169,8 @@ def main() -> None:
     plt.close(fig)
 
     heart_rate = float(np.median(60 / rr))
+    mean_lag = cardiac_lag_samples.mean()
+    sd_lag = cardiac_lag_samples.std(ddof=1)
     report = f"""# Subject 13 multiscale audit: samples {START}-{END}
 
 - Sampling rate: {FS} Hz
@@ -128,8 +178,8 @@ def main() -> None:
 - W=100 peaks: {peaks_100.tolist()}
 - ECG R-peaks: {region_r_peaks.tolist()}
 - W=79 peak lags after preceding ECG R-peaks: {cardiac_lag_samples.tolist()} samples
-- Mean lag: {cardiac_lag_samples.mean():.1f} samples ({cardiac_lag_samples.mean()/FS:.3f} s)
-- Lag standard deviation: {cardiac_lag_samples.std(ddof=1):.1f} samples ({cardiac_lag_samples.std(ddof=1)/FS:.3f} s)
+- Mean lag: {mean_lag:.1f} samples ({mean_lag / FS:.3f} s)
+- Lag standard deviation: {sd_lag:.1f} samples ({sd_lag / FS:.3f} s)
 - Median ECG-derived heart rate: {heart_rate:.1f} beats/min
 - W=79 interpeak rates: {np.round(respiratory_rate, 1).tolist()} events/min
 - Annotator 1 events: {annotation_1.tolist()}

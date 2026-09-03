@@ -379,9 +379,20 @@ Figures 2 to 4 are regenerated from committed artifacts by
 `artifacts/studies/bidmc_window_85/annotation_summary.csv` and requires no
 network access or cached signal data.
 
-Figure 1, the construction on a single record, is produced by
-`scripts/analyze_bidmc_subject13_multiscale.py`, which needs the raw BIDMC
-signals and therefore runs only where those have been fetched.
+Figure 1, the construction on a single record, is drawn by the same script
+from the raw subject 13 signals, using the computation of
+`scripts/analyze_bidmc_subject13_multiscale.py`. It needs those signals cached
+under `notebooks/.bidmc_notebook_cache` and is skipped, with a message, where
+they are absent; the other figures regenerate regardless.
+
+**Figure 1.** Subject 13, samples 650 to 1200, the region examined in section
+7. Above: the raw respiration trace with the W=79 and W=100 envelopes and the
+object peaks each recovers. The peak both windows find is a shared object; the
+three that only W=79 finds are W=79-only objects. The two annotators' breath
+marks are the ticks along the top and disagree in this region. Below: the
+band-pass filtered ECG with its R-peaks, and the interval from each R-peak to
+the W=79 peak that follows it, which is the lag reported in the subject 13
+audit. Colours and marker shapes match figures 2 to 4.
 
 # 12. References
 
