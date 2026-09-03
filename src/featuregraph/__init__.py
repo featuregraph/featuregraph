@@ -2,7 +2,7 @@
 FeatureGraph public API.
 """
 
-from . import datasets
+from . import datasets, shape
 from .behaviors import feature_object, transition
 from .behaviors.state_occurrence import from_state_sequence
 from .contracts import (
@@ -29,6 +29,7 @@ __all__ = [
     "feature_object",
     "from_state_sequence",
     "datasets",
+    "shape",
     "plot",
     "smooth",
     "CompiledStateResult",

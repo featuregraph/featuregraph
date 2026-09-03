@@ -15,6 +15,13 @@ branch currently centers Transition construction.
    :show-inheritance:
 ```
 
+## Shape measures
+
+```{eval-rst}
+.. automodule:: featuregraph.shape
+   :members:
+```
+
 ## Example datasets
 
 ```{eval-rst}
