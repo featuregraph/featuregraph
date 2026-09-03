@@ -7,15 +7,14 @@ authors:
   - family-names: "Habib"
     given-names: "Nazia"
     orcid: "https://orcid.org/0009-0000-5474-277X"
-# The doi below is the all-versions record for the release series. Replace it
-# with the version DOI Zenodo mints for v0.2.0b1 once the GitHub release is
-# archived, and keep the version DOI thereafter.
+# Version DOI for v0.2.0b1. The all-versions record for the release series is
+# 10.5281/zenodo.21939317; cite that only for FeatureGraph as a project.
 version: "0.2.0b1"
-doi: "10.5281/zenodo.21939317"
+doi: "10.5281/zenodo.22286856"
 date-released: "2026-09-03"
 license: MIT
 repository-code: "https://github.com/featuregraph/featuregraph"
-url: "https://doi.org/10.5281/zenodo.21939317"
+url: "https://doi.org/10.5281/zenodo.22286856"
 keywords:
   - time series
   - behavioral objects

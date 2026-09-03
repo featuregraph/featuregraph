@@ -52,8 +52,9 @@ the results they archived; nothing here regenerates them.
   the lineages diverged, so every provenance stamp written from `main` before
   this release carries that string; treat it as "unreleased compiler
   lineage" rather than as the alpha.
-- `CITATION.cff` now names this release and the all-versions Zenodo record
-  for the release series, to be replaced by the version DOI once minted.
+- `CITATION.cff` now names this release and its Zenodo version DOI,
+  [10.5281/zenodo.22286856](https://doi.org/10.5281/zenodo.22286856), under
+  the all-versions record 10.5281/zenodo.21939317.
 
 ### Migration
 
