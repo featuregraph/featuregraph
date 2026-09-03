@@ -50,6 +50,17 @@ every check. Each run compiles to 3,001 observations, of which 99 are excluded:
 undefined, and 50 trailing, where the backward shift is undefined. No interior
 observation is excluded in any run.
 
-The BIDMC verification has not been run in this repository's continuous
-integration, because PhysioNet is not reachable from it. Run it where the
-dataset is reachable or cached and commit the two files it writes.
+`verification/bidmc_equivalence.csv` records 53 of 53 subjects identical on
+every check: valid mask, both derived columns, all three state masks, the
+occurrence identifiers, and both events. Each subject compiles to 60,001
+observations, of which 199 are excluded: 99 leading, where two full
+100-sample windows, the backward shift, and the first difference are
+undefined, and 100 trailing, where the shift is undefined. No interior
+observation is excluded in any subject. The run was made outside this
+repository's continuous integration, because PhysioNet is not reachable from
+it; `verification/bidmc_summary.json` records the environment and the
+contract fingerprint.
+
+Together the two tables say that the entire published BIDMC and TEP
+constructions, preprocessing included, execute from a single contract each,
+through a compiler that read none of it as science.
