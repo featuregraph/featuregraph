@@ -1,3 +1,32 @@
+# Abstract
+
+Time-series studies commonly fix preprocessing parameters without stating what
+variation those parameters suppress and what they preserve. We treat the
+temporal scale of a rolling envelope as part of a study's specification rather
+than as a cleaning step, and ask what changing it does to the objects a
+deterministic construction produces.
+
+Using all 53 records of the BIDMC PPG and Respiration Dataset, we constructed
+trough-peak-trough respiratory objects at rolling-envelope scales of 79 and 100
+samples under a contract frozen after inspecting four development records. The
+shorter scale produced 8,780 complete objects and the longer 7,926. Matching
+across scales gave 7,918 shared objects, 862 constructed only at 79 samples,
+and 8 constructed only at 100. Shortening the window adds objects and almost
+never removes them.
+
+On the 49 held-out records we tested whether objects introduced by the shorter
+scale occupy more consistent positions in the cardiac cycle than objects both
+scales construct. Forty-one records passed prespecified ECG validation and 20
+supplied enough objects of both classes. The median difference in circular
+phase concentration was 0.269 and was positive in 14 of the 20 records, with an
+interquartile range from -0.038 to 0.459.
+
+Where shorter-scale-only objects occur the construction is locally about 1.7
+times denser than its average, but those positions are not at cardiac
+frequency: no record had a local event rate within 10% of its own monitor
+heart rate. Unmatched objects are reported as a
+population to be examined rather than as errors.
+
 # 1. Introduction
 
 **Research question:** When different rolling-envelope parameter sets cause the same construction to produce different respiratory-waveform objects, how can those differences be made explicit, and what can their relationships to independently recorded signals reveal about the represented structure?
@@ -139,8 +168,25 @@ difference between class concentrations:
 
 We report its distribution and the number of subjects for which it is positive.
 Secondary outcomes are W=79-only counts and concentration by subject, the
-annotation-supported fraction, and ECG-valid coverage with every exclusion
-reason. No parameter was tuned from the held-out result.
+annotation-supported fraction, the local event rate defined below, and
+ECG-valid coverage with every exclusion reason. No parameter was tuned from the
+held-out result.
+
+The local event rate is defined over the full W=79 object sequence. For every
+complete object, a period is taken from its peak and the peak of the preceding
+object in that sequence,
+
+\[ \text{period}_i = \frac{\text{peak}_i - \text{peak}_{i-1}}{125}\ \text{seconds} \]
+
+and converted to a rate of \(60/\text{period}_i\) events per minute. The
+per-record figure is the median of those rates at the positions where W=79-only
+objects occur.
+
+Three things this is not. It is not the duration of the W=79-only objects. It
+is not a rate computed between consecutive W=79-only objects, since the
+preceding object in the sequence is usually a shared one. And it is not a
+respiratory or a cardiac rate: it describes the timing of constructed objects
+and nothing else.
 
 The analysis tests one thing: whether objects introduced by the shorter temporal
 scale occupy more consistent positions in the cardiac cycle than objects shared
@@ -226,25 +272,28 @@ boundaries in Section 9 this neither confirms nor refutes a cardiogenic reading:
 the annotation series were not constructed to mark cardiac-frequency structure,
 and they disagree with each other where such structure occurs.
 
-## 10.6 Duration and recurrence rate of shorter-scale-only objects
+## 10.6 Local event rate where shorter-scale-only objects occur
 
-Object rate is the reciprocal of object period, at 60 divided by the period in
-seconds. Across the 20 eligible held-out records the median W=79-only object
-rate was 32.4 per minute, corresponding to a median object period of 1.85
-seconds. The median period of all W=79 objects is 3.196 seconds, or 18.8 per
-minute. Objects introduced by the shorter scale are therefore about half the
-duration of the objects both scales construct, which is the structure the
-longer window is expected to suppress.
+Across the 20 eligible held-out records the median local event rate, as defined
+in Section 9, was 32.4 events per minute. That is a local interval of 1.85
+seconds between a W=79-only object's peak and the peak before it. The median
+subject period across all W=79 objects is 3.196 seconds, or 18.8 per minute.
 
-They do not recur at cardiac frequency. The median monitor heart rate across
+The construction is therefore about 1.7 times denser where shorter-scale-only
+objects appear than it is on average, which is what inserting one additional
+peak between two peaks that both scales find would produce. This says nothing
+about how long those objects last; their durations are not measured here.
+
+These locations are not at cardiac frequency. The median monitor heart rate across
 the same 20 records was 89 beats per minute, a cardiac period of 0.674 seconds,
 and subject-level W=79-only rates ranged from 22.2 to 61.9 per minute. **No
 record had a W=79-only object rate within 10% of its own monitor heart rate.**
 
 ![W=79-only object rate against monitor heart rate for each eligible record, with the equal-rate line and a plus or minus 10 percent band. Every record sits well below the band.](figures/fig3_rate_against_heart_rate.png)
 
-**Figure 3.** W=79-only object rate against monitor heart rate, with the
-equal-rate line and a ±10% band. No record falls inside the band.
+**Figure 3.** Median local event rate at W=79-only object positions against
+monitor heart rate, with the equal-rate line and a ±10% band. No record falls
+inside the band.
 
 This distinguishes two claims that the development material does not separate.
 In subject 13 the shorter-scale peaks both recurred at a heart-rate-like
@@ -333,3 +382,55 @@ network access or cached signal data.
 Figure 1, the construction on a single record, is produced by
 `scripts/analyze_bidmc_subject13_multiscale.py`, which needs the raw BIDMC
 signals and therefore runs only where those have been fetched.
+
+# 12. References
+
+Every entry below must be checked against the published record before
+submission. They were assembled without network access and the volume, page and
+year fields in particular have not been verified.
+
+1. Goldberger AL, Amaral LAN, Glass L, Hausdorff JM, Ivanov PC, Mark RG,
+   Mietus JE, Moody GB, Peng C-K, Stanley HE. PhysioBank, PhysioToolkit, and
+   PhysioNet: Components of a New Research Resource for Complex Physiologic
+   Signals. *Circulation* 101(23):e215-e220, 2000.
+2. Pimentel MAF, Johnson AEW, Charlton PH, Birrenkott D, Watkinson PJ,
+   Tarassenko L, Clifton DA. Towards a Robust Estimation of Respiratory Rate
+   from Pulse Oximeters. *IEEE Transactions on Biomedical Engineering*
+   64(8):1914-1923. DOI: 10.1109/TBME.2016.2613124
+3. Pimentel MAF, Johnson AEW, Charlton PH, Birrenkott D, Watkinson PJ,
+   Tarassenko L, Clifton DA. BIDMC PPG and Respiration Dataset (version 1.0.0).
+   PhysioNet. DOI: 10.13026/C2208R
+4. Virtanen P, Gommers R, Oliphant TE, et al. SciPy 1.0: fundamental algorithms
+   for scientific computing in Python. *Nature Methods* 17:261-272, 2020.
+5. Harris CR, Millman KJ, van der Walt SJ, et al. Array programming with NumPy.
+   *Nature* 585:357-362, 2020.
+6. McKinney W. Data Structures for Statistical Computing in Python.
+   *Proceedings of the 9th Python in Science Conference*, 56-61, 2010.
+7. Mardia KV, Jupp PE. *Directional Statistics*. Wiley, 2000.
+8. Fisher NI. *Statistical Analysis of Circular Data*. Cambridge University
+   Press, 1993.
+9. Habib N. FeatureGraph. Zenodo. DOI: **to be confirmed** - see the note below.
+
+## A note on the software citation
+
+The repositories currently give three different Zenodo identifiers:
+`10.5281/zenodo.21535662` in the framework's `CITATION.cff`,
+`10.5281/zenodo.21984186` in the framework's `README.md` badge, and
+`10.5281/zenodo.21535661` in the research repository's `CITATION.cff`. Adjacent
+identifiers of this kind are usually a concept DOI and one of its version DOIs,
+but which is which has not been established here.
+
+A paper that argues specifications must be pinned should cite the exact version
+it used. Resolve all three on Zenodo, cite the version DOI for the release the
+analysis ran against, and record the commit as well, rather than citing a
+branch that moves.
+
+# 13. Availability
+
+The construction, the frozen contract, the per-record results and the code that
+produced every figure are in the repository. The frozen contract is
+`artifacts/studies/bidmc_multiscale_contract.md`; per-record held-out results
+are `artifacts/studies/bidmc_multiscale_heldout/subject_summary.csv`; figures
+are regenerated by `scripts/plot_bidmc_paper_figures.py`.
+
+Cite the commit, not the branch.
