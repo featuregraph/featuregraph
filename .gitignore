@@ -88,6 +88,8 @@ artifacts/studies/*
 !artifacts/studies/bidmc_subject13_multiscale/**
 !artifacts/studies/bidmc_window_85/
 !artifacts/studies/bidmc_window_85/**
+!artifacts/contracts/
+!artifacts/contracts/**
 !artifacts/paper/
 artifacts/paper/*
 !artifacts/paper/framework/

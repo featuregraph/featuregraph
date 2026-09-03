@@ -1,0 +1,65 @@
+{
+  "version": "state-contract-v2",
+  "group_by": "simulation_run",
+  "missing_policy": "exclude",
+  "parameters": {
+    "rolling_max_window": 50,
+    "rolling_mean_window": 50,
+    "offline_alignment_shift": -50,
+    "rate_eps": 0.0
+  },
+  "derive": {
+    "reactor_pressure_smooth": {
+      "op": "shift",
+      "value": {
+        "op": "rolling_mean",
+        "value": {
+          "op": "rolling_max",
+          "value": {"column": "reactor_pressure"},
+          "window": {"parameter": "rolling_max_window"}
+        },
+        "window": {"parameter": "rolling_mean_window"}
+      },
+      "periods": {"parameter": "offline_alignment_shift"}
+    },
+    "reactor_pressure_change": {
+      "op": "diff",
+      "value": {"column": "reactor_pressure_smooth"}
+    },
+    "time_step_hours": {
+      "op": "diff",
+      "value": {"column": "time_(h)"}
+    },
+    "reactor_pressure_rate": {
+      "op": "div",
+      "left": {"column": "reactor_pressure_change"},
+      "right": {"column": "time_step_hours"}
+    }
+  },
+  "states": {
+    "rising": {
+      "op": "gt",
+      "left": {"column": "reactor_pressure_rate"},
+      "right": {"parameter": "rate_eps"}
+    },
+    "falling": {
+      "op": "lt",
+      "left": {"column": "reactor_pressure_rate"},
+      "right": {"op": "neg", "value": {"parameter": "rate_eps"}}
+    },
+    "inactive": {
+      "op": "le",
+      "left": {"op": "abs", "value": {"column": "reactor_pressure_rate"}},
+      "right": {"parameter": "rate_eps"}
+    }
+  },
+  "events": {
+    "enter_reactor_pressure_rising": {"type": "enter_state", "state": "rising"},
+    "exit_reactor_pressure_rising": {"type": "exit_state", "state": "rising"}
+  },
+  "boundary_policy": {
+    "include_first_entry": false,
+    "include_last_exit": false
+  },
+  "validation": {"exclusive": true, "exhaustive": true}
+}

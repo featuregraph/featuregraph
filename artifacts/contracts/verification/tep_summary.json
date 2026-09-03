@@ -1,0 +1,14 @@
+{
+  "run_at": "2026-09-03T02:59:58.404924+00:00",
+  "featuregraph_version": "0.1.0a1",
+  "pandas_version": "3.0.5",
+  "numpy_version": "2.4.6",
+  "python_version": "3.11.15",
+  "platform": "Linux-6.18.44-fc-v24-x86_64-with-glibc2.39",
+  "contract_sha256": {
+    "tep_reactor_pressure_states_v2": "ccdf7555b0dd73f1ebf7eefa8c72c17f6a45a84bf6ab384479fc89a967950f40"
+  },
+  "records": 10,
+  "records_identical": 10,
+  "excluded_interior_total": 0
+}
