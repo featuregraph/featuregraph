@@ -21,9 +21,10 @@ supplied enough objects of both classes. The median difference in circular
 phase concentration was 0.269 and was positive in 14 of the 20 records, with an
 interquartile range from -0.038 to 0.459.
 
-Shorter-scale-only objects are about half the duration of shared objects but do
-not recur at cardiac frequency: no record had a shorter-scale object rate within
-10% of its own monitor heart rate. Unmatched objects are reported as a
+Where shorter-scale-only objects occur the construction is locally about 1.7
+times denser than its average, but those positions are not at cardiac
+frequency: no record had a local event rate within 10% of its own monitor
+heart rate. Unmatched objects are reported as a
 population to be examined rather than as errors.
 
 # 1. Introduction
@@ -167,8 +168,25 @@ difference between class concentrations:
 
 We report its distribution and the number of subjects for which it is positive.
 Secondary outcomes are W=79-only counts and concentration by subject, the
-annotation-supported fraction, and ECG-valid coverage with every exclusion
-reason. No parameter was tuned from the held-out result.
+annotation-supported fraction, the local event rate defined below, and
+ECG-valid coverage with every exclusion reason. No parameter was tuned from the
+held-out result.
+
+The local event rate is defined over the full W=79 object sequence. For every
+complete object, a period is taken from its peak and the peak of the preceding
+object in that sequence,
+
+\[ \text{period}_i = \frac{\text{peak}_i - \text{peak}_{i-1}}{125}\ \text{seconds} \]
+
+and converted to a rate of \(60/\text{period}_i\) events per minute. The
+per-record figure is the median of those rates at the positions where W=79-only
+objects occur.
+
+Three things this is not. It is not the duration of the W=79-only objects. It
+is not a rate computed between consecutive W=79-only objects, since the
+preceding object in the sequence is usually a shared one. And it is not a
+respiratory or a cardiac rate: it describes the timing of constructed objects
+and nothing else.
 
 The analysis tests one thing: whether objects introduced by the shorter temporal
 scale occupy more consistent positions in the cardiac cycle than objects shared
@@ -254,25 +272,28 @@ boundaries in Section 9 this neither confirms nor refutes a cardiogenic reading:
 the annotation series were not constructed to mark cardiac-frequency structure,
 and they disagree with each other where such structure occurs.
 
-## 10.6 Duration and recurrence rate of shorter-scale-only objects
+## 10.6 Local event rate where shorter-scale-only objects occur
 
-Object rate is the reciprocal of object period, at 60 divided by the period in
-seconds. Across the 20 eligible held-out records the median W=79-only object
-rate was 32.4 per minute, corresponding to a median object period of 1.85
-seconds. The median period of all W=79 objects is 3.196 seconds, or 18.8 per
-minute. Objects introduced by the shorter scale are therefore about half the
-duration of the objects both scales construct, which is the structure the
-longer window is expected to suppress.
+Across the 20 eligible held-out records the median local event rate, as defined
+in Section 9, was 32.4 events per minute. That is a local interval of 1.85
+seconds between a W=79-only object's peak and the peak before it. The median
+subject period across all W=79 objects is 3.196 seconds, or 18.8 per minute.
 
-They do not recur at cardiac frequency. The median monitor heart rate across
+The construction is therefore about 1.7 times denser where shorter-scale-only
+objects appear than it is on average, which is what inserting one additional
+peak between two peaks that both scales find would produce. This says nothing
+about how long those objects last; their durations are not measured here.
+
+These locations are not at cardiac frequency. The median monitor heart rate across
 the same 20 records was 89 beats per minute, a cardiac period of 0.674 seconds,
 and subject-level W=79-only rates ranged from 22.2 to 61.9 per minute. **No
 record had a W=79-only object rate within 10% of its own monitor heart rate.**
 
 ![W=79-only object rate against monitor heart rate for each eligible record, with the equal-rate line and a plus or minus 10 percent band. Every record sits well below the band.](figures/fig3_rate_against_heart_rate.png)
 
-**Figure 3.** W=79-only object rate against monitor heart rate, with the
-equal-rate line and a ±10% band. No record falls inside the band.
+**Figure 3.** Median local event rate at W=79-only object positions against
+monitor heart rate, with the equal-rate line and a ±10% band. No record falls
+inside the band.
 
 This distinguishes two claims that the development material does not separate.
 In subject 13 the shorter-scale peaks both recurred at a heart-rate-like
