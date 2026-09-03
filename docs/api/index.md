@@ -1,9 +1,9 @@
 # API reference
 
 ```{warning}
-The API on `main` is under active redesign. The released oscillation and
-accumulation interfaces are preserved at `v0.1.0a1`, while the development
-branch currently centers Transition construction.
+This is the API of the compiler lineage, released as `v0.2.0b1` and still
+beta. The 0.1 oscillation and accumulation interfaces are preserved at
+`v0.1.0a1` and `v0.1.0b1` and are not part of it.
 ```
 
 ## Development Transition

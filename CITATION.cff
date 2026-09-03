@@ -1,18 +1,21 @@
 cff-version: 1.2.0
 message: "If you use FeatureGraph in your research, please cite this software."
 title: "FeatureGraph"
-abstract: "A Python framework for constructing explicit behavioral objects from ordered observations."
+abstract: "A deterministic compiler that turns declared rules over ordered observations into inspectable states, events and objects, with fingerprinted study contracts and refusal semantics."
 type: software
 authors:
   - family-names: "Habib"
     given-names: "Nazia"
     orcid: "https://orcid.org/0009-0000-5474-277X"
-version: "0.1.0a1"
-doi: "10.5281/zenodo.21535662"
-date-released: "2026-07-24"
+# The doi below is the all-versions record for the release series. Replace it
+# with the version DOI Zenodo mints for v0.2.0b1 once the GitHub release is
+# archived, and keep the version DOI thereafter.
+version: "0.2.0b1"
+doi: "10.5281/zenodo.21939317"
+date-released: "2026-09-03"
 license: MIT
 repository-code: "https://github.com/featuregraph/featuregraph"
-url: "https://doi.org/10.5281/zenodo.21535662"
+url: "https://doi.org/10.5281/zenodo.21939317"
 keywords:
   - time series
   - behavioral objects

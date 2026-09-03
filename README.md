@@ -50,7 +50,7 @@ observations
     → computational queries
 ```
 
-> **Development status:** The `main` branch contains an unreleased architectural redesign and is not API-compatible with FeatureGraph `v0.1.0b1`. To use or reproduce the public beta, work from the immutable [`v0.1.0b1` release](https://github.com/featuregraph/featuregraph/releases/tag/v0.1.0b1) or its compatible maintenance branch, [`beta/v0.1.x`](https://github.com/featuregraph/featuregraph/tree/beta/v0.1.x). Migration guidance will be published when the replacement API stabilizes.
+> **Development status:** `main` is the compiler lineage, released as `v0.2.0b1`. It is not API-compatible with the 0.1 releases, which live on `alpha/v0.1.x` and `beta/v0.1.x` and remain the authority for the results they archived. There is no migration path from the 0.1 object API; a 0.1 construction is re-expressed as a state contract.
 
 ## Current research studies
 
@@ -122,7 +122,20 @@ mechanism was executed.
 - [Study record](artifacts/studies/replica_mechanism_fidelity_study.md)
 - [Executable study](scripts/run_replica_mechanism_fidelity_study.py)
 
-## Released beta
+## Released 0.2 beta
+
+FeatureGraph `v0.2.0b1` is the compiler lineage: `compile_states` and the
+state-contract language (v1 frozen, v2 with declared derivations), fingerprinted
+and approvable study contracts, the study intake and conversational builder,
+shape measures over compiled occurrences, and the frozen study records under
+`artifacts/studies`. Install it with:
+
+```bash
+python -m pip install \
+  "featuregraph @ git+https://github.com/featuregraph/featuregraph.git@v0.2.0b1"
+```
+
+## Released 0.1 beta
 
 FeatureGraph `v0.1.0b1` provides:
 
@@ -138,7 +151,7 @@ The release constructs observations into states and events, assigns object ident
 
 ## Quick start
 
-Install the released beta:
+Install the released 0.1 beta:
 
 ```bash
 python -m pip install   "featuregraph @ git+https://github.com/featuregraph/featuregraph.git@v0.1.0b1"
@@ -247,7 +260,7 @@ for the released result.
 
 ## Development line
 
-The next architecture is being developed on `main`. It centers transition summaries and revises how higher-order behaviors consume them. Its API, notebooks, and documentation may change without notice and should not be used to reproduce beta results.
+The compiler lineage lives on `main` and is released as `v0.2.0b1`. Its API is still beta and may change between releases; it should not be used to reproduce 0.1 results, which stay tied to their own tags.
 
 Current development documentation is labeled explicitly:
 
@@ -261,9 +274,10 @@ The governing version policy is:
 
 | Reference | Purpose |
 | --- | --- |
-| `v0.1.0b1` | Immutable released and citable beta |
+| `v0.2.0b1` | Immutable released and citable compiler-lineage beta |
+| `v0.1.0b1` | Immutable released and citable 0.1 beta |
 | `beta/v0.1.x` | Compatible maintenance line for the beta API |
 | `alpha/v0.1.x` | Frozen historical alpha branch |
-| `main` | Breaking, unreleased successor architecture |
+| `main` | Compiler lineage; the source of `v0.2.x` releases |
 
 FeatureGraph supports Python 3.10 through 3.13 and is released under the MIT License.

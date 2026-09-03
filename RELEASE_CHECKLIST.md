@@ -1,38 +1,37 @@
-# Alpha release checklist
+# Release checklist: 0.2.0b1
 
-Use this checklist for the archival alpha release.
+Use this checklist for the first archived release of the compiler lineage on
+`main`. The 0.1 releases on `alpha/v0.1.x` and `beta/v0.1.x` are unaffected.
 
-## Repository
+## Before tagging
 
 - [ ] Merge the release-preparation pull request after all required CI jobs pass.
 - [ ] Confirm `python -m pip install .` succeeds in a clean environment.
-- [ ] Confirm the supported Python matrix is 3.10 through 3.13.
-- [ ] Confirm runtime and development dependencies remain bounded.
-- [ ] Run `python scripts/reproduce.py --refresh`.
-- [ ] Compare regenerated tables and figures with the submission copy.
-- [ ] Review `environment.json` and `run_metadata.json`.
-- [ ] Confirm README text renders without mojibake.
+- [ ] Confirm `featuregraph.__version__`, `pyproject.toml`, `docs/conf.py` and
+      the CI wheel check all read `0.2.0b1`.
+- [ ] Re-run `scripts/run_bidmc_multiscale_heldout.py` at the release commit
+      where PhysioNet is reachable and confirm `subject_summary.csv` is
+      byte-identical to the committed file. This is the provenance the held-out
+      report does not record on its own.
+- [ ] Run `scripts/verify_derived_contracts.py --dataset all` at the release
+      commit and confirm 53 of 53 and 10 of 10 identical.
+- [ ] Confirm the README and docs name `v0.2.0b1` where they name a release.
 
-## Version and release
+## Tag and release
 
-- [ ] Confirm package version and `featuregraph.__version__` are both `0.1.0a1`.
-- [ ] Create annotated tag `v0.1.0a1` from the verified commit.
-- [ ] Push the tag and create the corresponding GitHub prerelease.
-- [ ] Copy the `0.1.0a1` changelog entry into the release notes.
-- [ ] Attach the wheel, source distribution, paper-artifact archive, and checksums.
+- [ ] Create annotated tag `v0.2.0b1` from the verified commit and push it.
+- [ ] Create the GitHub prerelease for the tag; copy the `0.2.0b1` changelog
+      entry into the release notes.
+- [ ] Attach the wheel and source distribution from the CI build artifacts.
 
 ## Archive and citation
 
-- [ ] Enable GitHub archiving for this repository in Zenodo.
-- [ ] Publish the GitHub release and wait for Zenodo ingestion.
-- [ ] Verify the archived files and metadata.
-- [ ] Add the Zenodo DOI to `CITATION.cff`, `.zenodo.json`, and README.
-- [ ] Create a small metadata-only follow-up release if the DOI update must itself be archived.
-
-## Submission record
-
-- [ ] Record the release commit SHA.
-- [ ] Record the GitHub release URL.
-- [ ] Record the Zenodo concept DOI and version DOI.
-- [ ] Record the operating system and hardware used for any reported benchmarks.
-- [ ] Archive the exact generated tables, figures, environment record, and run metadata used in the paper.
+- [ ] Confirm the Zenodo–GitHub integration is enabled for this repository and
+      note which all-versions record it will publish under.
+- [ ] Publish the release and wait for Zenodo ingestion.
+- [ ] Verify the archived files include `artifacts/studies`, `artifacts/contracts`
+      and `artifacts/paper/master`.
+- [ ] Replace the all-versions DOI in `CITATION.cff` with the version DOI, and
+      cite that version DOI in the BIDMC preprint (reference 9).
+- [ ] Record the release commit SHA, the release URL, the all-versions DOI and
+      the version DOI in the preprint's availability section.

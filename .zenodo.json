@@ -1,23 +1,26 @@
 {
   "title": "FeatureGraph",
-  "description": "A Python framework for constructing explicit behavioral objects from ordered observations.",
+  "description": "A deterministic compiler that turns declared rules over ordered observations into inspectable states, events and objects, with fingerprinted study contracts and refusal semantics.",
   "creators": [
     {
       "name": "Habib, Nazia",
       "orcid": "0009-0000-5474-277X"
     }
   ],
-  "version": "0.1.0a1",
+  "version": "0.2.0b1",
   "upload_type": "software",
   "access_right": "open",
   "license": "mit",
   "keywords": [
     "time series",
+    "state contracts",
+    "compiler",
     "behavioral objects",
     "transition",
     "oscillation",
     "accumulation",
-    "event detection"
+    "event detection",
+    "reproducibility"
   ],
   "related_identifiers": [
     {
@@ -26,7 +29,7 @@
       "scheme": "url"
     },
     {
-      "identifier": "10.5281/zenodo.21535661",
+      "identifier": "10.5281/zenodo.21939317",
       "relation": "isVersionOf",
       "scheme": "doi"
     }
