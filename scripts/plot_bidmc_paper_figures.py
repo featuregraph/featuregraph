@@ -140,7 +140,13 @@ def figure_phase_concentration() -> None:
 
 
 def figure_rate_against_heart_rate() -> None:
-    """W=79-only object rate against monitor heart rate, with a +/-10% band."""
+    """Local event rate at W=79-only positions against monitor heart rate.
+
+    The plotted quantity is the median, per record, of the local rate of the
+    full W=79 construction at the positions where W=79-only objects occur. It
+    is not the duration of those objects and not a rate between consecutive
+    ones. See Section 9 of the paper.
+    """
     d = eligible()
     fig, ax = plt.subplots(figsize=(4.6, 4.4))
     ax.grid(alpha=0.7)
@@ -167,8 +173,11 @@ def figure_rate_against_heart_rate() -> None:
     ax.set_ylim(lo, hi)
     ax.set_aspect("equal")
     ax.set_xlabel("Monitor heart rate (beats/min)")
-    ax.set_ylabel("W=79-only object rate (per min)")
-    ax.set_title("No record falls in the equal-rate band", fontsize=9, loc="left")
+    ax.set_ylabel("Local event rate at W=79-only objects (per min)")
+    ax.set_title(
+        "No record's local rate approaches its heart rate",
+        fontsize=9, loc="left",
+    )
     save(fig, "fig3_rate_against_heart_rate")
 
 
