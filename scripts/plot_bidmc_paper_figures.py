@@ -62,6 +62,8 @@ def style() -> None:
             "grid.linewidth": 0.6,
             "lines.linewidth": 2.0,
             "font.family": "DejaVu Sans",
+            "pdf.fonttype": 42,
+            "svg.fonttype": "none",
         }
     )
 
@@ -74,11 +76,16 @@ def eligible() -> pd.DataFrame:
 
 
 def save(fig: plt.Figure, name: str) -> None:
+    """Write PNG, SVG and PDF.
+
+    PDF is the one arXiv wants: pdflatex takes PDF, PNG and JPG but not SVG,
+    and a vector figure survives the printer at any scale.
+    """
     FIGURES.mkdir(parents=True, exist_ok=True)
-    for suffix in ("png", "svg"):
+    for suffix in ("png", "svg", "pdf"):
         fig.savefig(FIGURES / f"{name}.{suffix}", dpi=300, bbox_inches="tight")
     plt.close(fig)
-    print(f"  wrote {name}.png and {name}.svg")
+    print(f"  wrote {name}.png, {name}.svg and {name}.pdf")
 
 
 def figure_phase_concentration() -> None:
@@ -143,7 +150,10 @@ def figure_rate_against_heart_rate() -> None:
         [lo, hi], [lo * 0.9, hi * 0.9], [lo * 1.1, hi * 1.1],
         color=GRID, alpha=0.55, linewidth=0, zorder=1,
     )
-    ax.plot([lo, hi], [lo, hi], color=INK_MUTED, linewidth=1.0, linestyle="--", zorder=2)
+    ax.plot(
+        [lo, hi], [lo, hi],
+        color=INK_MUTED, linewidth=1.0, linestyle="--", zorder=2,
+    )
     ax.scatter(
         d.monitor_hr_median, d.objects_79_only_rate_median,
         s=48, color=ONLY_79, marker="s", zorder=3,
