@@ -22,6 +22,7 @@ import json
 import platform
 import sys
 import tempfile
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.request import urlretrieve
@@ -91,15 +92,38 @@ def resultant(values: np.ndarray) -> float:
     return float(np.abs(np.mean(np.exp(2j * np.pi * values))))
 
 
+DOWNLOAD_ATTEMPTS = 4
+
+
 def load_numerics(ns: dict[str, object], subject: int) -> pd.DataFrame:
-    """Fetch the monitor numerics the notebook's loader does not cover."""
+    """Fetch the monitor numerics the notebook's loader does not cover.
+
+    PhysioNet answers with a gateway error now and then. A failed attempt
+    leaves nothing behind and is retried with backoff; a file that arrives
+    without the monitor heart-rate column is discarded and fetched again.
+    """
     CACHE.mkdir(parents=True, exist_ok=True)
     path = CACHE / f"bidmc_{subject:02d}_Numerics.csv"
-    if not path.exists():
-        urlretrieve(f"{ns['BASE']}/{path.name}", path)
-    numerics = pd.read_csv(path)
-    numerics.columns = numerics.columns.str.strip()
-    return numerics
+    url = f"{ns['BASE']}/{path.name}"
+    last_error: Exception | None = None
+    for attempt in range(DOWNLOAD_ATTEMPTS):
+        try:
+            if not path.exists():
+                urlretrieve(url, path)
+            numerics = pd.read_csv(path)
+            numerics.columns = numerics.columns.str.strip()
+            if "HR" not in numerics.columns:
+                raise ValueError(f"{path.name} has no HR column")
+            return numerics
+        except (OSError, ValueError, pd.errors.ParserError) as error:
+            last_error = error
+            path.unlink(missing_ok=True)
+            if attempt < DOWNLOAD_ATTEMPTS - 1:
+                time.sleep(2**attempt)
+    raise RuntimeError(
+        f"Could not fetch a valid BIDMC numerics file after {DOWNLOAD_ATTEMPTS} "
+        f"attempts: {url}"
+    ) from last_error
 
 
 def run(output: Path) -> None:
