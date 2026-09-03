@@ -1,0 +1,14 @@
+{
+  "run_at": "2026-09-03T14:23:10.524326+00:00",
+  "featuregraph_version": "0.1.0a1",
+  "pandas_version": "3.0.5",
+  "numpy_version": "2.5.2",
+  "python_version": "3.12.11",
+  "platform": "Linux-6.8.0-1052-azure-x86_64-with-glibc2.36",
+  "contract_sha256": {
+    "bidmc_respiration_states_v2": "3c991d8298a8db4f4feb02a67219a31eb20586057e7932baba301fe1a45f5b01"
+  },
+  "records": 53,
+  "records_identical": 53,
+  "excluded_interior_total": 0
+}
