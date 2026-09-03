@@ -276,8 +276,12 @@ def compare(produced: Path, committed: Path) -> dict[str, object]:
             "committed": frozen,
             "identical": fresh == frozen,
         }
+    try:
+        compared_against = str(committed.relative_to(ROOT))
+    except ValueError:
+        compared_against = str(committed)
     return {
-        "compared_against": str(committed.relative_to(ROOT)),
+        "compared_against": compared_against,
         "files": files,
         "identical": all(entry["identical"] for entry in files.values()),
     }
