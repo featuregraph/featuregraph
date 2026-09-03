@@ -108,3 +108,39 @@ def test_check_mode_exits_zero_when_identical(committed: Path, monkeypatch):
     assert runner.main(["--check", "--output-dir", str(committed)]) == 0
     record = json.loads((committed / "provenance.json").read_text())
     assert record["check"]["identical"] is True
+
+
+def test_numerics_download_retries_a_gateway_error(tmp_path: Path, monkeypatch):
+    """One transient failure from PhysioNet must not end the run."""
+    import urllib.error
+
+    monkeypatch.setattr(runner, "CACHE", tmp_path)
+    monkeypatch.setattr(runner.time, "sleep", lambda _: None)
+    calls: list[str] = []
+
+    def flaky_urlretrieve(url: str, path: Path) -> None:
+        calls.append(url)
+        if len(calls) == 1:
+            raise urllib.error.HTTPError(url, 502, "Bad Gateway", {}, None)
+        Path(path).write_text("Time [s], HR, PULSE\n0,90,91\n")
+
+    monkeypatch.setattr(runner, "urlretrieve", flaky_urlretrieve)
+
+    numerics = runner.load_numerics({"BASE": "https://example.invalid/bidmc"}, 7)
+
+    assert calls == ["https://example.invalid/bidmc/bidmc_07_Numerics.csv"] * 2
+    assert numerics["HR"].tolist() == [90]
+
+
+def test_numerics_download_gives_up_after_the_last_attempt(tmp_path: Path, monkeypatch):
+    monkeypatch.setattr(runner, "CACHE", tmp_path)
+    monkeypatch.setattr(runner.time, "sleep", lambda _: None)
+
+    def broken_urlretrieve(url: str, path: Path) -> None:
+        raise OSError("connection reset")
+
+    monkeypatch.setattr(runner, "urlretrieve", broken_urlretrieve)
+
+    with pytest.raises(RuntimeError, match="after 4 attempts"):
+        runner.load_numerics({"BASE": "https://example.invalid/bidmc"}, 7)
+    assert not (tmp_path / "bidmc_07_Numerics.csv").exists()
