@@ -85,6 +85,8 @@ artifacts/studies/*
 !artifacts/studies/bidmc_multiscale_heldout/
 !artifacts/studies/bidmc_peak_measures/
 !artifacts/studies/bidmc_peak_measures/**
+!artifacts/studies/completeness_disagreement/
+!artifacts/studies/completeness_disagreement/**
 !artifacts/studies/bidmc_multiscale_heldout/**
 !artifacts/studies/bidmc_subject13_multiscale/
 !artifacts/studies/bidmc_subject13_multiscale/**

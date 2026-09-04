@@ -1,0 +1,150 @@
+{
+  "schema_version": 2,
+  "title": "Tennessee Eastman reactor pressure states under Fault 2",
+  "research_question": "Does a reactor-pressure rate construction selected on one Fault 2 simulation run, and frozen, produce the same rising, falling and inactive partition on the other Fault 2 runs, and does it stay quiet on normal-operation windows?",
+  "data_source": "Tennessee Eastman Process simulation data, Fault 2, simulation runs 1 to 10, as distributed in the Rieth et al. 2017 dataset; the reactor_pressure and time_(h) columns of each run, 3,001 rows per run.",
+  "observation_schema": [
+    {
+      "column": "simulation_run",
+      "dtype": "int",
+      "unit": "run number 1 to 10"
+    },
+    {
+      "column": "time_(h)",
+      "dtype": "float",
+      "unit": "hours since the start of the run"
+    },
+    {
+      "column": "reactor_pressure",
+      "dtype": "float",
+      "unit": "kPa gauge"
+    },
+    {
+      "column": "reactor_pressure_smooth",
+      "dtype": "float",
+      "unit": "derived envelope of reactor_pressure"
+    },
+    {
+      "column": "reactor_pressure_change",
+      "dtype": "float",
+      "unit": "derived first difference of the envelope"
+    },
+    {
+      "column": "time_step_hours",
+      "dtype": "float",
+      "unit": "derived first difference of time_(h)"
+    },
+    {
+      "column": "reactor_pressure_rate",
+      "dtype": "float",
+      "unit": "derived kPa per hour"
+    }
+  ],
+  "grouping_and_order": {
+    "group_by": [
+      "simulation_run"
+    ],
+    "order_by": "time_(h)"
+  },
+  "time_semantics": "Each row is a sample at an instant; the simulator writes one row every three minutes.",
+  "states_or_labels": [
+    {
+      "name": "rising",
+      "when": {
+        "op": "gt",
+        "left": {
+          "column": "reactor_pressure_rate"
+        },
+        "right": {
+          "parameter": "rate_eps"
+        }
+      }
+    },
+    {
+      "name": "falling",
+      "when": {
+        "op": "lt",
+        "left": {
+          "column": "reactor_pressure_rate"
+        },
+        "right": {
+          "op": "neg",
+          "value": {
+            "parameter": "rate_eps"
+          }
+        }
+      }
+    },
+    {
+      "name": "inactive",
+      "when": {
+        "op": "le",
+        "left": {
+          "op": "abs",
+          "value": {
+            "column": "reactor_pressure_rate"
+          }
+        },
+        "right": {
+          "parameter": "rate_eps"
+        }
+      }
+    }
+  ],
+  "preprocessing_steps": [
+    "reactor_pressure_smooth is the rolling maximum of reactor_pressure over rolling_max_window rows, then the rolling mean over rolling_mean_window rows, shifted by offline_alignment_shift rows",
+    "reactor_pressure_change is the first difference of reactor_pressure_smooth",
+    "time_step_hours is the first difference of time_(h)",
+    "reactor_pressure_rate is reactor_pressure_change divided by time_step_hours",
+    "rows where any derived column is undefined are excluded and counted"
+  ],
+  "operator_parameters": [
+    {
+      "name": "rolling_max_window",
+      "value": 50
+    },
+    {
+      "name": "rolling_mean_window",
+      "value": 50
+    },
+    {
+      "name": "offline_alignment_shift",
+      "value": -50
+    },
+    {
+      "name": "rate_eps",
+      "value": 0.0
+    }
+  ],
+  "boundary_rules": {
+    "include_first_entry": false,
+    "include_last_exit": false
+  },
+  "completeness_rules": {
+    "exclusive": true,
+    "exhaustive": true
+  },
+  "object_definition": "One row of the result is one rising occurrence of the smoothed reactor pressure: the interval from the first rising sample to the last, with the exit event on the last rising sample.",
+  "measurements": [
+    "count of rising occurrences per run",
+    "start and end time of each rising occurrence in hours",
+    "duration of each rising occurrence in hours",
+    "pressure gained within each occurrence in kPa"
+  ],
+  "validations": [
+    "states are mutually exclusive and cover every valid observation",
+    "every run compiles to 3,001 observations with 99 excluded, 49 leading and 50 trailing",
+    "the partition on runs 1 to 9 matches the published construction row for row"
+  ],
+  "provenance": [
+    "contract fingerprint",
+    "dataset revision",
+    "featuregraph version and Python environment"
+  ],
+  "exclusions": [],
+  "claim_limits": [
+    "the construction is a repeatable abnormal-pressure representation, not a Fault 2 classifier",
+    "no claim is made about faults other than Fault 2"
+  ],
+  "executor_registered": false
+}
