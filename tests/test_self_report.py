@@ -257,3 +257,4 @@ def test_field_guide_says_derived_columns_are_declared():
         or "preprocessing derives" in guide
     )
     assert "value is null is not a declaration" in guide
+    assert "declare an empty list: that is an answer" in guide

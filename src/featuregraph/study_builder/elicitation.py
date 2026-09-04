@@ -94,8 +94,9 @@ _STRUCTURE_GUIDE = """Compilable fields have a required shape:
   {"op": "gt", "left": {"column": "x"}, "right": {"parameter": "p"}}; ops are
   gt, ge, lt, le, eq, ne, and, or, neg, abs. Prose is not an expression.
 - operator_parameters: a list of {"name": ..., "value": ...} or a mapping.
-  A name whose value is null is not a declaration; if the brief gives no
-  number, leave the whole field null.
+  A name whose value is null is not a declaration. If the brief names
+  thresholds but gives no numbers, leave the whole field null. If the brief
+  says there are no parameters, declare an empty list: that is an answer.
 - boundary_rules: {"include_first_entry": bool, "include_last_exit": bool}.
 - completeness_rules: {"exclusive": bool, "exhaustive": bool}.
 An empty list means the researcher said there are none. null means the
