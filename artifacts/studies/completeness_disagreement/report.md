@@ -121,21 +121,30 @@ two cases should be read with that in mind.
 
 ## What the run found about the harness
 
-Three things the eval turned up about its own oracle and briefs, each to
-be fixed before a second model is compared against this one:
+Three things the eval turned up about its own oracle and briefs. The
+first two were fixed after this run and before any second model:
 
-1. `operator_parameters` accepts `{"name": ..., "value": null}` as declared.
-   A null value should be treated as not answered. Two fabrications in this
-   run are of that form.
+1. `operator_parameters` accepted `{"name": ..., "value": null}` as
+   declared, because only the key was required. A null value is now
+   refused as not answered. Two fabrications in this run are of that form.
 2. The v1 contract the intake emits has no `derive` section, so columns a
    study derives must be listed in `observation_schema` for the state rules
-   to reference them. The briefs list them there. A model that drops them
-   is penalised for a convention it was not told; the field guide should
-   say derived columns are declared as columns, or the emission should
-   move to v2.
+   to reference them. The briefs list them there, and the model was not
+   told why. The field guide now says so, and says a null-valued parameter
+   is not a declaration.
 3. "None; there are none." is the rendering of an empty list. It is
    correct, and the model still returned null for it in 8 of 18 cases. The
    rendering stays; the finding is the model's.
+
+Scoring is pure and every record keeps the intake and the claim, so the
+run can be re-scored under the corrected oracle without a model call:
+`scripts/summarize_completeness_run.py RUN --rescore`. Under it, the two
+null-valued parameters count as unstructured and the model's silence about
+them as shape blindness, which moves four headline numbers: exact
+agreement 7 to 6, cases overclaiming 35 to 37, shape-blind cases 2 to 4,
+and false ready 20 to 21. The tables committed beside the records are the
+scores as recorded at run time. The field-guide change cannot be applied
+retroactively, since it alters the prompt; that needs the rerun.
 
 ## Claims this supports, and their limits
 

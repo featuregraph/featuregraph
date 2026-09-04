@@ -42,3 +42,19 @@ def test_missing_records_is_an_error(tmp_path: Path):
 
     with pytest.raises(FileNotFoundError):
         summarize.load_records(tmp_path)
+
+
+def test_rescore_recomputes_from_stored_intake_and_claim(tmp_path: Path):
+    eval_script.main(
+        ["--provider", "offline", "--output", str(tmp_path), "--full-only"]
+    )
+    records = summarize.load_records(tmp_path)
+
+    rescored = summarize.rescore(records)
+
+    assert [r["score"] for r in rescored] == [r["score"] for r in records]
+    assert summarize.main([str(tmp_path), "--rescore"]) == 0
+    import json
+
+    head = json.loads((tmp_path / "summary.json").read_text())
+    assert head["scoring"] == "rescored under the current oracle"

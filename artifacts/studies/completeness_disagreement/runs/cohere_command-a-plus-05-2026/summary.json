@@ -14,5 +14,6 @@
  "withheld_named_missing": 4,
  "flattened_cases": 2,
  "flattened_unstructured": 0,
- "flattened_shape_blind": 0
+ "flattened_shape_blind": 0,
+ "scoring": "as recorded at run time"
 }

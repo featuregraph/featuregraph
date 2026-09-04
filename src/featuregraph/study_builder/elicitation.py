@@ -84,6 +84,9 @@ def _field_guide() -> str:
 
 _STRUCTURE_GUIDE = """Compilable fields have a required shape:
 - observation_schema: a list of {"column": name, "dtype": ..., "unit": ...}.
+  It must list every column the state rules refer to, including columns
+  that preprocessing derives from the raw ones; a rule over a column the
+  schema does not list cannot compile.
 - grouping_and_order: {"group_by": [columns], "order_by": column} or
   {"group_by": [columns], "timeline": {"frequency": "..."}}.
 - states_or_labels: either {"state_column": name} or a non-empty list of
@@ -91,6 +94,8 @@ _STRUCTURE_GUIDE = """Compilable fields have a required shape:
   {"op": "gt", "left": {"column": "x"}, "right": {"parameter": "p"}}; ops are
   gt, ge, lt, le, eq, ne, and, or, neg, abs. Prose is not an expression.
 - operator_parameters: a list of {"name": ..., "value": ...} or a mapping.
+  A name whose value is null is not a declaration; if the brief gives no
+  number, leave the whole field null.
 - boundary_rules: {"include_first_entry": bool, "include_last_exit": bool}.
 - completeness_rules: {"exclusive": bool, "exhaustive": bool}.
 An empty list means the researcher said there are none. null means the
