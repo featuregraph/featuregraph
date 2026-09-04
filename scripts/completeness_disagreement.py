@@ -42,6 +42,7 @@ from featuregraph.study_builder.elicitation import (  # noqa: E402
     AnthropicElicitor,
     CohereElicitor,
     Elicitor,
+    ElicitorUnavailable,
     OfflineElicitor,
     elicit,
 )
@@ -81,6 +82,11 @@ def make_elicitor(provider: str, model: str | None) -> Elicitor:
         return OfflineElicitor(_honest_offline, name=model or "offline-honest")
     if provider == "cohere":
         key = os.environ.get("COHERE_API_KEY", "")
+        if not key:
+            raise ElicitorUnavailable(
+                "COHERE_API_KEY is not set in this environment. A Codespaces "
+                "secret arrives only in a container started after it was added."
+            )
         return CohereElicitor(key, model or "command-a-plus-05-2026")
     if provider == "anthropic":
         return AnthropicElicitor(model or "claude-opus-5")
@@ -171,24 +177,24 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--full-only", action="store_true", help="skip the ablations")
     args = parser.parse_args(argv)
 
-    elicitor = make_elicitor(args.provider, args.model)
+    try:
+        elicitor = make_elicitor(args.provider, args.model)
+    except ElicitorUnavailable as error:
+        print(f"cannot run: {error}", file=sys.stderr)
+        return 2
     output = args.output or OUTPUT / elicitor.name.replace(":", "_").replace("/", "_")
     (output / "cases").mkdir(parents=True, exist_ok=True)
 
     references = load_references(args.reference_dir)
     records = []
-    for name, intake in references.items():
-        if args.only and name not in args.only:
-            continue
-        for case in ablations(name, intake):
-            if args.full_only and (case.withheld or case.flattened):
-                continue
-            record = run_case(case, elicitor)
-            records.append(record)
-            path = output / "cases" / (case.case_id.replace("/", "__") + ".json")
-            path.write_text(json.dumps(record, indent=1, sort_keys=True) + "\n")
-            status = "failed" if record["error"] else "ok"
-            print(f"{case.case_id}: {status}")
+    try:
+        _run_all(args, references, elicitor, output, records)
+    except ElicitorUnavailable as error:
+        print(f"\nstopped: {error}", file=sys.stderr)
+        print(
+            f"{len(records)} case(s) recorded before the provider became unavailable."
+        )
+        return 2
 
     table = pd.DataFrame([row(r) for r in records])
     table.to_csv(output / "cases.csv", index=False)
@@ -208,6 +214,29 @@ def main(argv: list[str] | None = None) -> int:
     print(summarise(table))
     print(f"wrote {output}")
     return 0
+
+
+def _run_all(
+    args: argparse.Namespace,
+    references: Mapping[str, StudyIntake],
+    elicitor: Elicitor,
+    output: Path,
+    records: list[dict[str, Any]],
+) -> None:
+    for name, intake in references.items():
+        if args.only and name not in args.only:
+            continue
+        for case in ablations(name, intake):
+            if args.full_only and (case.withheld or case.flattened):
+                continue
+            record = run_case(case, elicitor)
+            records.append(record)
+            path = output / "cases" / (case.case_id.replace("/", "__") + ".json")
+            path.write_text(json.dumps(record, indent=1, sort_keys=True) + "\n")
+            if record["error"]:
+                print(f"{case.case_id}: failed: {record['error']}")
+            else:
+                print(f"{case.case_id}: ok")
 
 
 if __name__ == "__main__":
