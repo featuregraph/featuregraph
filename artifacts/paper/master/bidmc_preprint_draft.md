@@ -398,11 +398,30 @@ this paper depends on it.
 
 # 11. Discussion
 
-Objects introduced by the W=79 construction concentrate at a cardiac phase more than objects shared by both constructs. In 14 of the 20 eligible held-out records, the difference in phase concentration was positive with a median of 0.269 and an interquartile range ffrom -0.038 to 0.459. This suggests that the two populations differ in their relationship to an independently recorded signal. It does not say what either population is. A cardiogenic reading of the W=79-only objects is permitted rather than established by the data. 
+Objects introduced by the W=79 construction concentrate at a cardiac phase
+more than objects shared by both constructions. In 14 of the 20 eligible
+held-out records the difference in phase concentration was positive, with a
+median of 0.269 and an interquartile range from -0.038 to 0.459. This says
+that the two populations differ in their relationship to an independently
+recorded signal. It does not say what either population is. A cardiogenic
+reading of the W=79-only objects is permitted by the data rather than
+established by them.
 
-Subject 13 is where the cardiogenic interpretation is strongest, and it is a development record. Every W=79 object peak in the sample occurs 39 samples after the preceding R-peak, with an interquartile range of 3 samples, and this holds for the shared objects as much as the W=79-only ones (Figure 5). Subject 13 is the only record in which the shared objects are concentrated (0.95, where the next highest in any ECG-valid record is 0.76). In the held-out population the shared objects are spread through the cardiac cycle, and only the W=79-only objects are concentrated. 
+Subject 13 is where the cardiogenic interpretation is strongest, and it is a
+development record. Over its full hour the W=79 object peaks sit a median of
+39 samples after the preceding R-peak, with an interquartile range of 3
+samples, and this holds for the shared objects as much as for the W=79-only
+ones (Figure 5). Subject 13 is the only record in which the shared objects
+are concentrated: 0.95, where the next highest in any ECG-valid record is
+0.76. In the held-out population the shared objects are spread through the
+cardiac cycle, and only the W=79-only objects are concentrated.
 
-The contribution of this paper is not the cardiac component in impedance respiration traces itself, which is known [Seppä 2011; Imanaka 2000]. The contribution is that the construction was able to identify that component with no prior knowledge of it. The construction was frozen before any ECG signal was read, produced a population of objects that carry it, and the analysis reported those objects as a population to examine rather than removing them as noise. 
+The contribution of this paper is not the cardiac component in impedance
+respiration traces, which is known [10, 11]. The contribution is that the
+construction produced that component with no prior knowledge of it. The
+construction was frozen before any ECG signal was read, it produced a
+population of objects that carry the component, and the analysis reported
+those objects as a population to examine rather than removing them as noise.
 
 # 12. Figures
 
@@ -462,6 +481,13 @@ year fields in particular have not been verified.
 9. Habib N. FeatureGraph 0.2.0b1. Zenodo, 2026. DOI: 10.5281/zenodo.22286856.
    Release tag `v0.2.0b1`, commit `23d79ac551c41926c50bb2ac683af428f15ee9ba`.
    All versions: 10.5281/zenodo.21939317.
+10. Seppä V-P, Hyttinen J, Viik J. A method for suppressing cardiogenic
+    oscillations in impedance pneumography. *Physiological Measurement*
+    32(3):337-345, 2011. DOI: 10.1088/0967-3334/32/3/005
+11. Imanaka H, Nishimura M, Takeuchi M, Kimball WR, Yahagi N, Kumon K.
+    Autotriggering caused by cardiogenic oscillation during flow-triggered
+    mechanical ventilation. *Critical Care Medicine* 28(2):402-407, 2000.
+    DOI: 10.1097/00003246-200002000-00019
 
 ## A note on the software citation
 
@@ -486,7 +512,7 @@ remains the citation for the released 0.1 beta and nothing more.
 
 The environment the provenance record names is Python 3.12.11, pandas 3.0.5,
 numpy 2.5.2 and scipy 1.18.1. The declared-derivation form of the
-construction (section 13) carries the contract fingerprint
+construction (section 14) carries the contract fingerprint
 `3c991d8298a8db4f4feb02a67219a31eb20586057e7932baba301fe1a45f5b01`.
 
 # 14. Availability
