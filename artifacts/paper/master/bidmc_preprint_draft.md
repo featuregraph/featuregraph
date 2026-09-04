@@ -396,7 +396,7 @@ comparisons, so the discrepancy is a property of that annotation series rather
 than of the objects. It is reported here rather than removed, and no result in
 this paper depends on it.
 
-# Discussion
+# 11. Discussion
 
 Objects introduced by the W=79 construction concentrate at a cardiac phase more than objects shared by both constructs. In 14 of the 20 eligible held-out records, the difference in phase concentration was positive with a median of 0.269 and an interquartile range ffrom -0.038 to 0.459. This suggests that the two populations differ in their relationship to an independently recorded signal. It does not say what either population is. A cardiogenic reading of the W=79-only objects is permitted rather than established by the data. 
 
@@ -404,7 +404,7 @@ Subject 13 is where the cardiogenic interpretation is strongest, and it is a dev
 
 The contribution of this paper is not the cardiac component in impedance respiration traces itself, which is known [Seppä 2011; Imanaka 2000]. The contribution is that the construction was able to identify that component with no prior knowledge of it. The construction was frozen before any ECG signal was read, produced a population of objects that carry it, and the analysis reported those objects as a population to examine rather than removing them as noise. 
 
-# 11. Figures
+# 12. Figures
 
 Figures 2 to 4 are regenerated from committed artifacts by
 `scripts/plot_bidmc_paper_figures.py`, which reads
@@ -433,7 +433,7 @@ band-pass filtered ECG with its R-peaks, and the interval from each R-peak to
 the W=79 peak that follows it, which is the lag reported in the subject 13
 audit. Colours and marker shapes match figures 2 to 4.
 
-# 12. References
+# 13. References
 
 Every entry below must be checked against the published record before
 submission. They were assembled without network access and the volume, page and
@@ -489,7 +489,7 @@ numpy 2.5.2 and scipy 1.18.1. The declared-derivation form of the
 construction (section 13) carries the contract fingerprint
 `3c991d8298a8db4f4feb02a67219a31eb20586057e7932baba301fe1a45f5b01`.
 
-# 13. Availability
+# 14. Availability
 
 The construction, the frozen contract, the per-record results and the code that
 produced every figure are in the repository. The frozen contract is
