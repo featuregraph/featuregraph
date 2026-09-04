@@ -4,6 +4,17 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>FeatureGraph Research Assistant</title>
+  <!--
+    PostHog, the same project and options as featuregraph.ai, so the assistant
+    shows up beside the marketing site under its own host. Pageviews and the
+    three named actions in the script below are captured. The text a visitor
+    types is never sent: only event names and the session phase. Session
+    recording is off.
+  -->
+  <script>
+    !function(t,e){var o,n,p,r;e.__SV||(window.posthog&&window.posthog.__loaded)||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}p||((p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",p.onerror=function(){p=null},(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r));var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+" (stub)"},o="capture identify alias people.set people.set_once unregister opt_out_capturing opt_in_capturing has_opted_out_capturing get_distinct_id get_session_id get_session_replay_url reset isFeatureEnabled onFeatureFlags reloadFeatureFlags".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+    posthog.init('phc_pR2JsfuNKv2VLjZ8KffGCMzp8PsbHHYmdpEaUPsGTgqy',{api_host:'https://us.i.posthog.com',defaults:'2026-05-30',capture_pageview:true,capture_pageleave:true,disable_session_recording:true});
+  </script>
   <style>
     :root {
       color-scheme: light;
@@ -187,6 +198,15 @@
     const budget = document.querySelector('#budget');
     const mode = document.querySelector('#mode');
     const errorBox = document.querySelector('#error');
+    let lastPhase = null;
+
+    function track(event, properties) {
+      // Names and phases only. What the visitor typed goes to the assistant
+      // and nowhere else.
+      if (window.posthog && typeof posthog.capture === 'function') {
+        posthog.capture(event, properties || {});
+      }
+    }
 
     function renderMessages(items) {
       messages.innerHTML = '';
@@ -238,6 +258,10 @@
       if (state.artifacts) renderArtifacts(state.artifacts);
       renderQuestions(state.open_questions);
       phase.textContent = `Phase: ${String(state.phase).replaceAll('_', ' ')}`;
+      if (state.phase === 'executed' && lastPhase !== 'executed') {
+        track('assistant_study_executed', {assistant_mode: state.assistant_mode});
+      }
+      lastPhase = state.phase;
       approve.style.display = state.can_approve ? 'block' : 'none';
       if (state.assistant_mode) mode.textContent = state.assistant_mode;
       if (state.budget) {
@@ -271,9 +295,13 @@
       const value = input.value.trim();
       if (!value) return;
       input.value = '';
+      track('assistant_message_sent', {phase: lastPhase});
       request('/api/message', {message: value});
     });
-    approve.addEventListener('click', () => request('/api/approve'));
+    approve.addEventListener('click', () => {
+      track('assistant_approve_clicked', {phase: lastPhase});
+      request('/api/approve');
+    });
     input.addEventListener('keydown', event => {
       if (event.key === 'Enter' && !event.shiftKey) {
         event.preventDefault();
