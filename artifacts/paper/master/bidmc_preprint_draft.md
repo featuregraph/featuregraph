@@ -396,6 +396,14 @@ comparisons, so the discrepancy is a property of that annotation series rather
 than of the objects. It is reported here rather than removed, and no result in
 this paper depends on it.
 
+# Discussion
+
+Objects introduced by the W=79 construction concentrate at a cardiac phase more than objects shared by both constructs. In 14 of the 20 eligible held-out records, the difference in phase concentration was positive with a median of 0.269 and an interquartile range ffrom -0.038 to 0.459. This suggests that the two populations differ in their relationship to an independently recorded signal. It does not say what either population is. A cardiogenic reading of the W=79-only objects is permitted rather than established by the data. 
+
+Subject 13 is where the cardiogenic interpretation is strongest, and it is a development record. Every W=79 object peak in the sample occurs 39 samples after the preceding R-peak, with an interquartile range of 3 samples, and this holds for the shared objects as much as the W=79-only ones (Figure 5). Subject 13 is the only record in which the shared objects are concentrated (0.95, where the next highest in any ECG-valid record is 0.76). In the held-out population the shared objects are spread through the cardiac cycle, and only the W=79-only objects are concentrated. 
+
+The contribution of this paper is not the cardiac component in impedance respiration traces itself, which is known [Seppä 2011; Imanaka 2000]. The contribution is that the construction was able to identify that component with no prior knowledge of it. The construction was frozen before any ECG signal was read, produced a population of objects that carry it, and the analysis reported those objects as a population to examine rather than removing them as noise. 
+
 # 11. Figures
 
 Figures 2 to 4 are regenerated from committed artifacts by
