@@ -1,0 +1,209 @@
+{
+ "brief_sha256": "980d6dc7145c6392e832a988348162fbbc2aaffdbae65df68a4de01fef13f236",
+ "case_id": "physionet_wearable/withhold/title",
+ "claim": {
+  "authoritative": false,
+  "believed_missing": [
+   "title"
+  ],
+  "believed_ready": false,
+  "believed_unstructured": [
+   "object_definition",
+   "time_semantics"
+  ],
+  "provenance": {
+   "cohere_sdk_version": "7.1.0",
+   "mode": "cohere",
+   "model": "command-a-plus-05-2026",
+   "prompt_sha256": "78db2c9998e6dd6ac6a3d1ea956814231128720f866b578899afd0df9f3217fb",
+   "response_id": "84d63d55-0678-4115-8f6e-7afb468e55bc",
+   "response_sha256": "93d356abcc06e566a45df87baf19c5960404f35f4ad2d1f62f9a8b50ed4be75f",
+   "schema_sha256": "74b89083fed336ea0e42275f7001c38a6d37b333ecfcbb8487cec59edae1247c",
+   "transport": "json_schema",
+   "transport_schema_sha256": "74b89083fed336ea0e42275f7001c38a6d37b333ecfcbb8487cec59edae1247c"
+  },
+  "self_report_version": 1
+ },
+ "claim_provenance": {
+  "cohere_sdk_version": "7.1.0",
+  "mode": "cohere",
+  "model": "command-a-plus-05-2026",
+  "prompt_sha256": "78db2c9998e6dd6ac6a3d1ea956814231128720f866b578899afd0df9f3217fb",
+  "response_id": "84d63d55-0678-4115-8f6e-7afb468e55bc",
+  "response_sha256": "93d356abcc06e566a45df87baf19c5960404f35f4ad2d1f62f9a8b50ed4be75f",
+  "schema_sha256": "74b89083fed336ea0e42275f7001c38a6d37b333ecfcbb8487cec59edae1247c",
+  "transport": "json_schema",
+  "transport_schema_sha256": "74b89083fed336ea0e42275f7001c38a6d37b333ecfcbb8487cec59edae1247c"
+ },
+ "error": null,
+ "flattened": [],
+ "intake": {
+  "boundary_rules": {
+   "include_first_entry": true,
+   "include_last_exit": true
+  },
+  "claim_limits": [
+   "Protocol states and boundaries are externally declared (not inferred)",
+   "FeatureGraph does not infer stress from physiological signals",
+   "The study does not establish causality or physiological validity"
+  ],
+  "completeness_rules": {
+   "exclusive": true,
+   "exhaustive": true
+  },
+  "data_source": "Wearable Device Dataset (version 1.0.1, DOI 10.13026/he0v-tf17, https://physionet.org/content/wearable-device-dataset/1.0.1/) \u2013 STRESS cohort directories containing tags.csv, HR.csv, EDA.csv, TEMP.csv, and Stress_Level files.",
+  "exclusions": [
+   {
+    "reason": "duplicated raw signals documented by the dataset authors",
+    "subject_id": "S02"
+   },
+   {
+    "reason": "PPG and temperature sensors covered by the protection dock",
+    "subject_id": "f07"
+   },
+   {
+    "reason": "protocol split across f14_a and f14_b after Bluetooth loss",
+    "subject_id": "f14"
+   }
+  ],
+  "grouping_and_order": {
+   "group_by": [
+    "subject_id"
+   ],
+   "timeline": {
+    "frequency": "1s"
+   }
+  },
+  "measurements": [
+   "samples",
+   "mean",
+   "median",
+   "min",
+   "max"
+  ],
+  "object_definition": "One declared protocol occurrence for a subject, spanning from a tag boundary to the next tag boundary.",
+  "observation_schema": [
+   {
+    "column": "subject_id",
+    "dtype": "string",
+    "unit": "subject directory name"
+   },
+   {
+    "column": "protocol_state",
+    "dtype": "string",
+    "unit": "protocol stage label from tags.csv"
+   },
+   {
+    "column": "HR",
+    "dtype": "float",
+    "unit": "beats per minute at 1 Hz"
+   },
+   {
+    "column": "EDA",
+    "dtype": "float",
+    "unit": "microsiemens at 4 Hz"
+   },
+   {
+    "column": "TEMP",
+    "dtype": "float",
+    "unit": "degrees Celsius at 4 Hz"
+   }
+  ],
+  "operator_parameters": null,
+  "preprocessing_steps": [
+   "Keep signals at native sampling rates",
+   "Label time outside declared protocol stages as unassigned"
+  ],
+  "provenance": [
+   "Approved contract fingerprint and approving authority",
+   "Dataset version and DOI (version 1.0.1, DOI 10.13026/he0v-tf17)"
+  ],
+  "research_question": "Can the externally recorded protocol stages of the wearable stress and exercise dataset be represented as declared occurrences, with the physiological signals and self-reports joined to them as measurements, without the system inferring any stage or any stress from the signals?",
+  "schema_version": 2,
+  "states_or_labels": {
+   "state_column": "protocol_state"
+  },
+  "time_semantics": "Each row represents a one\u2011second interval starting at its timestamp, closed on the left (i.e., the interval [t, t+1)).",
+  "title": null,
+  "validations": [
+   "33 eligible subjects",
+   "248 declared occurrences",
+   "Exact boundaries at the tag timestamps",
+   "Positive durations for every occurrence",
+   "Every occurrence joined to exactly one self-report",
+   "Native-rate coverage of every signal within every occurrence",
+   "Same schema across protocols"
+  ]
+ },
+ "intake_provenance": {
+  "cohere_sdk_version": "7.1.0",
+  "mode": "cohere",
+  "model": "command-a-plus-05-2026",
+  "prompt_sha256": "07257e5dfc73ed8e7b350abbd387a791562d8ceb1930d0f48e99c26092c9de4d",
+  "response_id": "57a4022d-23f2-4c4c-b473-740b6b0c922d",
+  "response_sha256": "2c4b5ce5b99c7ede1d319f2c58d6082a21d02271cbc7cdb5ad0430225850a0ae",
+  "schema_sha256": "20e8937ec19ae0fa1e0e27acc8654307dfdde04ee913a7ddc5e6030c84814a62",
+  "transport": "json_object",
+  "transport_schema_sha256": null
+ },
+ "model": "cohere:command-a-plus-05-2026",
+ "reference": "physionet_wearable",
+ "score": {
+  "agrees_exactly": false,
+  "claimed": {
+   "missing": [
+    "title"
+   ],
+   "ready": false,
+   "unknown_field_names": [],
+   "unstructured": [
+    "object_definition",
+    "time_semantics"
+   ]
+  },
+  "derived": {
+   "approvable": false,
+   "compilable": false,
+   "unset": [
+    "operator_parameters",
+    "title"
+   ],
+   "unstructured": []
+  },
+  "fabricated": [],
+  "overclaimed": [
+   "operator_parameters"
+  ],
+  "overclaimed_by_tier": {
+   "approvable": [],
+   "compilable": [
+    "operator_parameters"
+   ]
+  },
+  "readiness": {
+   "agrees": true,
+   "claimed": false,
+   "derived": false,
+   "false_ready": false
+  },
+  "self_report_version": 1,
+  "shape_blind": [],
+  "underclaimed": [
+   "object_definition",
+   "time_semantics"
+  ],
+  "underclaimed_by_tier": {
+   "approvable": [
+    "object_definition",
+    "time_semantics"
+   ],
+   "compilable": []
+  },
+  "withheld": [
+   "title"
+  ]
+ },
+ "withheld": [
+  "title"
+ ]
+}

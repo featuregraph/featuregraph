@@ -146,6 +146,69 @@ and false ready 20 to 21. The tables committed beside the records are the
 scores as recorded at run time. The field-guide change cannot be applied
 retroactively, since it alters the prompt; that needs the rerun.
 
+## Second run: corrected oracle and field guide
+
+The same model was run again after the two fixes above, with the guide
+now saying that derived columns are declared as observation columns and
+that a null-valued parameter is not a declaration. Records are under
+`runs/cohere_command-a-plus-05-2026_guide-v2/`; every record's
+`prompt_sha256` identifies which guide it saw. Both runs below are scored
+under the current oracle.
+
+| Quantity | Run 1 | Run 2 |
+| --- | ---: | ---: |
+| cases | 56 | 56 |
+| failed (response was not JSON) | 0 | 2 |
+| exact agreement | 6 | 5 |
+| cases overclaiming | 37 | 41 |
+| cases underclaiming | 31 | 34 |
+| said ready | 29 | 20 |
+| intake approvable | 16 | 11 |
+| said ready, was not | 21 | 17 |
+| said not ready, was | 9 | 8 |
+| withheld cases scored | 51 | 49 |
+| withheld field named as missing | 4 | 4 |
+| withheld field fabricated | 17 | 12 |
+| flattened rules rebuilt correctly | 2 of 2 | 2 of 2 |
+
+Three things changed, two of them for a reason the guide explains and one
+for a reason it caused.
+
+**Fabrication fell**, from 17 of 51 to 12 of 49, and no fabrication is a
+null-valued parameter any more. The withheld `operator_parameters` came
+back null in both BIDMC and TEP, which is the right answer. The
+fabrications that remain are the inferable ones: completeness rules,
+grouping rebuilt from the schema, the PhysioNet label column, exclusions
+paraphrased from the preprocessing.
+
+**Derived columns now appear in the schema.** In both withheld-schema cases
+the model listed `respiration_smooth`, `respiration_change` and the TEP
+equivalents. Both cases are still unstructured, because the model dropped
+the grouping and ordering columns instead (`subject_id`, `sample_index`,
+`simulation_run`). The guide now names derived columns; it does not say
+the grouping columns are observation columns too, which is the same
+omission one step over.
+
+**Null for "there are none" went from 8 of 18 to 18 of 18.** The sentence
+added to the guide, "if the brief gives no number, leave the whole field
+null", was read as an instruction to return null for the PhysioNet
+reference, whose brief says there are no parameters. That is why the
+intake was approvable in only 11 cases and why readiness claims fell. It
+is the guide's fault, not the model's, and item 3 above is revised
+accordingly: the empty-list distinction is one the model handles poorly
+and the guide must state explicitly, since a hint in the wrong direction
+moves the model all the way. The wording now says an empty list is an
+answer when the brief says there are none.
+
+Underclaiming did not move: the same seven prose fields, 28 to 11 times
+each, called unstructured on the tier where prose is the form. Two
+failures were ordinary: one intake and one claim came back as text that
+was not JSON, and were recorded as failed rather than repaired.
+
+The prompt changes stop here. A third run under this guide is the baseline
+every other model is compared against; runs 1 and 2 stay as the record of
+how the harness was corrected.
+
 ## Claims this supports, and their limits
 
 For this model, on these briefs: when a field was withheld, the model said
@@ -156,5 +219,6 @@ agreed with the intake in under half of cases.
 
 One model, one provider, three references rendered from intakes the same
 harness authored, one sample per case at temperature 0. The rates are
-exact for this run and say nothing yet about other models. The
-cross-model comparison this eval exists for begins with the second run.
+exact for these runs and say nothing yet about other models. The
+cross-model comparison this eval exists for begins once a second model
+runs under the frozen guide.

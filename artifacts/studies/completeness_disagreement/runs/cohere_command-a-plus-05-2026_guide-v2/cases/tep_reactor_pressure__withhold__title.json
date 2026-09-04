@@ -1,0 +1,26 @@
+{
+ "brief_sha256": "4845ff0309a8baa5599bfb37ca27b751a296a27c9ad2724172840a0df6ff819b",
+ "case_id": "tep_reactor_pressure/withhold/title",
+ "claim": null,
+ "claim_provenance": {},
+ "error": "intake: Expecting value: line 1 column 2 (char 1)",
+ "flattened": [],
+ "intake": null,
+ "intake_provenance": {
+  "cohere_sdk_version": "7.1.0",
+  "mode": "cohere",
+  "model": "command-a-plus-05-2026",
+  "prompt_sha256": "390d820a3f71afc873ed8de38042640796af82506ea0af0a4a37ced5b79b2246",
+  "response_id": "800b1446-78c9-4efe-91bb-c4d2450c1d56",
+  "response_sha256": "59c833495d38e76344a5c99eaed65273addfbb465ee457b836758548597c6c5c",
+  "schema_sha256": "20e8937ec19ae0fa1e0e27acc8654307dfdde04ee913a7ddc5e6030c84814a62",
+  "transport": "json_object",
+  "transport_schema_sha256": null
+ },
+ "model": "cohere:command-a-plus-05-2026",
+ "reference": "tep_reactor_pressure",
+ "score": null,
+ "withheld": [
+  "title"
+ ]
+}
