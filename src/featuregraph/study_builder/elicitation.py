@@ -175,6 +175,29 @@ class OfflineElicitor:
         }
 
 
+def cohere_can_carry(schema: Mapping[str, Any]) -> bool:
+    """Whether Cohere's ``json_schema`` subset accepts this schema as written.
+
+    Cohere refuses a ``type`` list that contains ``object`` ("type must not
+    be a list that contains `object`"), which is how the intake schema says
+    "a list, a mapping, or null". Such a schema is sent as a bare
+    ``json_object`` request and validated locally instead, which is the
+    validation every response goes through anyway.
+    """
+
+    def walk(node: Any) -> bool:
+        if isinstance(node, Mapping):
+            kind = node.get("type")
+            if isinstance(kind, list) and "object" in kind:
+                return False
+            return all(walk(value) for value in node.values())
+        if isinstance(node, list):
+            return all(walk(value) for value in node)
+        return True
+
+    return walk(schema)
+
+
 class CohereElicitor:
     """Cohere adapter, the same transport the conversational assistant uses."""
 
@@ -195,7 +218,11 @@ class CohereElicitor:
             _cohere_transport_schema,
         )
 
-        transport_schema = _cohere_transport_schema(schema)
+        transport_schema: dict[str, Any] | None = None
+        response_format: dict[str, Any] = {"type": "json_object"}
+        if cohere_can_carry(schema):
+            transport_schema = _cohere_transport_schema(schema)
+            response_format["json_schema"] = transport_schema
         try:
             response = cohere.ClientV2(api_key=self.api_key).chat(
                 model=self.model,
@@ -203,10 +230,7 @@ class CohereElicitor:
                     {"role": "system", "content": SYSTEM_PROMPT},
                     {"role": "user", "content": prompt},
                 ],
-                response_format={
-                    "type": "json_object",
-                    "json_schema": transport_schema,
-                },
+                response_format=response_format,
                 temperature=0,
             )
         except Exception as error:
@@ -222,7 +246,12 @@ class CohereElicitor:
             "prompt_sha256": _sha256(prompt),
             "response_sha256": _sha256(text),
             "schema_sha256": _schema_sha256(schema),
-            "transport_schema_sha256": _schema_sha256(transport_schema),
+            "transport_schema_sha256": (
+                _schema_sha256(transport_schema)
+                if transport_schema is not None
+                else None
+            ),
+            "transport": "json_schema" if transport_schema else "json_object",
             "response_id": getattr(response, "id", None),
         }
 
