@@ -1,0 +1,201 @@
+{
+ "brief_sha256": "b644545ee31caa5bb9115009fc0c7cc2522a13520a41ccabde2f072648fab58e",
+ "case_id": "physionet_wearable/withhold/validations",
+ "claim": {
+  "authoritative": false,
+  "believed_missing": [],
+  "believed_ready": false,
+  "believed_unstructured": [
+   "time_semantics",
+   "object_definition"
+  ],
+  "provenance": {
+   "cohere_sdk_version": "7.1.0",
+   "mode": "cohere",
+   "model": "command-a-plus-05-2026",
+   "prompt_sha256": "769444698ce76edb9aad45cc0b284df2a737fbee99dd1a53a5471ed98491fa98",
+   "response_id": "d7d91858-0b96-4295-b66c-55eb4a72c24f",
+   "response_sha256": "506b0e953db4fc584480b1c6aa275fe190f3a4364b3c3271413c296bfbce6e7c",
+   "schema_sha256": "74b89083fed336ea0e42275f7001c38a6d37b333ecfcbb8487cec59edae1247c",
+   "transport": "json_schema",
+   "transport_schema_sha256": "74b89083fed336ea0e42275f7001c38a6d37b333ecfcbb8487cec59edae1247c"
+  },
+  "self_report_version": 1
+ },
+ "claim_provenance": {
+  "cohere_sdk_version": "7.1.0",
+  "mode": "cohere",
+  "model": "command-a-plus-05-2026",
+  "prompt_sha256": "769444698ce76edb9aad45cc0b284df2a737fbee99dd1a53a5471ed98491fa98",
+  "response_id": "d7d91858-0b96-4295-b66c-55eb4a72c24f",
+  "response_sha256": "506b0e953db4fc584480b1c6aa275fe190f3a4364b3c3271413c296bfbce6e7c",
+  "schema_sha256": "74b89083fed336ea0e42275f7001c38a6d37b333ecfcbb8487cec59edae1247c",
+  "transport": "json_schema",
+  "transport_schema_sha256": "74b89083fed336ea0e42275f7001c38a6d37b333ecfcbb8487cec59edae1247c"
+ },
+ "error": null,
+ "flattened": [],
+ "intake": {
+  "boundary_rules": {
+   "include_first_entry": true,
+   "include_last_exit": true
+  },
+  "claim_limits": [
+   "protocol states and their boundaries are externally declared",
+   "FeatureGraph does not infer stress from physiological signals",
+   "the study does not establish causality or physiological validity"
+  ],
+  "completeness_rules": {
+   "exclusive": true,
+   "exhaustive": true
+  },
+  "data_source": "Wearable Device Dataset from Induced Stress and Structured Exercise Sessions, version 1.0.1, DOI 10.13026/he0v-tf17, https://physionet.org/content/wearable-device-dataset/1.0.1/; the STRESS cohort directories with tags.csv, HR.csv, EDA.csv, TEMP.csv and Stress_Level files.",
+  "exclusions": [
+   {
+    "reason": "duplicated raw signals documented by the dataset authors",
+    "subject_id": "S02"
+   },
+   {
+    "reason": "PPG and temperature sensors covered by the protection dock",
+    "subject_id": "f07"
+   },
+   {
+    "reason": "protocol split across f14_a and f14_b after Bluetooth loss",
+    "subject_id": "f14"
+   }
+  ],
+  "grouping_and_order": {
+   "group_by": [
+    "subject_id"
+   ],
+   "timeline": {
+    "closure": "left",
+    "frequency": "1s"
+   }
+  },
+  "measurements": [
+   "samples",
+   "mean",
+   "median",
+   "min",
+   "max"
+  ],
+  "object_definition": "One declared protocol occurrence for a subject, representing a stage from its tag boundary to the next.",
+  "observation_schema": [
+   {
+    "column": "subject_id",
+    "dtype": "string",
+    "unit": "subject directory name"
+   },
+   {
+    "column": "protocol_state",
+    "dtype": "string",
+    "unit": "protocol stage label from tags.csv"
+   },
+   {
+    "column": "HR",
+    "dtype": "float",
+    "unit": "beats per minute at 1 Hz"
+   },
+   {
+    "column": "EDA",
+    "dtype": "float",
+    "unit": "microsiemens at 4 Hz"
+   },
+   {
+    "column": "TEMP",
+    "dtype": "float",
+    "unit": "degrees Celsius at 4 Hz"
+   }
+  ],
+  "operator_parameters": null,
+  "preprocessing_steps": [
+   "Keep signals at native sampling rates",
+   "Label time outside declared protocol stage as unassigned"
+  ],
+  "provenance": [
+   "approved contract fingerprint and approving authority",
+   "dataset version and DOI"
+  ],
+  "research_question": "Can the externally recorded protocol stages of the wearable stress and exercise dataset be represented as declared occurrences, with the physiological signals and self-reports joined to them as measurements, without the system inferring any stage or any stress from the signals?",
+  "schema_version": 2,
+  "states_or_labels": {
+   "state_column": "protocol_state"
+  },
+  "time_semantics": "interval starting at timestamp, closed on left",
+  "title": "PhysioNet wearable protocol representation",
+  "validations": null
+ },
+ "intake_provenance": {
+  "cohere_sdk_version": "7.1.0",
+  "mode": "cohere",
+  "model": "command-a-plus-05-2026",
+  "prompt_sha256": "122c4c08aedbeff8e1e575104f48e5b355fac29aec4412a24a5d17913cb5659c",
+  "response_id": "f4047938-aec2-47f8-8450-984d041a5991",
+  "response_sha256": "7193c1f649d3f9e72113105650f9384de2ae741fcb2953c984c5976a91da4ea1",
+  "schema_sha256": "20e8937ec19ae0fa1e0e27acc8654307dfdde04ee913a7ddc5e6030c84814a62",
+  "transport": "json_object",
+  "transport_schema_sha256": null
+ },
+ "model": "cohere:command-a-plus-05-2026",
+ "reference": "physionet_wearable",
+ "score": {
+  "agrees_exactly": false,
+  "claimed": {
+   "missing": [],
+   "ready": false,
+   "unknown_field_names": [],
+   "unstructured": [
+    "time_semantics",
+    "object_definition"
+   ]
+  },
+  "derived": {
+   "approvable": false,
+   "compilable": false,
+   "unset": [
+    "operator_parameters",
+    "validations"
+   ],
+   "unstructured": []
+  },
+  "fabricated": [],
+  "overclaimed": [
+   "operator_parameters",
+   "validations"
+  ],
+  "overclaimed_by_tier": {
+   "approvable": [
+    "validations"
+   ],
+   "compilable": [
+    "operator_parameters"
+   ]
+  },
+  "readiness": {
+   "agrees": true,
+   "claimed": false,
+   "derived": false,
+   "false_ready": false
+  },
+  "self_report_version": 1,
+  "shape_blind": [],
+  "underclaimed": [
+   "object_definition",
+   "time_semantics"
+  ],
+  "underclaimed_by_tier": {
+   "approvable": [
+    "object_definition",
+    "time_semantics"
+   ],
+   "compilable": []
+  },
+  "withheld": [
+   "validations"
+  ]
+ },
+ "withheld": [
+  "validations"
+ ]
+}

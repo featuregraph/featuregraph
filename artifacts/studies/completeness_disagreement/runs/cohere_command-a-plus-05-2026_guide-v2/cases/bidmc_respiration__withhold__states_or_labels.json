@@ -1,0 +1,206 @@
+{
+ "brief_sha256": "d96082d9decda7595f1a5b50dd6c500311b998c84171206116c50393dc302ea5",
+ "case_id": "bidmc_respiration/withhold/states_or_labels",
+ "claim": {
+  "authoritative": false,
+  "believed_missing": [],
+  "believed_ready": false,
+  "believed_unstructured": [
+   "preprocessing_steps",
+   "measurements",
+   "validations",
+   "claim_limits",
+   "provenance"
+  ],
+  "provenance": {
+   "cohere_sdk_version": "7.1.0",
+   "mode": "cohere",
+   "model": "command-a-plus-05-2026",
+   "prompt_sha256": "6dff4161e721f1b167bef848213ffb00f2f84b878511a98d3028311800f23c37",
+   "response_id": "b6f95bc1-ccec-440f-af2f-645f25d198f2",
+   "response_sha256": "b58e885b6247d30b62da538a00770ac99e9120e7ab28464f4134a070905345e1",
+   "schema_sha256": "74b89083fed336ea0e42275f7001c38a6d37b333ecfcbb8487cec59edae1247c",
+   "transport": "json_schema",
+   "transport_schema_sha256": "74b89083fed336ea0e42275f7001c38a6d37b333ecfcbb8487cec59edae1247c"
+  },
+  "self_report_version": 1
+ },
+ "claim_provenance": {
+  "cohere_sdk_version": "7.1.0",
+  "mode": "cohere",
+  "model": "command-a-plus-05-2026",
+  "prompt_sha256": "6dff4161e721f1b167bef848213ffb00f2f84b878511a98d3028311800f23c37",
+  "response_id": "b6f95bc1-ccec-440f-af2f-645f25d198f2",
+  "response_sha256": "b58e885b6247d30b62da538a00770ac99e9120e7ab28464f4134a070905345e1",
+  "schema_sha256": "74b89083fed336ea0e42275f7001c38a6d37b333ecfcbb8487cec59edae1247c",
+  "transport": "json_schema",
+  "transport_schema_sha256": "74b89083fed336ea0e42275f7001c38a6d37b333ecfcbb8487cec59edae1247c"
+ },
+ "error": null,
+ "flattened": [],
+ "intake": {
+  "boundary_rules": {
+   "include_first_entry": true,
+   "include_last_exit": false
+  },
+  "claim_limits": [
+   "the study does not identify the physiological origin of any object",
+   "the annotators' breath marks are a comparison series, not a ground truth",
+   "nothing here estimates respiratory rate for clinical use"
+  ],
+  "completeness_rules": {
+   "exclusive": true,
+   "exhaustive": true
+  },
+  "data_source": "PhysioNet BIDMC PPG and Respiration Dataset, version 1.0.0, DOI 10.13026/C2208R; the RESP column of bidmc_NN_Signals.csv for subjects 1 to 53 at 125 Hz, 60,001 samples each.",
+  "exclusions": [],
+  "grouping_and_order": {
+   "group_by": [
+    "subject_id"
+   ],
+   "order_by": "sample_index"
+  },
+  "measurements": [
+   "count of complete objects per subject",
+   "peak position of each object in samples",
+   "period between consecutive peaks in seconds",
+   "full excursion of the raw signal within the object",
+   "temporal symmetry of rise and fall durations"
+  ],
+  "object_definition": "One row of the result is one trough-to-trough respiratory object: a rising occurrence together with the falling occurrence that follows it, with the peak at the last rising sample.",
+  "observation_schema": [
+   {
+    "column": "subject_id",
+    "dtype": "int",
+    "unit": "subject number 1 to 53"
+   },
+   {
+    "column": "sample_index",
+    "dtype": "int",
+    "unit": "sample number at 125 Hz"
+   },
+   {
+    "column": "respiration",
+    "dtype": "float",
+    "unit": "impedance respiration, arbitrary units"
+   },
+   {
+    "column": "respiration_smooth",
+    "dtype": "float",
+    "unit": "derived look-ahead envelope of respiration"
+   },
+   {
+    "column": "respiration_change",
+    "dtype": "float",
+    "unit": "derived first difference of respiration_smooth"
+   }
+  ],
+  "operator_parameters": [
+   {
+    "name": "smooth_window",
+    "value": 100
+   },
+   {
+    "name": "numerical_atol",
+    "value": 1e-12
+   }
+  ],
+  "preprocessing_steps": [
+   "Compute respiration_smooth as rolling maximum of respiration over smooth_window samples, then rolling mean over smooth_window samples, shifted back by smooth_window samples to produce a look\u2011ahead envelope.",
+   "Compute respiration_change as the first difference of respiration_smooth."
+  ],
+  "provenance": [
+   "contract fingerprint (SHA-256 of the canonical contract JSON)",
+   "dataset version and DOI",
+   "featuregraph version, Python, numpy, pandas and scipy versions",
+   "git commit and whether the tree was clean"
+  ],
+  "research_question": "Does a rolling-envelope construction of the BIDMC impedance respiration signal, declared once and frozen, produce respiratory rising and falling occurrences whose peaks agree with the two annotators' breath marks across all 53 subjects, and if not, where does it disagree?",
+  "schema_version": 2,
+  "states_or_labels": null,
+  "time_semantics": "Each row is one sample taken at an instant; consecutive rows are 8 milliseconds apart.",
+  "title": "BIDMC respiratory objects at a fixed envelope scale",
+  "validations": [
+   "states are mutually exclusive and cover every valid observation",
+   "every subject compiles to 60,001 observations",
+   "the derived envelope matches the notebook construction row for row"
+  ]
+ },
+ "intake_provenance": {
+  "cohere_sdk_version": "7.1.0",
+  "mode": "cohere",
+  "model": "command-a-plus-05-2026",
+  "prompt_sha256": "566e06aedce0eca868c3003212985ad062649ba6e4489c99522b62931fd9acdc",
+  "response_id": "138e4b96-8239-48a0-9257-8dd4cf04153a",
+  "response_sha256": "db47d4477ac836c18572eb27af456dd6284f3be165cbe8eba0f9aa5323ffea26",
+  "schema_sha256": "20e8937ec19ae0fa1e0e27acc8654307dfdde04ee913a7ddc5e6030c84814a62",
+  "transport": "json_object",
+  "transport_schema_sha256": null
+ },
+ "model": "cohere:command-a-plus-05-2026",
+ "reference": "bidmc_respiration",
+ "score": {
+  "agrees_exactly": false,
+  "claimed": {
+   "missing": [],
+   "ready": false,
+   "unknown_field_names": [],
+   "unstructured": [
+    "preprocessing_steps",
+    "measurements",
+    "validations",
+    "claim_limits",
+    "provenance"
+   ]
+  },
+  "derived": {
+   "approvable": false,
+   "compilable": false,
+   "unset": [
+    "states_or_labels"
+   ],
+   "unstructured": []
+  },
+  "fabricated": [],
+  "overclaimed": [
+   "states_or_labels"
+  ],
+  "overclaimed_by_tier": {
+   "approvable": [],
+   "compilable": [
+    "states_or_labels"
+   ]
+  },
+  "readiness": {
+   "agrees": true,
+   "claimed": false,
+   "derived": false,
+   "false_ready": false
+  },
+  "self_report_version": 1,
+  "shape_blind": [],
+  "underclaimed": [
+   "claim_limits",
+   "measurements",
+   "preprocessing_steps",
+   "provenance",
+   "validations"
+  ],
+  "underclaimed_by_tier": {
+   "approvable": [
+    "claim_limits",
+    "measurements",
+    "preprocessing_steps",
+    "provenance",
+    "validations"
+   ],
+   "compilable": []
+  },
+  "withheld": [
+   "states_or_labels"
+  ]
+ },
+ "withheld": [
+  "states_or_labels"
+ ]
+}
