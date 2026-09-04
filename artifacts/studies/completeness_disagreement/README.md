@@ -62,8 +62,11 @@ A model's claim is stored in each record under `claim` and is marked
 
 `runs/<model>/` holds one run each: the per-case records, `cases.csv`, and
 the tables `scripts/summarize_completeness_run.py` derives from them.
-`report.md` beside this file reads the runs. The first run, Cohere
-`command-a-plus-05-2026`, is reported there; no second model has run yet.
+`report.md` beside this file reads the runs. Cohere
+`command-a-plus-05-2026` has run three times: once under the original
+oracle and guide, once after the oracle and guide were corrected, and once
+under the frozen guide, which is the baseline. Every record's
+`prompt_sha256` says which guide it saw. No second model has run yet.
 
 The Anthropic adapter deliberately configures no server-side fallback: a
 refusal rerun on another model would attribute that model's answer to the

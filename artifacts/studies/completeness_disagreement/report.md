@@ -209,13 +209,63 @@ The prompt changes stop here. A third run under this guide is the baseline
 every other model is compared against; runs 1 and 2 stay as the record of
 how the harness was corrected.
 
+## Baseline run: frozen guide
+
+The guide was frozen after the empty-list correction and the model run a
+third time. This run is the baseline other models are compared against.
+Records are under `runs/cohere_command-a-plus-05-2026_guide-v3/`. All
+three runs below are scored under the current oracle.
+
+| Quantity | Run 1 | Run 2 | Baseline |
+| --- | ---: | ---: | ---: |
+| cases | 56 | 56 | 56 |
+| failed (response was not JSON) | 0 | 2 | 3 |
+| exact agreement | 6 | 5 | 10 |
+| cases overclaiming | 37 | 41 | 31 |
+| cases underclaiming | 31 | 34 | 29 |
+| said ready | 29 | 20 | 26 |
+| intake approvable | 16 | 11 | 19 |
+| said ready, was not | 21 | 17 | 16 |
+| said not ready, was | 9 | 8 | 9 |
+| readiness agreed | 27 of 56 | 29 of 54 | 28 of 53 |
+| withheld cases scored | 51 | 49 | 48 |
+| withheld field named as missing | 4 | 4 | 3 |
+| withheld field fabricated | 17 | 12 | 16 |
+| withheld field left unset, not named | 30 | 34 | 31 |
+| flattened rules rebuilt correctly | 2 of 2 | 2 of 2 | 2 of 2 |
+
+The wording correction did what it was meant to: PhysioNet's
+`operator_parameters` came back as an empty list in 17 of 18 cases, null
+once. All three whole briefs compiled and were approvable. On the BIDMC
+whole brief the model said ready and was right, the first time in three
+runs; on PhysioNet and TEP it withheld readiness for prose fields again
+(`time_semantics`; `preprocessing_steps` and `validations`).
+
+Everything else held. Fabrication is back at a third of withheld cases,
+16 of 48, and the content is the same inferable kind: completeness rules,
+grouping, the label column, exclusions paraphrased from the preprocessing,
+a title and a research question composed from the rest. The withheld
+field was named as missing 3 times. The same seven prose fields were
+called unstructured, `object_definition` 21 times, `validations` 17. The
+two withheld-schema cases now carry the derived columns and still omit
+the grouping ones. Three intakes came back as text that was not JSON, one
+more than run 2, all on the schema-free intake call; that rate is a
+property of the model under this transport and is reported, not retried.
+
+Across three runs, then, the corrections moved the numbers the harness
+was responsible for and left the model's own pattern where it was: silent
+about what it left out, willing to fill it in, and unable to tell prose
+that is required from prose that is not.
+
 ## Claims this supports, and their limits
 
-For this model, on these briefs: when a field was withheld, the model said
-so 4 times in 51 and filled it in 17 times; when the intake was complete,
-the model called its prose fields unexecutable and withheld readiness; and
-it declared readiness on 20 intakes that were not approvable. Readiness
-agreed with the intake in under half of cases.
+For this model, on these briefs, under the frozen guide: when a field
+was withheld, the model said so 3 times in 48 and filled it in 16 times;
+when the intake was complete, the model called its prose fields
+unexecutable and withheld readiness on two briefs of three; and it
+declared readiness on 16 intakes that were not approvable. Readiness
+agreed with the intake in about half of cases, and the two errors point
+in opposite directions.
 
 One model, one provider, three references rendered from intakes the same
 harness authored, one sample per case at temperature 0. The rates are
