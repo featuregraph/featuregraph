@@ -1,0 +1,18 @@
+{
+ "model": "cohere:command-a-plus-05-2026",
+ "cases": 56,
+ "failed": 0,
+ "exact_agreement": 7,
+ "cases_overclaiming": 35,
+ "cases_underclaiming": 31,
+ "cases_shape_blind": 2,
+ "false_ready": 20,
+ "claimed_ready": 29,
+ "derived_approvable": 18,
+ "withheld_cases": 51,
+ "fabricated": 17,
+ "withheld_named_missing": 4,
+ "flattened_cases": 2,
+ "flattened_unstructured": 0,
+ "flattened_shape_blind": 0
+}
