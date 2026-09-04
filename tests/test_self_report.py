@@ -234,3 +234,15 @@ def test_schemas_name_every_field_and_nothing_else():
         "believed_unstructured",
         "believed_ready",
     }
+
+
+def test_cohere_sends_no_schema_it_cannot_carry():
+    """Cohere refuses a type list containing object; the intake schema has them."""
+    from featuregraph.study_builder.elicitation import cohere_can_carry
+
+    assert cohere_can_carry(CLAIM_SCHEMA)
+    assert not cohere_can_carry(INTAKE_SCHEMA)
+    assert cohere_can_carry(
+        {"type": "object", "properties": {"a": {"type": ["string", "null"]}}}
+    )
+    assert not cohere_can_carry({"properties": {"a": {"type": ["array", "object"]}}})
