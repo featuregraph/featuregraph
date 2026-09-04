@@ -23,6 +23,12 @@ only matter once the page is public:
 Nothing here executes researcher-supplied code or data. The study that runs is
 the maintained PhysioNet wearable protocol fixture.
 
+The page carries the same PostHog snippet as featuregraph.ai, under the same
+project, so visits to the assistant appear beside the marketing site's and can
+be told apart by host. It captures pageviews and three named actions: a message
+sent, Approve and run clicked, and a study reaching the executed phase. The
+text a visitor types is never sent to PostHog, and session recording is off.
+
 ## Run it locally
 
     COHERE_API_KEY=... FEATUREGRAPH_INSECURE_COOKIE=1 python apps/assistant/server.py
