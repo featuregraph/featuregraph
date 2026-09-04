@@ -4,6 +4,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import pytest
 
 from scripts import analyze_bidmc_subject13_multiscale as audit
 from scripts import plot_bidmc_paper_figures as figures
@@ -90,3 +91,47 @@ def test_regenerated_figure_files_are_byte_identical(tmp_path: Path, monkeypatch
     figures.figure_construction(cache)
 
     assert digests() == first
+
+
+def _synthetic_peaks(directory: Path, subject: int = 13) -> Path:
+    directory.mkdir(parents=True, exist_ok=True)
+    rng = np.random.default_rng(5)
+    n = 60
+    lag = np.round(39 + rng.normal(0, 1.5, n))
+    lag[:3] = [95, 26, 88]  # a few breaths whose exit fell between bumps
+    pd.DataFrame(
+        {
+            "position": np.arange(n) * 140 + 200,
+            "nearest_coarse_peak": np.where(np.arange(n) % 2 == 0, 0, 112),
+            "matched": np.arange(n) % 2 == 0,
+            "r_lag": lag,
+            "cardiac_phase": lag / 112,
+            "breath_phase": np.where(np.arange(n) % 2 == 0, 0.0, 0.33),
+        }
+    ).to_csv(directory / f"bidmc_{subject:02d}_peaks_W79_100.csv", index=False)
+    return directory
+
+
+def test_figure_5_is_drawn_from_the_peak_table(tmp_path: Path, monkeypatch):
+    out = tmp_path / "figures"
+    monkeypatch.setattr(figures, "FIGURES", out)
+    monkeypatch.setattr(figures, "PEAK_MEASURES", _synthetic_peaks(tmp_path / "peaks"))
+    figures.style()
+
+    figures.figure_lag_histogram()
+
+    for suffix in ("png", "svg", "pdf"):
+        assert (out / f"fig5_subject13_lag_histogram.{suffix}").stat().st_size > 0
+
+
+def test_figure_5_reads_the_committed_subject_13_table(tmp_path: Path, monkeypatch):
+    """The committed table is the paper's source; the figure must draw from it."""
+    if not (figures.PEAK_MEASURES / "bidmc_13_peaks_W79_100.csv").exists():
+        pytest.skip("peak tables not present")
+    out = tmp_path / "figures"
+    monkeypatch.setattr(figures, "FIGURES", out)
+    figures.style()
+
+    figures.figure_lag_histogram()
+
+    assert (out / "fig5_subject13_lag_histogram.pdf").stat().st_size > 0
