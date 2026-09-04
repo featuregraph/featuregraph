@@ -303,6 +303,31 @@ the frozen contract tests only the first, and the held-out result supports only
 the first. A reading in which every W=79-only object is one oscillation per
 heartbeat is not supported by these records.
 
+What subject 13 does show, over its whole hour rather than the 550-sample
+region of section 7, is in Figure 5. Every one of its 421 W=79 object peaks
+was placed by its lag after the preceding lead-II R-peak. The median lag is
+39 samples, 0.31 seconds, with an interquartile range of 3 samples, and the
+shared objects and the W=79-only objects occupy the same band. The nine peaks
+outside it are all shared objects, breaths whose envelope exit fell between
+two of the smaller oscillations. In this record the timing holds for the
+breaths both windows keep as much as for the objects only the shorter window
+keeps; it is a property of the record, not of the W=79-only class. No other
+ECG-valid record shows it for the shared objects, which is what makes subject
+13 a development illustration and not a result. The peak table behind the
+figure, and the same table for every subject, is under
+`artifacts/studies/bidmc_peak_measures/`; its counts differ slightly from
+the frozen study's because it counts every exit event rather than complete
+objects only, and its report states the differences.
+
+![Stacked histogram of the lag from the preceding R-peak to every W=79 object peak in subject 13, one bar per sample. Shared and W=79-only objects fall in one narrow band around 39 samples.](figures/fig5_subject13_lag_histogram.png)
+
+**Figure 5.** Every W=79 object peak in subject 13 by its lag after the
+preceding lead-II R-peak, one bar per sample, over the full record. Shared
+objects and W=79-only objects are stacked. Both classes fall in the same band,
+centred on 39 samples (0.31 s) with an interquartile range of 3 samples. The
+nine peaks outside the band are all shared objects, breaths whose envelope
+exit fell between two cardiac-rate oscillations.
+
 ## 10.7 Scale dependence across three windows
 
 A third parameterization at 85 samples was executed separately under an
@@ -384,6 +409,12 @@ from the raw subject 13 signals, using the computation of
 `scripts/analyze_bidmc_subject13_multiscale.py`. It needs those signals cached
 under `notebooks/.bidmc_notebook_cache` and is skipped, with a message, where
 they are absent; the other figures regenerate regardless.
+
+Figure 5, the lag histogram for subject 13, is drawn by the same script from
+the committed peak table
+`artifacts/studies/bidmc_peak_measures/bidmc_13_peaks_W79_100.csv`, which
+`scripts/inspect_bidmc_region.py --peaks` writes from the raw signals. The
+figure itself needs no signal data.
 
 **Figure 1.** Subject 13, samples 650 to 1200, the region examined in section
 7. Above: the raw respiration trace with the W=79 and W=100 envelopes and the
