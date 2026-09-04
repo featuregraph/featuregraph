@@ -34,7 +34,11 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from featuregraph.study_builder.intake import FIELDS  # noqa: E402
+from featuregraph.study_builder.intake import FIELDS, StudyIntake  # noqa: E402
+from featuregraph.study_builder.self_report import (  # noqa: E402
+    CompletenessClaim,
+    score,
+)
 
 
 def load_records(run_dir: Path) -> list[dict[str, Any]]:
@@ -45,6 +49,27 @@ def load_records(run_dir: Path) -> list[dict[str, Any]]:
     if not records:
         raise FileNotFoundError(f"no case records under {run_dir / 'cases'}")
     return records
+
+
+def rescore(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Recompute every score from the stored intake and claim.
+
+    Scoring is pure: the intake payload and the claim are in the record,
+    so a run made under an earlier oracle can be re-scored under the
+    current one without a model call. The records on disk are left as
+    they were; the summary says which scoring it reports.
+    """
+    out = []
+    for r in records:
+        r = dict(r)
+        if r["intake"] is not None and r["claim"] is not None:
+            r["score"] = score(
+                StudyIntake.from_payload(r["intake"]),
+                CompletenessClaim.from_payload(r["claim"]),
+                withheld=tuple(r["withheld"]),
+            )
+        out.append(r)
+    return out
 
 
 def headline(records: list[dict[str, Any]]) -> dict[str, Any]:
@@ -147,11 +172,24 @@ def withheld_table(records: list[dict[str, Any]]) -> pd.DataFrame:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("run_dir", type=Path, nargs="+")
+    parser.add_argument(
+        "--rescore",
+        action="store_true",
+        help="score the stored intakes and claims under the current oracle "
+        "instead of reporting the scores recorded at run time",
+    )
     args = parser.parse_args(argv)
     pd.set_option("display.width", 200)
     for run_dir in args.run_dir:
         records = load_records(run_dir)
+        if args.rescore:
+            records = rescore(records)
         head = headline(records)
+        head["scoring"] = (
+            "rescored under the current oracle"
+            if args.rescore
+            else ("as recorded at run time")
+        )
         fields = field_table(records)
         withheld = withheld_table(records)
         (run_dir / "summary.json").write_text(json.dumps(head, indent=1) + "\n")

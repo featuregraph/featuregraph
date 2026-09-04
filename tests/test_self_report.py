@@ -246,3 +246,14 @@ def test_cohere_sends_no_schema_it_cannot_carry():
         {"type": "object", "properties": {"a": {"type": ["string", "null"]}}}
     )
     assert not cohere_can_carry({"properties": {"a": {"type": ["array", "object"]}}})
+
+
+def test_field_guide_says_derived_columns_are_declared():
+    from featuregraph.study_builder.elicitation import intake_prompt
+
+    guide = intake_prompt("brief")
+    assert (
+        "columns\n  that preprocessing derives" in guide
+        or "preprocessing derives" in guide
+    )
+    assert "value is null is not a declaration" in guide

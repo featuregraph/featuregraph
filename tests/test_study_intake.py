@@ -366,3 +366,18 @@ def test_reader_reports_a_v2_derivation_as_preprocessing():
         "observations a derivation leaves undefined are excluded from the "
         "partition and counted in the validation report",
     ]
+
+
+def test_a_parameter_named_with_a_null_value_is_not_declared():
+    """The eval's first run produced {"name": ..., "value": null}; refuse it."""
+    from featuregraph.study_builder.intake import StudyIntake
+
+    listed = StudyIntake.empty().declare(
+        operator_parameters=[{"name": "atol", "value": None}]
+    )
+    mapped = StudyIntake.empty().declare(operator_parameters={"atol": None})
+    valued = StudyIntake.empty().declare(operator_parameters={"atol": 0.0})
+
+    assert listed.unstructured == ("operator_parameters",)
+    assert mapped.unstructured == ("operator_parameters",)
+    assert valued.unstructured == ()

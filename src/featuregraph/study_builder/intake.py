@@ -331,21 +331,37 @@ def _states(value: Any) -> dict[str, Any]:
 
 
 def _parameters(value: Any) -> dict[str, Any]:
+    """Read named thresholds. A name with no value is not a declaration.
+
+    The first completeness-eval run returned parameters as the name the
+    state rules use with ``"value": null``, and this accepted them because
+    only the key was required. A threshold nobody has given a number is
+    the compilable-tier hole the intake exists to report, so null is
+    refused as prose would be.
+    """
     if isinstance(value, Mapping):
-        return {"parameters": deepcopy(dict(value))}
-    if not isinstance(value, list):
-        raise _ShapeError("operator_parameters must be a list or a mapping.")
-    parameters: dict[str, Any] = {}
-    for entry in value:
-        if not isinstance(entry, Mapping) or not isinstance(entry.get("name"), str):
-            raise _ShapeError(
-                "Every operator_parameters entry needs a 'name' and a 'value'."
-            )
-        if "value" not in entry:
-            raise _ShapeError(
-                f"Parameter {entry['name']!r} is named but has no 'value'."
-            )
-        parameters[entry["name"]] = deepcopy(entry["value"])
+        parameters = deepcopy(dict(value))
+    else:
+        if not isinstance(value, list):
+            raise _ShapeError("operator_parameters must be a list or a mapping.")
+        parameters = {}
+        for entry in value:
+            if not isinstance(entry, Mapping) or not isinstance(entry.get("name"), str):
+                raise _ShapeError(
+                    "Every operator_parameters entry needs a 'name' and a 'value'."
+                )
+            if "value" not in entry:
+                raise _ShapeError(
+                    f"Parameter {entry['name']!r} is named but has no 'value'."
+                )
+            parameters[entry["name"]] = deepcopy(entry["value"])
+    unvalued = sorted(name for name, given in parameters.items() if given is None)
+    if unvalued:
+        raise _ShapeError(
+            "These parameters are named but given no value: "
+            + ", ".join(unvalued)
+            + "."
+        )
     return {"parameters": parameters}
 
 
