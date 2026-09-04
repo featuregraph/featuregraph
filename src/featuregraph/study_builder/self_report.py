@@ -99,7 +99,13 @@ class CompletenessClaim:
 
 @dataclass(frozen=True)
 class DerivedCompleteness:
-    """What the intake itself says is outstanding."""
+    """What the intake itself says is outstanding.
+
+    ``approvable`` here means complete and shaped, whoever declared the
+    fields. Whether a researcher has confirmed a model's proposals is a
+    separate question the eval does not ask; every field a model elicits is
+    a proposal by construction.
+    """
 
     unset: tuple[str, ...]
     unstructured: tuple[str, ...]
@@ -130,7 +136,7 @@ def derived_completeness(intake: StudyIntake) -> DerivedCompleteness:
     return DerivedCompleteness(
         unset=intake.missing_information,
         unstructured=tuple(sorted(unstructured)),
-        approvable=intake.is_approvable and not unstructured,
+        approvable=intake.is_complete and not unstructured,
         compilable=compilable,
     )
 

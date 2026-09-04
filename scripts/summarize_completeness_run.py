@@ -34,7 +34,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from featuregraph.study_builder.intake import FIELDS, StudyIntake  # noqa: E402
+from featuregraph.study_builder.intake import FIELDS, MODEL, StudyIntake  # noqa: E402
 from featuregraph.study_builder.self_report import (  # noqa: E402
     CompletenessClaim,
     score,
@@ -64,7 +64,7 @@ def rescore(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
         r = dict(r)
         if r["intake"] is not None and r["claim"] is not None:
             r["score"] = score(
-                StudyIntake.from_payload(r["intake"]),
+                StudyIntake.from_payload(r["intake"], source=MODEL),
                 CompletenessClaim.from_payload(r["claim"]),
                 withheld=tuple(r["withheld"]),
             )

@@ -24,6 +24,13 @@ questions and the flat v1 list conflated them:
 
 A study can be compilable and not approvable. The reverse is also possible, and
 both are useful things to be able to say.
+
+Every declared field also records who declared it: the researcher, or a model
+proposing on their behalf. A proposal is visible as such, blocks approval until
+the researcher confirms it, and the confirmation is an act with a record. The
+completeness eval showed why: asked to leave a field blank, a model fills it in
+with a plausible answer about a third of the time and does not say so, and a
+plausible answer nobody gave is the one nothing downstream will catch.
 """
 
 from __future__ import annotations
@@ -31,6 +38,7 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from copy import deepcopy
 from dataclasses import dataclass, replace
+from dataclasses import field as dataclass_field
 from typing import Any
 
 INTAKE_SCHEMA_VERSION = 2
@@ -39,6 +47,12 @@ STUDY_CONTRACT_VERSION = "study-contract-v1"
 
 COMPILABLE = "compilable"
 APPROVABLE = "approvable"
+
+#: Who declared a field. A researcher's statement is authoritative; a model's
+#: proposal is not, until the researcher confirms it.
+RESEARCHER = "researcher"
+MODEL = "model"
+SOURCES = (RESEARCHER, MODEL)
 
 #: What v1 wrote into a text field it had not yet filled in.
 V1_TEXT_SENTINEL = "Not yet specified"
@@ -217,7 +231,13 @@ FIELDS: tuple[IntakeField, ...] = (
 FIELDS_BY_NAME: dict[str, IntakeField] = {field.name: field for field in FIELDS}
 
 _RESERVED_KEYS = frozenset(
-    {"schema_version", "status", "executor_registered", "missing_information"}
+    {
+        "schema_version",
+        "status",
+        "executor_registered",
+        "missing_information",
+        "sources",
+    }
 )
 
 
@@ -445,6 +465,10 @@ class StudyIntake:
 
     values: Mapping[str, Any]
     executor_registered: bool = False
+    #: Who declared each field, by name. A declared field absent here was
+    #: declared by the researcher; that is the default so that every intake
+    #: written before sources existed reads as researcher-stated.
+    sources: Mapping[str, str] = dataclass_field(default_factory=dict)
 
     def __post_init__(self) -> None:
         if not isinstance(self.values, Mapping):
@@ -461,6 +485,20 @@ class StudyIntake:
                 if name in self.values
             },
         )
+        if not isinstance(self.sources, Mapping):
+            raise StudyIntakeError("An intake's sources must be a mapping.")
+        bad = sorted(
+            name for name, source in self.sources.items() if source not in SOURCES
+        )
+        if bad:
+            raise StudyIntakeError(
+                f"A field's source must be one of {SOURCES}; not so for {bad}."
+            )
+        object.__setattr__(
+            self,
+            "sources",
+            {name: self.sources.get(name, RESEARCHER) for name in self.values},
+        )
 
     # -- construction ----------------------------------------------------
 
@@ -470,20 +508,68 @@ class StudyIntake:
         return cls(values={})
 
     def declare(self, **fields: Any) -> StudyIntake:
-        """Return a new intake with ``fields`` set.
+        """Return a new intake with ``fields`` stated by the researcher.
 
         Passing ``None`` retracts a field, which is how a researcher takes back
-        something a model filled in on their behalf.
+        something a model filled in on their behalf. Declaring a field a model
+        had proposed replaces the proposal with the researcher's statement.
         """
+        return self._set(fields, RESEARCHER)
+
+    def propose(self, **fields: Any) -> StudyIntake:
+        """Return a new intake with ``fields`` proposed by a model.
+
+        A proposal is declared, so it is not missing and it compiles, but it
+        is not the researcher's word: it renders as a proposal, it blocks
+        approval, and it stays a proposal until :meth:`confirm`. Passing
+        ``None`` retracts, as in :meth:`declare`.
+        """
+        return self._set(fields, MODEL)
+
+    def _set(self, fields: Mapping[str, Any], source: str) -> StudyIntake:
         merged = dict(self.values)
+        sources = dict(self.sources)
         for name, value in fields.items():
             if name not in FIELDS_BY_NAME:
                 raise StudyIntakeError(f"Unknown intake field: {name!r}.")
             if value is None:
                 merged.pop(name, None)
+                sources.pop(name, None)
             else:
                 merged[name] = value
-        return replace(self, values=merged)
+                sources[name] = source
+        return replace(self, values=merged, sources=sources)
+
+    def confirm(self, *names: str) -> StudyIntake:
+        """Return a new intake with the named proposals adopted by the researcher.
+
+        Confirming is the researcher's act, and it is the only way a model's
+        proposal becomes a declaration. A field that is not declared cannot be
+        confirmed; a field the researcher already stated is left as it is.
+        """
+        sources = dict(self.sources)
+        for name in names:
+            if name not in FIELDS_BY_NAME:
+                raise StudyIntakeError(f"Unknown intake field: {name!r}.")
+            if name not in self.values:
+                raise StudyIntakeError(
+                    f"Field {name!r} is not declared, so there is nothing to confirm."
+                )
+            sources[name] = RESEARCHER
+        return replace(self, sources=sources)
+
+    def source(self, name: str) -> str | None:
+        """Who declared ``name``: the researcher, a model, or nobody yet."""
+        if name not in FIELDS_BY_NAME:
+            raise StudyIntakeError(f"Unknown intake field: {name!r}.")
+        return self.sources.get(name)
+
+    @property
+    def proposed(self) -> tuple[str, ...]:
+        """Declared fields a model proposed and the researcher has not confirmed."""
+        return tuple(
+            sorted(name for name, source in self.sources.items() if source == MODEL)
+        )
 
     def get(self, name: str) -> Any:
         """The declared value of ``name``, or ``None`` if it is unset."""
@@ -545,15 +631,26 @@ class StudyIntake:
         return True
 
     @property
-    def is_approvable(self) -> bool:
-        """Whether every field is answered and the compilable ones are shaped."""
+    def is_complete(self) -> bool:
+        """Whether every field is answered and the compilable ones are shaped.
+
+        Complete says nothing about who answered. A model can complete an
+        intake; only a researcher can make it approvable.
+        """
         return not self.missing_information and not self.unstructured
+
+    @property
+    def is_approvable(self) -> bool:
+        """Whether the intake is complete and every field is the researcher's."""
+        return self.is_complete and not self.proposed
 
     @property
     def status(self) -> str:
         """Where this intake sits, stated the way v1's ``status`` field did."""
         if self.is_approvable:
             return "awaiting_approval"
+        if self.is_complete:
+            return "awaiting_confirmation"
         return "intake_in_progress"
 
     # -- emission --------------------------------------------------------
@@ -660,6 +757,11 @@ class StudyIntake:
             f"{name}: declared, but not in a form the compiler can execute."
             for name in self.unstructured
         ]
+        unresolved += [
+            f"{name}: proposed by the assistant and not yet confirmed by the "
+            "researcher."
+            for name in self.proposed
+        ]
         try:
             candidate["state_contract"] = self.to_state_contract()
         except IntakeIncompleteError as error:
@@ -680,10 +782,13 @@ class StudyIntake:
         for field in FIELDS:
             payload[field.name] = deepcopy(self.values.get(field.name))
         payload["missing_information"] = list(self.missing_information)
+        payload["sources"] = dict(self.sources)
         return payload
 
     @classmethod
-    def from_payload(cls, payload: Mapping[str, Any]) -> StudyIntake:
+    def from_payload(
+        cls, payload: Mapping[str, Any], *, source: str = RESEARCHER
+    ) -> StudyIntake:
         """Load an intake payload, reading v1 the way v1 meant it.
 
         v1 had no way to distinguish "unanswered" from "answered as nothing":
@@ -691,6 +796,11 @@ class StudyIntake:
         into unanswered lists. Both are read here as unset, so an existing
         checkpoint round-trips. From v2 on, only ``None`` means unset, and an
         empty list is a researcher saying there are none.
+
+        ``source`` is who declared the fields the payload does not attribute:
+        the researcher by default, so that every payload written before
+        sources existed reads as it was meant, or a model when the payload is
+        what a model returned.
         """
         if not isinstance(payload, Mapping):
             raise StudyIntakeError("An intake payload must be a mapping.")
@@ -701,7 +811,13 @@ class StudyIntake:
         if unknown:
             raise StudyIntakeError(f"Unknown intake fields: {unknown}.")
 
+        if source not in SOURCES:
+            raise StudyIntakeError(f"A field's source must be one of {SOURCES}.")
+        recorded = payload.get("sources") or {}
+        if not isinstance(recorded, Mapping):
+            raise StudyIntakeError("An intake payload's sources must be a mapping.")
         values: dict[str, Any] = {}
+        sources: dict[str, str] = {}
         for field in FIELDS:
             if field.name not in payload:
                 continue
@@ -711,9 +827,11 @@ class StudyIntake:
             if version == 1 and (value == V1_TEXT_SENTINEL or value == []):
                 continue
             values[field.name] = value
+            sources[field.name] = recorded.get(field.name, source)
         return cls(
             values=values,
             executor_registered=bool(payload.get("executor_registered", False)),
+            sources=sources,
         )
 
 
@@ -748,20 +866,26 @@ _SECTIONS: tuple[tuple[str, tuple[str, ...]], ...] = (
 )
 
 
-def _render_value(field: IntakeField, value: Any) -> list[str]:
+#: How a proposal is marked in the checkpoint, so the researcher reading it
+#: sees which answers are theirs and which are the assistant's.
+PROPOSED_MARK = "(proposed by the assistant, not yet confirmed)"
+
+
+def _render_value(
+    field: IntakeField, value: Any, *, proposed: bool = False
+) -> list[str]:
     if value is None:
         return [f"- {field.heading}: not yet specified"]
+    heading = f"{field.heading} {PROPOSED_MARK}" if proposed else field.heading
     if field.kind == "text":
-        return [f"- {field.heading}: {value}"]
+        return [f"- {heading}: {value}"]
     if isinstance(value, Mapping):
         if not value:
-            return [f"- {field.heading}: declared as none"]
-        return [f"- {field.heading}:"] + [
-            f"  - {key}: {value[key]}" for key in sorted(value)
-        ]
+            return [f"- {heading}: declared as none"]
+        return [f"- {heading}:"] + [f"  - {key}: {value[key]}" for key in sorted(value)]
     if not value:
-        return [f"- {field.heading}: declared as none"]
-    return [f"- {field.heading}:"] + [f"  - {entry}" for entry in value]
+        return [f"- {heading}: declared as none"]
+    return [f"- {heading}:"] + [f"  - {entry}" for entry in value]
 
 
 def render_checkpoint(intake: StudyIntake, *, level: int = 1) -> str:
@@ -785,10 +909,13 @@ def render_checkpoint(intake: StudyIntake, *, level: int = 1) -> str:
         "",
         f"Status: **{intake.status.replace('_', ' ')}**",
     ]
+    proposed = set(intake.proposed)
     for heading, names in _SECTIONS:
         lines += ["", f"{sub} {heading}"]
         for name in names:
-            lines += _render_value(FIELDS_BY_NAME[name], intake.get(name))
+            lines += _render_value(
+                FIELDS_BY_NAME[name], intake.get(name), proposed=name in proposed
+            )
 
     lines += ["", f"{sub} Completeness"]
     for tier in (COMPILABLE, APPROVABLE):
@@ -798,6 +925,11 @@ def render_checkpoint(intake: StudyIntake, *, level: int = 1) -> str:
     unstructured = intake.unstructured
     if unstructured:
         lines.append(f"- Declared without structure: {', '.join(unstructured)}")
+    if proposed:
+        lines.append(
+            "- Proposed by the assistant, not yet confirmed: "
+            + ", ".join(intake.proposed)
+        )
 
     lines += [
         "",
