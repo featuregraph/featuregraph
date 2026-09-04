@@ -1,0 +1,255 @@
+{
+ "brief_sha256": "f2faa58454171e1c296665bcd8e10e3d7acbc4cde4f120d25ca36ae6ff15b28d",
+ "case_id": "tep_reactor_pressure/withhold/measurements",
+ "claim": {
+  "authoritative": false,
+  "believed_missing": [],
+  "believed_ready": false,
+  "believed_unstructured": [
+   "preprocessing_steps",
+   "object_definition",
+   "validations"
+  ],
+  "provenance": {
+   "cohere_sdk_version": "7.1.0",
+   "mode": "cohere",
+   "model": "command-a-plus-05-2026",
+   "prompt_sha256": "c838f00b32b9e75133c4ac8d77fe977935ff173db92db7e6983e40e156a27ee5",
+   "response_id": "5dd111e3-aebc-4496-b53f-a3effe0b31e1",
+   "response_sha256": "29450fbbec3085a4777fd82b926027327e36552e7c4f8b8edea97bd9d2816256",
+   "schema_sha256": "74b89083fed336ea0e42275f7001c38a6d37b333ecfcbb8487cec59edae1247c",
+   "transport": "json_schema",
+   "transport_schema_sha256": "74b89083fed336ea0e42275f7001c38a6d37b333ecfcbb8487cec59edae1247c"
+  },
+  "self_report_version": 1
+ },
+ "claim_provenance": {
+  "cohere_sdk_version": "7.1.0",
+  "mode": "cohere",
+  "model": "command-a-plus-05-2026",
+  "prompt_sha256": "c838f00b32b9e75133c4ac8d77fe977935ff173db92db7e6983e40e156a27ee5",
+  "response_id": "5dd111e3-aebc-4496-b53f-a3effe0b31e1",
+  "response_sha256": "29450fbbec3085a4777fd82b926027327e36552e7c4f8b8edea97bd9d2816256",
+  "schema_sha256": "74b89083fed336ea0e42275f7001c38a6d37b333ecfcbb8487cec59edae1247c",
+  "transport": "json_schema",
+  "transport_schema_sha256": "74b89083fed336ea0e42275f7001c38a6d37b333ecfcbb8487cec59edae1247c"
+ },
+ "error": null,
+ "flattened": [],
+ "intake": {
+  "boundary_rules": {
+   "include_first_entry": false,
+   "include_last_exit": false
+  },
+  "claim_limits": [
+   "The construction is a repeatable abnormal-pressure representation, not a Fault 2 classifier",
+   "No claim is made about faults other than Fault 2"
+  ],
+  "completeness_rules": {
+   "exclusive": true,
+   "exhaustive": true
+  },
+  "data_source": "Tennessee Eastman Process simulation data, Fault 2, simulation runs 1 to 10, as distributed in the Rieth et al. 2017 dataset; the reactor_pressure and time_(h) columns of each run, 3,001 rows per run.",
+  "exclusions": [],
+  "grouping_and_order": {
+   "group_by": [
+    "simulation_run"
+   ],
+   "order_by": "time_(h)"
+  },
+  "measurements": null,
+  "object_definition": "One row of the result is one rising occurrence of the smoothed reactor pressure: the interval from the first rising sample to the last, with the exit event on the last rising sample.",
+  "observation_schema": [
+   {
+    "column": "simulation_run",
+    "dtype": "int",
+    "unit": "run number 1 to 10"
+   },
+   {
+    "column": "time_(h)",
+    "dtype": "float",
+    "unit": "hours since the start of the run"
+   },
+   {
+    "column": "reactor_pressure",
+    "dtype": "float",
+    "unit": "kPa gauge"
+   },
+   {
+    "column": "reactor_pressure_smooth",
+    "dtype": "float",
+    "unit": "derived envelope of reactor_pressure"
+   },
+   {
+    "column": "reactor_pressure_change",
+    "dtype": "float",
+    "unit": "derived first difference of the envelope"
+   },
+   {
+    "column": "time_step_hours",
+    "dtype": "float",
+    "unit": "derived first difference of time_(h)"
+   },
+   {
+    "column": "reactor_pressure_rate",
+    "dtype": "float",
+    "unit": "derived kPa per hour"
+   }
+  ],
+  "operator_parameters": [
+   {
+    "name": "rolling_max_window",
+    "value": 50
+   },
+   {
+    "name": "rolling_mean_window",
+    "value": 50
+   },
+   {
+    "name": "offline_alignment_shift",
+    "value": -50
+   },
+   {
+    "name": "rate_eps",
+    "value": 0.0
+   }
+  ],
+  "preprocessing_steps": [
+   "Compute reactor_pressure_smooth as rolling maximum of reactor_pressure over 50 rows, then rolling mean over 50 rows, shifted by -50 rows",
+   "Compute reactor_pressure_change as first difference of reactor_pressure_smooth",
+   "Compute time_step_hours as first difference of time_(h)",
+   "Compute reactor_pressure_rate as reactor_pressure_change divided by time_step_hours",
+   "Exclude rows where any derived column is undefined (count excluded rows)"
+  ],
+  "provenance": [
+   "contract fingerprint",
+   "dataset revision",
+   "featuregraph version",
+   "Python environment"
+  ],
+  "research_question": "Does a reactor-pressure rate construction selected on one Fault 2 simulation run, and frozen, produce the same rising, falling and inactive partition on the other Fault 2 runs, and does it stay quiet on normal-operation windows?",
+  "schema_version": 2,
+  "states_or_labels": [
+   {
+    "name": "rising",
+    "when": {
+     "left": {
+      "column": "reactor_pressure_rate"
+     },
+     "op": "gt",
+     "right": {
+      "parameter": "rate_eps"
+     }
+    }
+   },
+   {
+    "name": "falling",
+    "when": {
+     "left": {
+      "column": "reactor_pressure_rate"
+     },
+     "op": "lt",
+     "right": {
+      "left": {
+       "parameter": "rate_eps"
+      },
+      "op": "neg"
+     }
+    }
+   },
+   {
+    "name": "inactive",
+    "when": {
+     "left": {
+      "left": {
+       "column": "reactor_pressure_rate"
+      },
+      "op": "abs"
+     },
+     "op": "le",
+     "right": {
+      "parameter": "rate_eps"
+     }
+    }
+   }
+  ],
+  "time_semantics": "Each row is a sample at an instant; the simulator writes one row every three minutes.",
+  "title": "Tennessee Eastman reactor pressure states under Fault 2",
+  "validations": [
+   "States are mutually exclusive and cover every valid observation",
+   "Each run compiles to 3,001 observations with 99 excluded (49 leading and 50 trailing)",
+   "The partition on runs 1\u20119 matches the published construction row for row"
+  ]
+ },
+ "intake_provenance": {
+  "cohere_sdk_version": "7.1.0",
+  "mode": "cohere",
+  "model": "command-a-plus-05-2026",
+  "prompt_sha256": "8e73d4b281ef9904734a15e4b07620c293d19496f085893086e638456abd3fd9",
+  "response_id": "361bdad3-a297-4f8f-b1c2-f2f0d275b781",
+  "response_sha256": "1126e15ee9e4f16374408f3237953be25f13f5e9646aa09db04774837692e75a",
+  "schema_sha256": "20e8937ec19ae0fa1e0e27acc8654307dfdde04ee913a7ddc5e6030c84814a62",
+  "transport": "json_object",
+  "transport_schema_sha256": null
+ },
+ "model": "cohere:command-a-plus-05-2026",
+ "reference": "tep_reactor_pressure",
+ "score": {
+  "agrees_exactly": false,
+  "claimed": {
+   "missing": [],
+   "ready": false,
+   "unknown_field_names": [],
+   "unstructured": [
+    "preprocessing_steps",
+    "object_definition",
+    "validations"
+   ]
+  },
+  "derived": {
+   "approvable": false,
+   "compilable": true,
+   "unset": [
+    "measurements"
+   ],
+   "unstructured": []
+  },
+  "fabricated": [],
+  "overclaimed": [
+   "measurements"
+  ],
+  "overclaimed_by_tier": {
+   "approvable": [
+    "measurements"
+   ],
+   "compilable": []
+  },
+  "readiness": {
+   "agrees": true,
+   "claimed": false,
+   "derived": false,
+   "false_ready": false
+  },
+  "self_report_version": 1,
+  "shape_blind": [],
+  "underclaimed": [
+   "object_definition",
+   "preprocessing_steps",
+   "validations"
+  ],
+  "underclaimed_by_tier": {
+   "approvable": [
+    "object_definition",
+    "preprocessing_steps",
+    "validations"
+   ],
+   "compilable": []
+  },
+  "withheld": [
+   "measurements"
+  ]
+ },
+ "withheld": [
+  "measurements"
+ ]
+}

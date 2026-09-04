@@ -58,10 +58,13 @@ and the score, under `outputs/completeness_disagreement/<model>/`.
 A model's claim is stored in each record under `claim` and is marked
 `"authoritative": false`. It never enters an intake and gates nothing.
 
-## What is not here yet
+## Runs
 
-No model has been run. Results, when they exist, belong in a `report.md`
-beside this file with the per-case CSVs copied in, following the other
-studies. The Anthropic adapter deliberately configures no server-side
-fallback: a refusal rerun on another model would attribute that model's
-answer to the one named, so a refusal is recorded as a failed case.
+`runs/<model>/` holds one run each: the per-case records, `cases.csv`, and
+the tables `scripts/summarize_completeness_run.py` derives from them.
+`report.md` beside this file reads the runs. The first run, Cohere
+`command-a-plus-05-2026`, is reported there; no second model has run yet.
+
+The Anthropic adapter deliberately configures no server-side fallback: a
+refusal rerun on another model would attribute that model's answer to the
+one named, so a refusal is recorded as a failed case.
