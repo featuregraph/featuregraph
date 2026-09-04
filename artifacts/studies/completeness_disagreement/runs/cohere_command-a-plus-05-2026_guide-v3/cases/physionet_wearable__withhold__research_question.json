@@ -1,0 +1,209 @@
+{
+ "brief_sha256": "4e7965161c8e223df9ff16002f27869af3118d20a5f76b173c946b85c91229d9",
+ "case_id": "physionet_wearable/withhold/research_question",
+ "claim": {
+  "authoritative": false,
+  "believed_missing": [],
+  "believed_ready": false,
+  "believed_unstructured": [
+   "time_semantics",
+   "object_definition",
+   "preprocessing_steps"
+  ],
+  "provenance": {
+   "cohere_sdk_version": "7.1.0",
+   "mode": "cohere",
+   "model": "command-a-plus-05-2026",
+   "prompt_sha256": "4e3259037e0bba3d8225da9fe1a92e5b9ce8f82994315b7ef80173c7135e887d",
+   "response_id": "40d49dfb-f85b-4078-b540-52c592c5827b",
+   "response_sha256": "aae6213feac96ab7c7143d8477d3eb808abdac64c97c131118851f0fb1137474",
+   "schema_sha256": "74b89083fed336ea0e42275f7001c38a6d37b333ecfcbb8487cec59edae1247c",
+   "transport": "json_schema",
+   "transport_schema_sha256": "74b89083fed336ea0e42275f7001c38a6d37b333ecfcbb8487cec59edae1247c"
+  },
+  "self_report_version": 1
+ },
+ "claim_provenance": {
+  "cohere_sdk_version": "7.1.0",
+  "mode": "cohere",
+  "model": "command-a-plus-05-2026",
+  "prompt_sha256": "4e3259037e0bba3d8225da9fe1a92e5b9ce8f82994315b7ef80173c7135e887d",
+  "response_id": "40d49dfb-f85b-4078-b540-52c592c5827b",
+  "response_sha256": "aae6213feac96ab7c7143d8477d3eb808abdac64c97c131118851f0fb1137474",
+  "schema_sha256": "74b89083fed336ea0e42275f7001c38a6d37b333ecfcbb8487cec59edae1247c",
+  "transport": "json_schema",
+  "transport_schema_sha256": "74b89083fed336ea0e42275f7001c38a6d37b333ecfcbb8487cec59edae1247c"
+ },
+ "error": null,
+ "flattened": [],
+ "intake": {
+  "boundary_rules": {
+   "include_first_entry": true,
+   "include_last_exit": true
+  },
+  "claim_limits": [
+   "protocol states and their boundaries are externally declared",
+   "FeatureGraph does not infer stress from physiological signals",
+   "the study does not establish causality or physiological validity"
+  ],
+  "completeness_rules": {
+   "exclusive": true,
+   "exhaustive": true
+  },
+  "data_source": "Wearable Device Dataset from Induced Stress and Structured Exercise Sessions, version 1.0.1, DOI 10.13026/he0v-tf17, https://physionet.org/content/wearable-device-dataset/1.0.1/; the STRESS cohort directories with tags.csv, HR.csv, EDA.csv, TEMP.csv and Stress_Level files.",
+  "exclusions": [
+   {
+    "reason": "duplicated raw signals documented by the dataset authors",
+    "subject_id": "S02"
+   },
+   {
+    "reason": "PPG and temperature sensors covered by the protection dock",
+    "subject_id": "f07"
+   },
+   {
+    "reason": "protocol split across f14_a and f14_b after Bluetooth loss",
+    "subject_id": "f14"
+   }
+  ],
+  "grouping_and_order": {
+   "group_by": [
+    "subject_id"
+   ],
+   "timeline": {
+    "closure": "left",
+    "frequency": "1s"
+   }
+  },
+  "measurements": [
+   "samples",
+   "mean",
+   "median",
+   "min",
+   "max"
+  ],
+  "object_definition": "One row represents a declared protocol occurrence for a subject, spanning from a tag boundary to the next tag boundary.",
+  "observation_schema": [
+   {
+    "column": "subject_id",
+    "dtype": "string",
+    "unit": "subject directory name"
+   },
+   {
+    "column": "protocol_state",
+    "dtype": "string",
+    "unit": "protocol stage label from tags.csv"
+   },
+   {
+    "column": "HR",
+    "dtype": "float",
+    "unit": "beats per minute at 1 Hz"
+   },
+   {
+    "column": "EDA",
+    "dtype": "float",
+    "unit": "microsiemens at 4 Hz"
+   },
+   {
+    "column": "TEMP",
+    "dtype": "float",
+    "unit": "degrees Celsius at 4 Hz"
+   }
+  ],
+  "operator_parameters": [],
+  "preprocessing_steps": [
+   "signals are kept at their native sampling rates",
+   "time outside a declared protocol stage is labelled unassigned"
+  ],
+  "provenance": [
+   "approved contract fingerprint and the approving authority",
+   "dataset version and DOI"
+  ],
+  "research_question": null,
+  "schema_version": 2,
+  "states_or_labels": {
+   "state_column": "protocol_state"
+  },
+  "time_semantics": "Each row represents an interval starting at its timestamp and closed on the left, on a regular one-second timeline.",
+  "title": "PhysioNet wearable protocol representation",
+  "validations": [
+   "33 eligible subjects",
+   "248 declared occurrences",
+   "exact boundaries at the tag timestamps",
+   "positive durations for every occurrence",
+   "every occurrence joined to exactly one self-report",
+   "native-rate coverage of every signal within every occurrence",
+   "the same schema across protocols"
+  ]
+ },
+ "intake_provenance": {
+  "cohere_sdk_version": "7.1.0",
+  "mode": "cohere",
+  "model": "command-a-plus-05-2026",
+  "prompt_sha256": "2c81842e2738f8149358fb14c4c3aa13d2ddb1902ac1f15d8f5650c3ca09e7f2",
+  "response_id": "f7d8a316-39d1-4521-96fc-c5ef8530e21e",
+  "response_sha256": "75e1829b56e9936cda5e59b597b2599d476c222f19b7acdaed4eca11b1c49c41",
+  "schema_sha256": "20e8937ec19ae0fa1e0e27acc8654307dfdde04ee913a7ddc5e6030c84814a62",
+  "transport": "json_object",
+  "transport_schema_sha256": null
+ },
+ "model": "cohere:command-a-plus-05-2026",
+ "reference": "physionet_wearable",
+ "score": {
+  "agrees_exactly": false,
+  "claimed": {
+   "missing": [],
+   "ready": false,
+   "unknown_field_names": [],
+   "unstructured": [
+    "time_semantics",
+    "object_definition",
+    "preprocessing_steps"
+   ]
+  },
+  "derived": {
+   "approvable": false,
+   "compilable": true,
+   "unset": [
+    "research_question"
+   ],
+   "unstructured": []
+  },
+  "fabricated": [],
+  "overclaimed": [
+   "research_question"
+  ],
+  "overclaimed_by_tier": {
+   "approvable": [
+    "research_question"
+   ],
+   "compilable": []
+  },
+  "readiness": {
+   "agrees": true,
+   "claimed": false,
+   "derived": false,
+   "false_ready": false
+  },
+  "self_report_version": 1,
+  "shape_blind": [],
+  "underclaimed": [
+   "object_definition",
+   "preprocessing_steps",
+   "time_semantics"
+  ],
+  "underclaimed_by_tier": {
+   "approvable": [
+    "object_definition",
+    "preprocessing_steps",
+    "time_semantics"
+   ],
+   "compilable": []
+  },
+  "withheld": [
+   "research_question"
+  ]
+ },
+ "withheld": [
+  "research_question"
+ ]
+}

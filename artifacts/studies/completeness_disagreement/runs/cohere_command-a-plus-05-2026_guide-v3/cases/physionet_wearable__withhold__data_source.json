@@ -1,0 +1,216 @@
+{
+ "brief_sha256": "2c511354556cf911cbf45b3fc69207ebdf918614508d788c3c459a67db2f5abd",
+ "case_id": "physionet_wearable/withhold/data_source",
+ "claim": {
+  "authoritative": false,
+  "believed_missing": [],
+  "believed_ready": false,
+  "believed_unstructured": [
+   "time_semantics",
+   "preprocessing_steps",
+   "measurements",
+   "validations",
+   "provenance",
+   "claim_limits"
+  ],
+  "provenance": {
+   "cohere_sdk_version": "7.1.0",
+   "mode": "cohere",
+   "model": "command-a-plus-05-2026",
+   "prompt_sha256": "b91d3ff9c30d97bbbc651e8a8d8787c14fbd198e741ea7ec42717d1ccf7b278c",
+   "response_id": "33ee5268-57b9-475f-ac16-3e6e81f4a862",
+   "response_sha256": "d5616c5783cb19d57333aa8c29da9418e607866900bdcbe27dfdf1e5177acaf7",
+   "schema_sha256": "74b89083fed336ea0e42275f7001c38a6d37b333ecfcbb8487cec59edae1247c",
+   "transport": "json_schema",
+   "transport_schema_sha256": "74b89083fed336ea0e42275f7001c38a6d37b333ecfcbb8487cec59edae1247c"
+  },
+  "self_report_version": 1
+ },
+ "claim_provenance": {
+  "cohere_sdk_version": "7.1.0",
+  "mode": "cohere",
+  "model": "command-a-plus-05-2026",
+  "prompt_sha256": "b91d3ff9c30d97bbbc651e8a8d8787c14fbd198e741ea7ec42717d1ccf7b278c",
+  "response_id": "33ee5268-57b9-475f-ac16-3e6e81f4a862",
+  "response_sha256": "d5616c5783cb19d57333aa8c29da9418e607866900bdcbe27dfdf1e5177acaf7",
+  "schema_sha256": "74b89083fed336ea0e42275f7001c38a6d37b333ecfcbb8487cec59edae1247c",
+  "transport": "json_schema",
+  "transport_schema_sha256": "74b89083fed336ea0e42275f7001c38a6d37b333ecfcbb8487cec59edae1247c"
+ },
+ "error": null,
+ "flattened": [],
+ "intake": {
+  "boundary_rules": {
+   "include_first_entry": true,
+   "include_last_exit": true
+  },
+  "claim_limits": [
+   "Protocol states and their boundaries are externally declared",
+   "FeatureGraph does not infer stress from physiological signals",
+   "The study does not establish causality or physiological validity"
+  ],
+  "completeness_rules": {
+   "exclusive": true,
+   "exhaustive": true
+  },
+  "data_source": "PhysioNet wearable stress and exercise dataset",
+  "exclusions": [
+   {
+    "reason": "duplicated raw signals documented by the dataset authors",
+    "subject_id": "S02"
+   },
+   {
+    "reason": "PPG and temperature sensors covered by the protection dock",
+    "subject_id": "f07"
+   },
+   {
+    "reason": "protocol split across f14_a and f14_b after Bluetooth loss",
+    "subject_id": "f14"
+   }
+  ],
+  "grouping_and_order": {
+   "group_by": [
+    "subject_id"
+   ],
+   "timeline": {
+    "frequency": "1s"
+   }
+  },
+  "measurements": [
+   "samples",
+   "mean",
+   "median",
+   "min",
+   "max"
+  ],
+  "object_definition": "One row of the result is one declared protocol occurrence for one subject: a stage from its tag boundary to the next.",
+  "observation_schema": [
+   {
+    "column": "subject_id",
+    "dtype": "string",
+    "unit": "subject directory name"
+   },
+   {
+    "column": "protocol_state",
+    "dtype": "string",
+    "unit": "protocol stage label from tags.csv"
+   },
+   {
+    "column": "HR",
+    "dtype": "float",
+    "unit": "beats per minute at 1 Hz"
+   },
+   {
+    "column": "EDA",
+    "dtype": "float",
+    "unit": "microsiemens at 4 Hz"
+   },
+   {
+    "column": "TEMP",
+    "dtype": "float",
+    "unit": "degrees Celsius at 4 Hz"
+   }
+  ],
+  "operator_parameters": [],
+  "preprocessing_steps": [
+   "Keep signals at native sampling rates",
+   "Label time outside declared protocol stage as unassigned"
+  ],
+  "provenance": [
+   "Approved contract fingerprint and the approving authority",
+   "Dataset version and DOI"
+  ],
+  "research_question": "Can the externally recorded protocol stages of the wearable stress and exercise dataset be represented as declared occurrences, with the physiological signals and self-reports joined to them as measurements, without the system inferring any stage or any stress from the signals?",
+  "schema_version": 2,
+  "states_or_labels": {
+   "state_column": "protocol_state"
+  },
+  "time_semantics": "Each row represents an interval starting at its timestamp and closed on the left (i.e., [timestamp, timestamp+1s)).",
+  "title": "PhysioNet wearable protocol representation",
+  "validations": [
+   "33 eligible subjects",
+   "248 declared occurrences",
+   "Exact boundaries at the tag timestamps",
+   "Positive durations for every occurrence",
+   "Every occurrence joined to exactly one self-report",
+   "Native-rate coverage of every signal within every occurrence",
+   "The same schema across protocols"
+  ]
+ },
+ "intake_provenance": {
+  "cohere_sdk_version": "7.1.0",
+  "mode": "cohere",
+  "model": "command-a-plus-05-2026",
+  "prompt_sha256": "5a4fcc930118aaf368854b953ce28383ed11de3bcee658a5840f51b42ca4aa3c",
+  "response_id": "6d9d443b-5cfd-4115-98f0-483901d4eb60",
+  "response_sha256": "50f4eb0bb5e6af36a1ebcbbb7b4efc7c8bb2d28cb8f8c9f1cea17cf770f4516d",
+  "schema_sha256": "20e8937ec19ae0fa1e0e27acc8654307dfdde04ee913a7ddc5e6030c84814a62",
+  "transport": "json_object",
+  "transport_schema_sha256": null
+ },
+ "model": "cohere:command-a-plus-05-2026",
+ "reference": "physionet_wearable",
+ "score": {
+  "agrees_exactly": false,
+  "claimed": {
+   "missing": [],
+   "ready": false,
+   "unknown_field_names": [],
+   "unstructured": [
+    "time_semantics",
+    "preprocessing_steps",
+    "measurements",
+    "validations",
+    "provenance",
+    "claim_limits"
+   ]
+  },
+  "derived": {
+   "approvable": true,
+   "compilable": true,
+   "unset": [],
+   "unstructured": []
+  },
+  "fabricated": [
+   "data_source"
+  ],
+  "overclaimed": [],
+  "overclaimed_by_tier": {
+   "approvable": [],
+   "compilable": []
+  },
+  "readiness": {
+   "agrees": false,
+   "claimed": false,
+   "derived": true,
+   "false_ready": false
+  },
+  "self_report_version": 1,
+  "shape_blind": [],
+  "underclaimed": [
+   "claim_limits",
+   "measurements",
+   "preprocessing_steps",
+   "provenance",
+   "time_semantics",
+   "validations"
+  ],
+  "underclaimed_by_tier": {
+   "approvable": [
+    "claim_limits",
+    "measurements",
+    "preprocessing_steps",
+    "provenance",
+    "time_semantics",
+    "validations"
+   ],
+   "compilable": []
+  },
+  "withheld": [
+   "data_source"
+  ]
+ },
+ "withheld": [
+  "data_source"
+ ]
+}
