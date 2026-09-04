@@ -11,6 +11,9 @@ that cache holds them and skipped, with a message, when it does not. The
 computation is the audit's own, imported from
 ``scripts.analyze_bidmc_subject13_multiscale``.
 
+Figure 5, the lag histogram for subject 13, reads the committed peak table
+under ``artifacts/studies/bidmc_peak_measures`` and so needs no signal data.
+
 Usage:
     python -m scripts.plot_bidmc_paper_figures
 """
@@ -42,6 +45,7 @@ from scripts.analyze_bidmc_subject13_multiscale import (  # noqa: E402
 )
 
 HELDOUT = ROOT / "artifacts" / "studies" / "bidmc_multiscale_heldout"
+PEAK_MEASURES = ROOT / "artifacts" / "studies" / "bidmc_peak_measures"
 WINDOW_85 = ROOT / "artifacts" / "studies" / "bidmc_window_85"
 FIGURES = ROOT / "artifacts" / "paper" / "master" / "figures"
 
@@ -451,6 +455,62 @@ def figure_construction(cache: Path = CACHE) -> bool:
     return True
 
 
+def figure_lag_histogram(subject: int = 13) -> None:
+    """Every W=79 object peak of one record, by its lag after the R-peak.
+
+    One bar per sample. The whole hour is shown, not a region, so that the
+    width of the band is the result: the matched peaks, which are breaths,
+    and the W=79-only peaks fall in the same few samples. The lag is drawn
+    from the committed peak table, so the figure needs no signal data.
+    """
+    table = pd.read_csv(PEAK_MEASURES / f"bidmc_{subject:02d}_peaks_W79_100.csv")
+    lag = table["r_lag"].dropna()
+    matched = table["matched"].astype(bool)
+    only_79 = lag[~matched.loc[lag.index]].to_numpy()
+    shared = lag[matched.loc[lag.index]].to_numpy()
+    upper = int(np.ceil(lag.max() / 10) * 10) + 1
+    bins = np.arange(0, upper + 1, 1)
+
+    fig, ax = plt.subplots(figsize=(7.2, 3.0))
+    ax.grid(axis="y", alpha=0.7)
+    ax.set_axisbelow(True)
+    ax.hist(
+        [shared, only_79],
+        bins=bins,
+        stacked=True,
+        color=[SHARED, ONLY_79],
+        label=[
+            f"Shared objects (n = {len(shared)})",
+            f"W=79-only objects (n = {len(only_79)})",
+        ],
+        linewidth=0,
+    )
+    median = float(np.median(lag))
+    q1, q3 = np.percentile(lag, [25, 75])
+    ax.axvline(median, color=INK, linewidth=0.8, linestyle=":")
+    ax.text(
+        median + 12,
+        ax.get_ylim()[1] * 0.95,
+        f"median {median:.0f} samples ({median / FS:.2f} s)\n"
+        f"interquartile range {q3 - q1:.0f} samples\n"
+        f"n = {len(lag)} peaks over the record",
+        fontsize=8,
+        color=INK_MUTED,
+        va="top",
+        ha="left",
+    )
+    ax.set_xlim(0, upper)
+    ax.set_xlabel(
+        "Lag from preceding lead-II R-peak to object peak (samples at 125 Hz)"
+    )
+    ax.set_ylabel("Object peaks")
+    seconds = ax.secondary_xaxis("top", functions=(lambda x: x / FS, lambda t: t * FS))
+    seconds.set_xlabel("seconds", fontsize=8)
+    seconds.tick_params(labelsize=7)
+    ax.legend(loc="upper left")
+    save(fig, f"fig5_subject{subject}_lag_histogram")
+
+
 def main() -> None:
     style()
     print("writing figures to", FIGURES.relative_to(ROOT))
@@ -458,6 +518,7 @@ def main() -> None:
     figure_phase_concentration()
     figure_rate_against_heart_rate()
     figure_annotation_agreement()
+    figure_lag_histogram()
 
 
 if __name__ == "__main__":
