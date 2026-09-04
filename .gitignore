@@ -84,6 +84,7 @@ artifacts/studies/*
 !artifacts/studies/tep_pressure_transfer_study.md
 !artifacts/studies/bidmc_multiscale_heldout/
 !artifacts/studies/bidmc_peak_measures/
+!artifacts/studies/bidmc_peak_measures/**
 !artifacts/studies/bidmc_multiscale_heldout/**
 !artifacts/studies/bidmc_subject13_multiscale/
 !artifacts/studies/bidmc_subject13_multiscale/**
