@@ -193,7 +193,10 @@ def test_elicit_runs_two_calls_and_loads_the_intake(reference: StudyIntake):
 
     assert result.error is None
     assert len(elicitor.calls) == 2
-    assert result.intake is not None and result.intake.is_approvable
+    assert result.intake is not None and result.intake.is_complete
+    # Everything a model elicits is a proposal until a researcher confirms it.
+    assert not result.intake.is_approvable
+    assert result.intake.proposed == tuple(sorted(result.intake.values))
     assert result.claim is not None and result.claim.believed_ready
     assert (
         result.intake_provenance["schema_sha256"]

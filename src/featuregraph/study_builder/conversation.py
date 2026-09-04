@@ -485,6 +485,7 @@ class ConversationalStudySession:
             "artifacts": [asdict(link) for link in self._current_artifact_links()],
             "intake": self.intake.to_payload(),
             "open_questions": self._governed_gaps(),
+            "proposed": list(self.intake.proposed),
         }
 
     def handle_message(self, message: str) -> ConversationResponse:
@@ -534,6 +535,12 @@ class ConversationalStudySession:
         if self.phase is not SessionPhase.AWAITING_APPROVAL or self.candidate is None:
             return self._respond("There is no candidate awaiting approval.")
 
+        # Approval is the researcher's act, and it is what turns the
+        # assistant's proposals into declarations. Which fields that applied
+        # to is written into the specification, so the record says which
+        # answers the researcher stated and which they adopted.
+        confirmed = self.intake.proposed
+        self.intake = self.intake.confirm(*confirmed)
         validations = dict(self.executor.validate(self.candidate))
         approved = approve_study_contract(
             self.candidate,
@@ -561,6 +568,7 @@ class ConversationalStudySession:
             self.approved_payloads[-1],
             self.version,
             status="approved and executed",
+            confirmed=confirmed,
         )
         self._write_results(report, self.version, loaded.sha256)
         if len(self.reports) > 1:
@@ -584,9 +592,14 @@ class ConversationalStudySession:
         return self._respond(reply)
 
     def _declare_from(self, decision: DraftDecision) -> None:
-        """Record a proposal as intake declarations, not as settled fact."""
+        """Record the assistant's proposal as proposed, not as settled fact.
+
+        The intake keeps the proposal marked as the assistant's until the
+        researcher's approval confirms it, and the checkpoint shows it that
+        way, so what a person approves is visibly theirs or the model's.
+        """
         statistics = list(decision.measurement_statistics)
-        self.intake = self.intake.declare(
+        self.intake = self.intake.propose(
             research_question=decision.research_question.strip() or None,
             # An empty list is a researcher saying "there are none". Coming from
             # an assistant that named no statistics it means the opposite -- the
@@ -691,6 +704,7 @@ class ConversationalStudySession:
         *,
         status: str,
         validations: Mapping[str, bool] | None = None,
+        confirmed: Sequence[str] = (),
     ) -> None:
         statistics = payload["measurements"]["statistics"]
         protocols = payload["protocol_versions"]
@@ -724,6 +738,21 @@ class ConversationalStudySession:
             lines.extend(
                 f"- {'PASS' if passed else 'FAIL'} — `{name}`"
                 for name, passed in validations.items()
+            )
+        proposed = self.intake.proposed
+        if proposed and validations is not None:
+            lines.extend(["", "## Proposed by the assistant", ""])
+            lines.append(
+                "These fields were written by the assistant, not by you. "
+                "Approving adopts them as your own: "
+                + ", ".join(f"`{name}`" for name in proposed)
+                + "."
+            )
+        if confirmed:
+            lines.extend(["", "## Confirmed at approval", ""])
+            lines.append(
+                "Fields proposed by the assistant and adopted by the researcher "
+                "at approval: " + ", ".join(f"`{name}`" for name in confirmed) + "."
             )
         filename = (
             f"specification_v{version}.md"

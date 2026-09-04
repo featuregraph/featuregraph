@@ -29,6 +29,7 @@ from typing import Any, Protocol
 from featuregraph.study_builder.intake import (
     FIELDS,
     INTAKE_SCHEMA_VERSION,
+    MODEL,
     StudyIntake,
     StudyIntakeError,
 )
@@ -356,7 +357,7 @@ class Elicitation:
     def intake(self) -> StudyIntake | None:
         if self.intake_payload is None:
             return None
-        return StudyIntake.from_payload(self.intake_payload)
+        return StudyIntake.from_payload(self.intake_payload, source=MODEL)
 
 
 def _validate(payload: Any, schema: Mapping[str, Any]) -> None:
@@ -374,7 +375,9 @@ def elicit(brief: str, elicitor: Elicitor) -> Elicitation:
         payload = json.loads(text)
         _validate(payload, INTAKE_SCHEMA)
         payload["schema_version"] = INTAKE_SCHEMA_VERSION
-        StudyIntake.from_payload(payload)  # refuses what the intake refuses
+        StudyIntake.from_payload(
+            payload, source=MODEL
+        )  # refuses what the intake refuses
     except ElicitorUnavailable:
         raise
     except ElicitationRefused as refused:

@@ -381,3 +381,105 @@ def test_a_parameter_named_with_a_null_value_is_not_declared():
     assert listed.unstructured == ("operator_parameters",)
     assert mapped.unstructured == ("operator_parameters",)
     assert valued.unstructured == ()
+
+
+def test_a_proposal_is_declared_but_not_the_researchers_word():
+    from featuregraph.study_builder.intake import MODEL, RESEARCHER
+
+    intake = complete_intake().propose(research_question="Does it rise?")
+
+    assert "research_question" not in intake.missing_information
+    assert intake.source("research_question") == MODEL
+    assert intake.source("title") == RESEARCHER
+    assert intake.proposed == ("research_question",)
+    assert intake.is_complete
+    assert not intake.is_approvable
+    assert intake.status == "awaiting_confirmation"
+
+
+def test_confirming_adopts_a_proposal_and_declaring_over_it_replaces_it():
+    from featuregraph.study_builder.intake import RESEARCHER
+
+    proposed = complete_intake().propose(title="Proposed title", measurements=["n"])
+
+    confirmed = proposed.confirm("title")
+    restated = proposed.declare(measurements=["count"])
+
+    assert confirmed.source("title") == RESEARCHER
+    assert confirmed.proposed == ("measurements",)
+    assert restated.get("measurements") == ["count"]
+    assert restated.source("measurements") == RESEARCHER
+    assert proposed.confirm("title", "measurements").is_approvable
+
+
+def test_only_a_declared_field_can_be_confirmed():
+    from featuregraph.study_builder.intake import StudyIntake, StudyIntakeError
+
+    with pytest.raises(StudyIntakeError, match="nothing to confirm"):
+        StudyIntake.empty().confirm("title")
+    with pytest.raises(StudyIntakeError, match="Unknown intake field"):
+        complete_intake().confirm("no_such_field")
+
+
+def test_retracting_a_proposal_forgets_its_source():
+    intake = complete_intake().propose(title="x").propose(title=None)
+
+    assert "title" in intake.missing_information
+    assert intake.source("title") is None
+    assert intake.proposed == ()
+
+
+def test_a_proposal_is_an_unresolved_question_for_the_approval_gate():
+    from featuregraph.contracts import (
+        StudyContractApprovalError,
+        approve_study_contract,
+    )
+
+    candidate = complete_intake().propose(claim_limits=["none"]).to_study_candidate()
+
+    assert any(
+        q.startswith("claim_limits: proposed by the assistant")
+        for q in candidate["unresolved_questions"]
+    )
+    with pytest.raises(StudyContractApprovalError, match="unresolved questions"):
+        approve_study_contract(
+            candidate, authority="researcher", validation_results={"ok": True}
+        )
+
+
+def test_sources_round_trip_through_the_payload_and_default_to_the_researcher():
+    from featuregraph.study_builder.intake import (
+        MODEL,
+        RESEARCHER,
+        StudyIntake,
+        StudyIntakeError,
+    )
+
+    intake = complete_intake().propose(title="Proposed")
+    payload = intake.to_payload()
+
+    assert payload["sources"]["title"] == MODEL
+    assert payload["sources"]["research_question"] == RESEARCHER
+    loaded = StudyIntake.from_payload(payload)
+    assert loaded.proposed == ("title",)
+    # A payload written before sources existed is the researcher's throughout.
+    del payload["sources"]
+    assert StudyIntake.from_payload(payload).proposed == ()
+    # A payload that is what a model returned is a proposal throughout.
+    assert StudyIntake.from_payload(payload, source=MODEL).proposed == tuple(
+        sorted(loaded.values)
+    )
+    with pytest.raises(StudyIntakeError, match="source"):
+        StudyIntake.from_payload(payload, source="oracle")
+
+
+def test_checkpoint_marks_proposals():
+    from featuregraph.study_builder.intake import PROPOSED_MARK, render_checkpoint
+
+    text = render_checkpoint(
+        complete_intake().propose(object_definition="One rise per row")
+    )
+
+    assert f"- Object definition {PROPOSED_MARK}: One rise per row" in text
+    assert "- Proposed by the assistant, not yet confirmed: object_definition" in text
+    assert "Status: **awaiting confirmation**" in text

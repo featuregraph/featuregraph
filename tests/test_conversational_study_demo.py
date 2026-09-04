@@ -424,3 +424,23 @@ def test_confirmation_invents_nothing_when_the_template_declares_nothing(
         question.startswith("measurements:")
         for question in session.state()["open_questions"]
     )
+
+
+def test_the_assistants_answers_are_proposals_until_approval(tmp_path) -> None:
+    session = build_session(tmp_path)
+    prepare_first_candidate(session)
+
+    assert session.state()["proposed"] == ["measurements", "research_question"]
+    assert not session.intake.is_approvable
+    checkpoint = (tmp_path / "conversation_checkpoint.md").read_text()
+    assert "(proposed by the assistant, not yet confirmed)" in checkpoint
+    candidate_spec = (tmp_path / "specification_candidate_v1.md").read_text()
+    assert "## Proposed by the assistant" in candidate_spec
+
+    session.approve_and_run()
+
+    assert session.state()["proposed"] == []
+    assert session.intake.source("research_question") == "researcher"
+    approved_spec = (tmp_path / "specification_v1.md").read_text()
+    assert "## Confirmed at approval" in approved_spec
+    assert "`measurements`" in approved_spec and "`research_question`" in approved_spec

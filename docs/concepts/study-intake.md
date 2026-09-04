@@ -72,6 +72,41 @@ intake.to_state_contract()
 # observation_schema; declared without structure: completeness_rules.
 ```
 
+## Who said it
+
+Every declared field records its source: the researcher, or a model
+proposing on their behalf. `declare` states; `propose` proposes; `confirm`
+is the researcher adopting a proposal, and it is the only way a proposal
+becomes a declaration.
+
+```python
+intake = StudyIntake.empty().propose(research_question="Does pressure rise?")
+intake.missing_information      # research_question is not missing
+intake.proposed                 # ('research_question',)
+intake.is_complete              # may be True
+intake.is_approvable            # False until confirmed
+intake.confirm("research_question").is_approvable
+```
+
+A proposal compiles like any declared field. It is not missing, and it is
+not unstructured. What it is not is the researcher's word: the checkpoint
+renders it with "(proposed by the assistant, not yet confirmed)", the
+study candidate lists it under `unresolved_questions`, and the approval gate
+refuses it. In the conversation, the researcher's approval is the
+confirmation, and the approved specification records which fields were
+adopted that way rather than stated.
+
+This exists because of a measurement. Asked to declare an intake from a
+brief with one field removed, a general model filled the gap with a
+plausible answer about a third of the time and, asked afterwards what it had
+left out, said nothing. A plausible answer nobody gave is the one nothing
+downstream catches. The intake cannot stop a model from writing it; it can
+refuse to let it count as declared until a person says so.
+
+Payloads written before sources existed load with every field attributed to
+the researcher. A payload that is what a model returned loads with
+`from_payload(payload, source="model")`, and every field is a proposal.
+
 ## What it emits
 
 {py:meth}`~featuregraph.study_builder.intake.StudyIntake.to_state_contract`
