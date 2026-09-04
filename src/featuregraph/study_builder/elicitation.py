@@ -196,15 +196,24 @@ class CohereElicitor:
         )
 
         transport_schema = _cohere_transport_schema(schema)
-        response = cohere.ClientV2(api_key=self.api_key).chat(
-            model=self.model,
-            messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": prompt},
-            ],
-            response_format={"type": "json_object", "json_schema": transport_schema},
-            temperature=0,
-        )
+        try:
+            response = cohere.ClientV2(api_key=self.api_key).chat(
+                model=self.model,
+                messages=[
+                    {"role": "system", "content": SYSTEM_PROMPT},
+                    {"role": "user", "content": prompt},
+                ],
+                response_format={
+                    "type": "json_object",
+                    "json_schema": transport_schema,
+                },
+                temperature=0,
+            )
+        except Exception as error:
+            status = getattr(error, "status_code", None)
+            if status in (401, 403) or isinstance(error, ConnectionError):
+                raise ElicitorUnavailable(f"{self.name}: {error}") from error
+            raise
         text = _cohere_response_text(response.message.content)
         return text, {
             "mode": "cohere",
@@ -236,18 +245,26 @@ class AnthropicElicitor:
     ) -> tuple[str, dict[str, Any]]:
         import anthropic
 
-        client = (
-            anthropic.Anthropic(api_key=self.api_key)
-            if self.api_key
-            else anthropic.Anthropic()
-        )
-        response = client.messages.create(
-            model=self.model,
-            max_tokens=16000,
-            system=SYSTEM_PROMPT,
-            messages=[{"role": "user", "content": prompt}],
-            output_config={"format": {"type": "json_schema", "schema": dict(schema)}},
-        )
+        try:
+            client = (
+                anthropic.Anthropic(api_key=self.api_key)
+                if self.api_key
+                else anthropic.Anthropic()
+            )
+            response = client.messages.create(
+                model=self.model,
+                max_tokens=16000,
+                system=SYSTEM_PROMPT,
+                messages=[{"role": "user", "content": prompt}],
+                output_config={
+                    "format": {"type": "json_schema", "schema": dict(schema)}
+                },
+            )
+        except anthropic.AnthropicError as error:
+            # Any SDK-level failure, a missing or rejected key, a rejected
+            # request shape, no network, is a property of the run and not of
+            # the case: it would repeat on all fifty-six.
+            raise ElicitorUnavailable(f"{self.name}: {error}") from error
         if response.stop_reason == "refusal":
             details = response.stop_details
             raise ElicitationRefused(
@@ -267,6 +284,14 @@ class AnthropicElicitor:
             "response_id": getattr(response, "id", None),
             "stop_reason": response.stop_reason,
         }
+
+
+class ElicitorUnavailable(RuntimeError):
+    """The provider cannot be called at all: no key, a rejected key, no network.
+
+    Raised through ``elicit`` rather than recorded, because a run that cannot
+    reach its model has no cases, only a misconfiguration.
+    """
 
 
 class ElicitationRefused(RuntimeError):
@@ -315,6 +340,8 @@ def elicit(brief: str, elicitor: Elicitor) -> Elicitation:
         _validate(payload, INTAKE_SCHEMA)
         payload["schema_version"] = INTAKE_SCHEMA_VERSION
         StudyIntake.from_payload(payload)  # refuses what the intake refuses
+    except ElicitorUnavailable:
+        raise
     except ElicitationRefused as refused:
         return Elicitation(None, None, intake_provenance, {}, error=str(refused))
     except (ValueError, StudyIntakeError) as error:
