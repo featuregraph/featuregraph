@@ -1,0 +1,26 @@
+{
+ "brief_sha256": "3cd05899e246ecffa8b646aa497e40b90a900acb015a6428b5579a91e357f5f0",
+ "case_id": "bidmc_respiration/withhold/claim_limits",
+ "claim": null,
+ "claim_provenance": {},
+ "error": "intake: Expecting value: line 1 column 1 (char 0)",
+ "flattened": [],
+ "intake": null,
+ "intake_provenance": {
+  "cohere_sdk_version": "7.1.0",
+  "mode": "cohere",
+  "model": "command-a-plus-05-2026",
+  "prompt_sha256": "dee0a03a3e7a22d1deadcbfab7c2344476bd10785c5bcdaa8f43e12026ea32c6",
+  "response_id": "816804a9-5afb-4e97-a029-06f2191ee607",
+  "response_sha256": "ecd8efea0190796c17178d23c1c5ab6535960b08614a4b3392cea8f5c5de49dd",
+  "schema_sha256": "20e8937ec19ae0fa1e0e27acc8654307dfdde04ee913a7ddc5e6030c84814a62",
+  "transport": "json_object",
+  "transport_schema_sha256": null
+ },
+ "model": "cohere:command-a-plus-05-2026",
+ "reference": "bidmc_respiration",
+ "score": null,
+ "withheld": [
+  "claim_limits"
+ ]
+}

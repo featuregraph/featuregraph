@@ -1,0 +1,10 @@
+{
+ "model": "cohere:command-a-plus-05-2026",
+ "run_at": "2026-09-04T18:50:32.550653+00:00",
+ "references": [
+  "bidmc_respiration",
+  "physionet_wearable",
+  "tep_reactor_pressure"
+ ],
+ "cases": 56
+}
