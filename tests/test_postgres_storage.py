@@ -114,3 +114,27 @@ def test_create_table_if_exists_fail_raises(live_connection) -> None:
             table_name,
             {"object_id": "TEXT PRIMARY KEY"},
         )
+
+
+def test_create_table_accepts_a_table_level_constraint(live_connection) -> None:
+    table_name = "featuregraph_storage_test_composite_key"
+    fg_postgres.create_table(
+        live_connection,
+        table_name,
+        {"group_id": "BIGINT NOT NULL", "object_id": "BIGINT NOT NULL"},
+        constraints=["PRIMARY KEY (group_id, object_id)"],
+        if_exists="replace",
+    )
+    fg_postgres.insert_rows(
+        live_connection,
+        table_name,
+        pd.DataFrame({"group_id": [1, 1, 2], "object_id": [1, 2, 1]}),
+    )
+
+    with pytest.raises(psycopg.errors.UniqueViolation):
+        with live_connection.cursor() as cursor:
+            cursor.execute(f"INSERT INTO {table_name} VALUES (1, 1)")
+    live_connection.rollback()
+
+    result = fg_postgres.read_table(live_connection, table_name)
+    assert len(result) == 3

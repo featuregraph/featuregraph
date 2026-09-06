@@ -16,12 +16,13 @@ Example::
         conn,
         "clap_objects",
         {
-            "object_id": "TEXT PRIMARY KEY",
+            "object_id": "TEXT NOT NULL",
             "object_type": "TEXT NOT NULL",
             "start_index": "BIGINT NOT NULL",
             "end_index": "BIGINT NOT NULL",
             "duration": "DOUBLE PRECISION",
         },
+        constraints=["PRIMARY KEY (object_id)"],
     )
     fg_postgres.insert_rows(conn, "clap_objects", result.object_table())
 """
@@ -29,7 +30,7 @@ Example::
 from __future__ import annotations
 
 import os
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from typing import Literal
 
 import pandas as pd
@@ -59,14 +60,24 @@ def create_table(
     table_name: str,
     columns: Mapping[str, str],
     *,
+    constraints: Sequence[str] = (),
     if_exists: Literal["fail", "skip", "replace"] = "fail",
 ) -> None:
     """Create a table from an explicit, caller-defined schema.
 
     ``columns`` maps each column name to its Postgres type and any
-    constraints, verbatim — for example ``{"object_id": "TEXT PRIMARY KEY",
-    "duration": "DOUBLE PRECISION NOT NULL"}``. This module never infers a
-    schema from data; you declare it once here.
+    column-level constraints, verbatim — for example
+    ``{"object_id": "TEXT PRIMARY KEY", "duration": "DOUBLE PRECISION NOT
+    NULL"}``. This module never infers a schema from data; you declare it
+    once here.
+
+    ``constraints`` holds table-level constraints that name more than one
+    column, verbatim — for example ``["PRIMARY KEY (subject,
+    oscillation_id)", "UNIQUE (object_id)"]``. Keeping these separate from
+    ``columns`` means a composite key doesn't have to be smuggled in as a
+    fake column, and the same ``columns`` mapping (say, the measurement
+    columns every oscillation study shares) can be reused across tables
+    that key their rows differently.
 
     ``if_exists`` controls what happens when the table already exists:
     ``"fail"`` (the default) raises, ``"skip"`` leaves the existing table
@@ -87,12 +98,14 @@ def create_table(
                 return
             cursor.execute(sql.SQL("DROP TABLE {}").format(identifier))
 
-        column_definitions = sql.SQL(", ").join(
+        definitions = [
             sql.SQL("{} {}").format(sql.Identifier(name), sql.SQL(definition))
             for name, definition in columns.items()
-        )
+        ] + [sql.SQL(constraint) for constraint in constraints]
         cursor.execute(
-            sql.SQL("CREATE TABLE {} ({})").format(identifier, column_definitions)
+            sql.SQL("CREATE TABLE {} ({})").format(
+                identifier, sql.SQL(", ").join(definitions)
+            )
         )
 
     conn.commit()
