@@ -4,6 +4,32 @@ FeatureGraph provides narrow loaders for the fixed datasets used by the alpha
 research line. Loaders return ordinary pandas data frames and attach provenance
 and construction metadata through `DataFrame.attrs`.
 
+## CapnoBase respiratory benchmark
+
+`featuregraph.datasets.capnobase()` loads one of the 42 eight-minute cases in
+the [CapnoBase IEEE TBME Respiratory Rate Benchmark](https://doi.org/10.5683/SP2/NLB8IT).
+The connector downloads the original CSV files directly from Borealis Dataverse,
+caches them outside the repository, and verifies each new download against the
+MD5 checksum published by Borealis.
+
+```python
+import featuregraph as fg
+
+signals = fg.datasets.capnobase(case="0009")
+labels = fg.datasets.capnobase_labels(case="0009")
+```
+
+`signals` contains zero-based `sample_index`, `time_seconds`, `capnogram`,
+`ppg`, and `ecg` observations at 300 Hz. `labels` converts the source's
+one-based sample-number arrays into an ordered event table while retaining both
+`source_sample_number` and the corresponding zero-based `sample_index`. Event
+types preserve the source labels, including `co2_startexp`, `co2_startinsp`,
+`pleth_peak`, `ecg_peak`, and the artifact labels.
+
+The complete tuple of accepted case identifiers is available as
+`fg.datasets.CAPNOBASE_CASES`. The loader exposes the signals and supplied
+labels without deciding which events constitute FeatureGraph objects.
+
 ## CartPole oscillation dataset
 
 `featuregraph.datasets.cartpole()` generates deterministic CartPole-v1
