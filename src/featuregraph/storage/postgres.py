@@ -29,6 +29,7 @@ Example::
 
 from __future__ import annotations
 
+import io
 import os
 from collections.abc import Mapping, Sequence
 from typing import Literal
@@ -119,23 +120,31 @@ def insert_rows(
     """Insert a DataFrame's rows into a table already created by :func:`create_table`.
 
     Every column in ``frame`` must already exist in the table; this function
-    does not alter the schema. ``NaN``/``NaT`` values are written as SQL
-    ``NULL``.
+    does not alter the schema. Uses Postgres' ``COPY`` rather than one
+    ``INSERT`` per row: the frame is serialized to CSV in one call and
+    streamed to the server as a single bulk load, which is both faster than
+    row-at-a-time inserts and keeps this to one round trip regardless of row
+    count.
+
+    ``NaN``/``NaT`` values are written as SQL ``NULL`` via CSV's empty-field
+    convention. One consequence: a genuine empty string in a text column is
+    indistinguishable from ``NULL`` to Postgres' CSV parser and will also be
+    read back as ``NULL``. This does not affect numeric or boolean columns.
     """
     if frame.empty:
         return
 
     columns = list(frame.columns)
-    insert = sql.SQL("INSERT INTO {} ({}) VALUES ({})").format(
+    buffer = io.StringIO()
+    frame.to_csv(buffer, index=False, header=False, na_rep="")
+    buffer.seek(0)
+
+    copy_sql = sql.SQL("COPY {} ({}) FROM STDIN WITH (FORMAT csv)").format(
         sql.Identifier(table_name),
         sql.SQL(", ").join(sql.Identifier(column) for column in columns),
-        sql.SQL(", ").join(sql.Placeholder() for _ in columns),
     )
-    rows = frame.astype(object).where(frame.notna(), None).itertuples(
-        index=False, name=None
-    )
-    with conn.cursor() as cursor:
-        cursor.executemany(insert, list(rows))
+    with conn.cursor() as cursor, cursor.copy(copy_sql) as copy:
+        copy.write(buffer.read())
     conn.commit()
 
 
