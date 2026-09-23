@@ -1,10 +1,10 @@
-#Section 1: Time-series waveform construction using multiple-scale parameters
+# Section 1: Time-series waveform construction using multiple-scale parameters
 
 Time-series studies commonly mix preprocessing choices and scientific interpretation into a single analysis. In preprocessing, these studies often reduce agreement between two computational methods to a single summary score. This makes it difficult to locate individual disagreements, determine how they arise, or test whether discordant events form a homogenous error category.
 Respiratory waveforms contain structure at multiple temporal scales, and changing the temporal scale of a representation can alter which signal reversals are preserved and which waveform objects are constructed. In this study, a waveform object is a bounded trough-peak-trough interval constructed from ordered rising, falling, and inactive states.
 Even within a single deterministic construction, changing one temporal-scale parameter can produce different boundaries and waveform object identities. The resulting unmatched objects may expose organized signal structure that is not preserved at another temporal scale.
 
-#Section 2: FeatureGraph as deterministic automated construction of time-series waveform objects
+# Section 2: FeatureGraph as deterministic automated construction of time-series waveform objects
 
 FeatureGraph is a deterministic representation framework for constructing explicit behavioral objects from ordered time-series observations. In this study, the behavior is oscillatory, and the objects we produce are waveform objects. FeatureGraph classifies waveform samples as rising, falling, or inactive, marks the boundaries where those states begin and end, and composes ordered state transitions into explicit trough-peak-trough objects.
 While many parts of the data analysis process can be automated, the automation software should execute rather than determine the scientific rules of the analysis. Within FeatureGraph, the researcher supplies the representation, validation, and comparison rules, FeatureGraph applies those rules deterministically, and the scientific meaning of the resulting objects remains a matter for investigation. Preserving this division of roles makes it possible to report which decisions were made by the researcher, what was automated by the software, and what scientific interpretations were supported by the resulting evidence.
