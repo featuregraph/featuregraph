@@ -95,6 +95,8 @@ What FeatureGraph can do as a bootstrap toward this determination is structural,
 
 ### References
 
+BIDMC PPG and Respiration Dataset, available via PhysioNet (Pimentel et al., 2016; Goldberger et al., 2000).
+
 Imtiaz, M. N., & Khan, N. (2022). Pan-Tompkins++: A robust approach to detect R-peaks in ECG signals. arXiv preprint arXiv:2211.03171.
 
 Lacourse, K., Delfrate, J., Beaudry, J., Peppard, P., & Warby, S. C. (2019). A sleep spindle detection algorithm that emulates human expert spindle scoring. Journal of Neuroscience Methods, 316, 3–11. https://doi.org/10.1016/j.jneumeth.2018.08.014
