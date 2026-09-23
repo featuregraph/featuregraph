@@ -93,6 +93,8 @@ What FeatureGraph can do as a bootstrap toward this determination is structural,
 
 ### References
 
+BIDMC PPG and Respiration Dataset (version 1.0.0). PhysioNet. https://physionet.org/content/bidmc/1.0.0/
+
 Pimentel, M. A. F., Johnson, A. E. W., Charlton, P. H., Birrenkott, D., Watkinson, P. J., Tarassenko, L., & Clifton, D. A. (2016). Toward a robust estimation of respiratory rate from pulse oximeters. IEEE Transactions on Biomedical Engineering, 64(8), 1914–1923.
 
 Imtiaz, M. N., & Khan, N. (2022). Pan-Tompkins++: A robust approach to detect R-peaks in ECG signals. arXiv preprint arXiv:2211.03171.
