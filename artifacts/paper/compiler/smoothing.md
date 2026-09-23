@@ -1,3 +1,8 @@
+## Structural, Analytical, and Scientific Understanding: A Compiler-Level Account of Smoothing-Parameter Choice
+
+Nazia Habib
+September 2026
+
 ### Section 1: Time-series waveform construction using multiple-scale parameters
 
 Time-series studies commonly mix preprocessing choices and scientific interpretation into a single analysis. In preprocessing, these studies often reduce agreement between two computational methods to a single summary score. This makes it difficult to locate individual disagreements, determine how they arise, or test whether discordant events form a homogenous error category.
