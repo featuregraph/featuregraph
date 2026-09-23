@@ -81,7 +81,7 @@ This is not unique to a single BIDMC recording. Repeating the waveform object co
 
 ### Section 7: FeatureGraph's role in parameter selection
 
-Peak-detection and smoothing parameter sensitivity arises in fields adjacent to respiratory waveform construction (ECG R-peak detection, EEG event detection). It is usually treated as a tuning problem, something to be measured against a downstream metric or reference method, rather than as a specification problem requiring its own justification.
+Peak-detection and smoothing-parameter sensitivity arises in fields adjacent to respiratory waveform construction. In ECG R-peak detection, fixed decision thresholds are documented to fail under changing signal amplitude, missing low-amplitude peaks or producing extended detection gaps after anomalous beats, requiring threshold-adjustment rules to compensate (Imtiaz & Khan, 2022). In EEG sleep-spindle detection, automated methods rely on fixed numeric thresholds across several signal features, and different detectors, or a detector compared against human expert scoring, typically show only moderate agreement (Lacourse et al., 2019). In both fields, this sensitivity is usually treated as a tuning problem, something to be measured against a downstream metric or reference method, rather than as a specification problem requiring its own justification.
 
 FeatureGraph's contribution is first demonstrating the instability due to smoothing parameter construction quantitatively across a real population, and then explicitly using the structural/analytic/scientific three-level separation to decide what automation can and cannot resolve, rather than leaving it as an implicit judgment call of the researcher.
 
@@ -91,3 +91,8 @@ The determination of what should be removed from an oscillation as noise is part
 
 What FeatureGraph can do as a bootstrap toward this determination is structural, not scientific. It can characterize the signal's own periodicity directly, independent of any smoothing choice, and use that measurement to suggest a principled range of window sizes, along with an explicit flag of when no such suggestion is trustworthy. This does not answer which waveform objects belong to the phenomenon under study; it narrows the space of defensible smoothing choices to those consistent with the signal's own measured structure, providing a constraint on which smoothing specifications are worth defending.
 
+### References
+
+Imtiaz, M. N., & Khan, N. (2022). Pan-Tompkins++: A robust approach to detect R-peaks in ECG signals. arXiv preprint arXiv:2211.03171.
+
+Lacourse, K., Delfrate, J., Beaudry, J., Peppard, P., & Warby, S. C. (2019). A sleep spindle detection algorithm that emulates human expert spindle scoring. Journal of Neuroscience Methods, 316, 3–11. https://doi.org/10.1016/j.jneumeth.2018.08.014
