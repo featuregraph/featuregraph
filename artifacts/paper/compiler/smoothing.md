@@ -1,6 +1,7 @@
 ## Structural, Analytical, and Scientific Understanding: A Compiler-Level Account of Smoothing-Parameter Choice
 
 Nazia Habib
+
 September 2026
 
 ### Section 1: Time-series waveform construction using multiple-scale parameters
