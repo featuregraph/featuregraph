@@ -43,7 +43,7 @@ The remainder of this discussion rests on a five-part classification, developed 
 3. O - compiled output (resulting states, boundaries, and waveform object identities)
 4. M - measurement (quantities computed from O, such as duration, period, or the correlation statistics in Section 5)
 5. S - scientific interpretation (which waveform objects reflect the phenomenon under study).
-6. 
+   
 This extends the three-level distinction introduced above into a five-part classification, structural understanding corresponds to P (compiler primitives) and O (compiled output); analytical understanding corresponds to D (declarative definitions) and M (measurements); and scientific understanding corresponds to S (scientific interpretation).
 
 This full P/D/O/M/S classification, and its application beyond this single illustrative case, is developed in FeatureGraph's compiler and representation-language formalization; this discussion presents one concrete instance of the general claim.
