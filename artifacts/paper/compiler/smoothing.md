@@ -58,9 +58,7 @@ This full P/D/O/M/S classification, and its application beyond this single illus
 
 All analyses use the BIDMC PPG and Respiration Dataset, available via PhysioNet (Pimentel et al., 2016; Goldberger et al., 2000). The dataset comprises 53 recordings, each an 8-minute segment, sampled at 125 Hz. Only the impedance-derived respiration signal is used in this study.
 
-Waveform objects are constructed using FeatureGraph's Oscillation representation. For a given smoothing window W, specified in samples, the raw respiration signal is smoothed with a rolling median filter of length W, followed by a rolling mean filter of the same length, both centered. Both rolling operations require a full window of valid values to produce output, so the two chained operations leave the first and last several samples of each recording undefined; this affects only the first and last several samples of an 8-minute recording and does not affect the waveform object counts reported below.
-
-The smoothed signal is classified sample-by-sample as rising, falling, or inactive based on the sign of its first difference. A waveform object starts at a trough (transition into a rising state) and closes at the next trough. The peak (transition into a falling state) is marked within the object. The construction is applied identically across all subjects; the only parameter that changes is W.
+Waveform objects are constructed using FeatureGraph's Oscillation representation. For a given smoothing window W, specified in samples, the raw respiration signal is smoothed with a rolling median filter of length W, followed by a rolling mean filter of the same length, both centered. The smoothed signal is classified sample-by-sample as rising, falling, or inactive based on the sign of its first difference. A waveform object starts at a trough (transition into a rising state) and closes at the next trough. The peak (transition into a falling state) is marked within the object. The construction is applied identically across all subjects; the only parameter that changes is W.
 
 Single-recording illustration: One recording (subject 1) is examined at two window lengths, W=1 (effectively unsmoothed) and W=100, over an 8-minute segment. Waveform object boundaries and counts are compared directly between the two constructions.
 
@@ -95,7 +93,7 @@ What FeatureGraph can do as a bootstrap toward this determination is structural,
 
 ### References
 
-BIDMC PPG and Respiration Dataset, available via PhysioNet (Pimentel et al., 2016; Goldberger et al., 2000).
+Pimentel, M. A. F., Johnson, A. E. W., Charlton, P. H., Birrenkott, D., Watkinson, P. J., Tarassenko, L., & Clifton, D. A. (2016). Toward a robust estimation of respiratory rate from pulse oximeters. IEEE Transactions on Biomedical Engineering, 64(8), 1914–1923.
 
 Imtiaz, M. N., & Khan, N. (2022). Pan-Tompkins++: A robust approach to detect R-peaks in ECG signals. arXiv preprint arXiv:2211.03171.
 
