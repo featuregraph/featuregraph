@@ -1,4 +1,4 @@
-# BIDMC–CapnoBase Cross-Domain Studies: Status
+# BIDMC–CapnoBase cross-domain studies: status
 
 A short series of study notes comparing BIDMC (impedance-derived respiration)
 against CapnoBase (capnography), scoped after both datasets were populated
