@@ -87,15 +87,34 @@ filter on data that already exists, not new infrastructure.
 This series was scoped before the CapnoBase data-usage permission question
 came up, and before CapnoBase was removed from the smoothing paper. Studies
 1, 2, and 4 all involve publishing CapnoBase-derived numbers — the same
-category of thing that permission question concerned. Worth resolving that
-(or deciding these stay internal/private for now) before publishing any of
-them.
+category of thing that permission question concerned. 
 
 Study 3 is a partial exception: it's closer to an aggregate observation
 about signal characteristics (a confidence-rate comparison) than a
 per-subject derived result, and may sit more comfortably even without
 resolved permission — but that's worth a deliberate decision, not an
 assumption.
+
+## CapnoBase usage permission — resolved
+
+CapnoBase's own terms (capnobase.org) require citation of the 2010 STA
+abstract and the 2013 IEEE TBME paper, and require that redistributed
+data carry that citation and the terms of use. The IEEE TBME RR
+Benchmark's specific restriction is: the dataset must not be used to
+train or tune an algorithm, since doing so would bias its value as a
+fixed benchmark for future work.
+
+None of Studies 1–4 train or tune anything against CapnoBase — each
+applies FeatureGraph's fixed, deterministic construction and reports
+comparative or descriptive results, which is explicitly named as
+permitted use in the CapnoBase materials agreement ("comparing data...
+with other Materials," "extracting... for use in other projects,
+publications, research"). All four are clear to publish as study
+notes, provided the required citation accompanies each one.
+
+CapnoBase was removed from the smoothing paper for separate,
+already-settled reasons (scope), unrelated to this permission
+question.
 
 ## References
 
