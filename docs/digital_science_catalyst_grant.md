@@ -14,20 +14,20 @@ The people affected are researchers and institutions who analyze time-series dat
 
 FeatureGraph is a deterministic compiler that turns a time series into explicit events and intervals (breaths, protocol steps, process excursions) from rising, falling, and inactive states. The same configuration on the same data always produces the same objects.
 
-1. **Characterize** (autonomous, no model). Estimates each recording's own period from autocorrelation, derives its smoothing window from that period, and flags recordings with no stable period.
-2. **Construct** (autonomous, no model). The compiler builds the objects and stores them in a database. Each row carries its construction parameters, a configuration fingerprint, the dataset version, the sampling rate, and the software version.
-3. **Query** (model). A language model chooses among five deterministic tools: aggregate, outlier statistics, filter, characterization lookup, and outlier co-occurrence. Every count, comparison, and outlier judgment is computed in code, over only the recordings that step 1 confirmed.
-4. **Review** (human). A researcher judges which detected events reflect the phenomenon under study. 
+1. Characterize (autonomous, no model): Estimates each recording's own period from autocorrelation, derives its smoothing window from that period, and flags recordings with no stable period.
+2. Construct (autonomous, no model): The compiler builds the objects and stores them in a database. Each row carries its construction parameters, a configuration fingerprint, the dataset version, the sampling rate, and the software version.
+3. Query (model): A language model chooses among five deterministic tools: aggregate, outlier statistics, filter, characterization lookup, and outlier co-occurrence. Every count, comparison, and outlier judgment is computed in code, over only the recordings that step 1 confirmed.
+4. Review (human): A researcher judges which detected events reflect the phenomenon under study. 
 
 ## 3. Trust, Audit and Governance
 
-*What the agent did.* Each stored object carries its configuration fingerprint and construction parameters, so a reviewer can see exactly what was computed and rerun it. 
+What the agent did: Each stored object carries its configuration fingerprint and construction parameters, so a reviewer can see exactly what was computed and rerun it. 
 
-*Provenance.* Inputs are public datasets used under their published terms. Each study publishes its construction parameters and results so a third party can rerun it.
+Provenance: Inputs are public datasets used under their published terms. Each study publishes its construction parameters and results so a third party can rerun it.
 
-*Uncertainty.* The system declines to guess. Where results were checked against two independent human experts, both the result and the ceiling those experts set for each other are reported together, not just the result on its own.
+Uncertainty: The system declines to guess. Where results were checked against two independent human experts, both the result and the ceiling those experts set for each other are reported together, not just the result on its own.
 
-*Accountability.* No model sits in the execution path, so every error traces to a versioned construction. The person who reviews the results is accountable for that judgment.
+Accountability. No model sits in the execution path, so every error traces to a versioned construction. The person who reviews the results is accountable for that judgment.
 
 ## 4. Team
 
@@ -43,7 +43,7 @@ What exists:
 - A public, MIT-licensed extract of the construction code that reproduces the smoothing paper's results: https://github.com/featuregraph/featuregraph-smoothing-core. The current compiler, database, and query layer are private while I decide what to release.
 - A persistent database with BIDMC and CapnoBase populated and their cross-study comparability validated. Tennessee Eastman process data is in progress.
 - A query interface with five tools, built on Cohere models under a grant from Cohere Labs (August 2026).
-- Validation against human experts: for 32 BIDMC subjects with two independent annotators, recall across three timing tolerances (0.25, 0.5, and 1.0 s) was 80.6–99.1% and precision was 80.9–99.5%, against an annotator-to-annotator ceiling of 89.6–97.9% recall and 89.8–98.1% precision. https://github.com/featuregraph/featuregraph-smoothing-core/blob/main/artifacts/paper/compiler/smoothing.md
+- Validation against human experts: for 32 BIDMC subjects with two independent annotators, recall across three timing tolerances. https://github.com/featuregraph/featuregraph-smoothing-core/blob/main/artifacts/paper/compiler/smoothing.md
 
 How I have tested the idea: the compiler against human annotation, and its structure across two datasets. The agent-reliability harness is built: eight questions, three conditions (no tools, tools, hardened tools), ten repeats each, with a question counted correct only if all ten repeats are correct. That all-repeats rate is the outcome metric. The harness has been tested only against mock models; runs against live models are the next stage.
 
@@ -66,7 +66,6 @@ FeatureGraph sits in discovery (data analysis) and research integrity (auditable
 ## 9. Budget
 
 - £15,000: protected development time to harden the validation layer and run the reliability evaluation across open and hosted models
-- £4,000: twelve months of hosting for the public database and API
 - £4,000: compute and model costs for replication across models
 
 I fund my time independently today, which limits how much evaluation I can run. The grant would produce independent evidence on how reliably models work through FeatureGraph and keep the public database free for researchers.
