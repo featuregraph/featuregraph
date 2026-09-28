@@ -8,11 +8,11 @@
 
 An AI agent asked to analyze a physiological or industrial signal makes dozens of choices nobody sees: how much to smooth, what counts as a peak, where an interval starts and ends. Those choices change the answer, and today they are buried in generated code.
 
-The people affected are researchers and institutions who analyze time-series data (wearables, patient monitoring, industrial sensors) and the analysts who must defend the results. Today they write bespoke code for each study, or hand the task to a code-writing model and inspect what comes back. Either way the analysis specification stays invisible. This arises in every analysis. The cost is results nobody can reproduce, disagreements nobody can locate, and review time spent reverse-engineering code.
+The people affected are researchers and institutions who analyze time-series data (wearables, patient monitoring, industrial sensors) and the analysts who must defend the results. Today they write bespoke code for each study, or hand the task to a code-writing model and inspect what comes back. Either way the analysis specification stays invisible. The cost is results that are difficult to reproduce and review time spent reverse-engineering code.
 
 ## 2. Your Workflow
 
-FeatureGraph is a deterministic compiler that turns a time series into explicit events and intervals (breaths, protocol steps, process excursions) from rising, falling, and inactive states. The same configuration on the same data always produces the same objects.
+FeatureGraph is a deterministic compiler that turns a timeseries signal into explicit events and intervals (breaths, protocol steps, process excursions) from rising, falling, and inactive states. The same configuration on the same data always produces the same objects.
 
 1. Characterize (autonomous, no model): Estimates each recording's own period from autocorrelation, derives its smoothing window from that period, and flags recordings with no stable period.
 2. Construct (autonomous, no model): The compiler builds the objects and stores them in a database. Each row carries its construction parameters, a configuration fingerprint, the dataset version, the sampling rate, and the software version.
