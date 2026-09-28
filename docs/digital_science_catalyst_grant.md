@@ -27,7 +27,7 @@ Provenance: Inputs are public datasets used under their published terms. Each st
 
 Uncertainty: The system declines to guess. Where results were checked against two independent human experts, both the result and the ceiling those experts set for each other are reported together, not just the result on its own.
 
-Accountability. No model sits in the execution path, so every error traces to a versioned construction. The person who reviews the results is accountable for that judgment.
+Accountability: No model sits in the execution path, so every error traces to a versioned construction. The person who reviews the results is accountable for that judgment.
 
 ## 4. Team
 
