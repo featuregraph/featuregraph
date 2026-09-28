@@ -1,4 +1,4 @@
-# FeatureGraph — Digital Science Catalyst Grant 2026
+# FeatureGraph Digital Science Catalyst Grant 2026
 
 **Applicant:** Nazia Habib
 
