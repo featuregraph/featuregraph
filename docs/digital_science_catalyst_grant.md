@@ -2,8 +2,6 @@
 
 **Applicant:** Nazia Habib
 
----
-
 ## 1. The Problem
 
 An AI agent asked to analyze a physiological or industrial signal makes dozens of choices nobody sees: how much to smooth, what counts as a peak, where an interval starts and ends. Those choices change the answer, and today they are buried in generated code.
