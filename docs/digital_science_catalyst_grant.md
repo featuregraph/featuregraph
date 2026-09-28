@@ -1,22 +1,12 @@
 # FeatureGraph — Digital Science Catalyst Grant 2026
-## "Agentic Workflows You Can Trust"
 
 **Applicant:** Nazia Habib
-**Word count (sections 1–9):** 1,179 / 1,500
-
----
-
-## Abstract
-
-FeatureGraph is a deterministic compiler that turns time-series signals into explicit, auditable events, so that neither a person nor an AI agent has to bury analytical choices like smoothing and thresholding inside generated code. Where two independent human experts have scored the same recordings, FeatureGraph's output matches each of them nearly as closely as they match each other, and it explicitly flags recordings it cannot analyze with confidence rather than guessing. Its potential is as a trust layer for AI agents working with scientific and industrial time-series data: a language model can query validated results through a small set of deterministic tools, with every count and comparison computed in code rather than in the model's own reasoning, and every result traceable to its exact construction parameters.
 
 ---
 
 ## 1. The Problem
 
 An AI agent asked to analyze a physiological or industrial signal makes dozens of choices nobody sees: how much to smooth, what counts as a peak, where an interval starts and ends. Those choices change the answer, and today they are buried in generated code.
-
-I measured how much. I ran one identical, deterministic construction on the BIDMC respiration dataset (53 subjects) at two smoothing windows, changing nothing else. Event counts at the two settings correlated at 0.39 across subjects, and the per-subject ratio ranged from 1.14x to over 40x. The smoothing choice is part of the scientific claim, yet it is rarely declared, reviewed, or reproducible.
 
 The people affected are researchers and institutions who analyze time-series data (wearables, patient monitoring, industrial sensors) and the analysts who must defend the results. Today they write bespoke code for each study, or hand the task to a code-writing model and inspect what comes back. Either way the analysis specification stays invisible. This arises in every analysis. The cost is results nobody can reproduce, disagreements nobody can locate, and review time spent reverse-engineering code.
 
@@ -26,24 +16,24 @@ FeatureGraph is a deterministic compiler that turns a time series into explicit 
 
 1. **Characterize** (autonomous, no model). Estimates each recording's own period from autocorrelation, derives its smoothing window from that period, and flags recordings with no stable period.
 2. **Construct** (autonomous, no model). The compiler builds the objects and stores them in a database. Each row carries its construction parameters, a configuration fingerprint, the dataset version, the sampling rate, and the software version.
-3. **Query** (model selects, code computes). A language model chooses among five deterministic tools: aggregate, outlier statistics, filter, characterization lookup, and outlier co-occurrence. Every count, comparison, and outlier judgment is computed in code, over only the recordings that step 1 confirmed.
-4. **Review** (human). A researcher judges which detected events reflect the phenomenon under study. FeatureGraph does not automate that.
+3. **Query** (model). A language model chooses among five deterministic tools: aggregate, outlier statistics, filter, characterization lookup, and outlier co-occurrence. Every count, comparison, and outlier judgment is computed in code, over only the recordings that step 1 confirmed.
+4. **Review** (human). A researcher judges which detected events reflect the phenomenon under study. 
 
 ## 3. Trust, Audit and Governance
 
-*What the agent did.* Each stored object carries its configuration fingerprint and construction parameters, so a reviewer can see exactly what was computed and rerun it. The PhysioNet wearable study preserved all 248 declared protocol steps across 33 participants, with native-rate heart rate, skin conductance, and temperature and lossless self-report joins.
+*What the agent did.* Each stored object carries its configuration fingerprint and construction parameters, so a reviewer can see exactly what was computed and rerun it. 
 
 *Provenance.* Inputs are public datasets used under their published terms. Each study publishes its construction parameters and results so a third party can rerun it.
 
-*Uncertainty.* The system declines to guess. Signal characterization estimates each subject's breathing period and flags subjects with no stable period: 16 of 53 BIDMC subjects were flagged and excluded from validation rather than given a forced window. Where results were checked against two independent human experts, both the result and the ceiling those experts set for each other are reported together, not just the result on its own.
+*Uncertainty.* The system declines to guess. Where results were checked against two independent human experts, both the result and the ceiling those experts set for each other are reported together, not just the result on its own.
 
 *Accountability.* No model sits in the execution path, so every error traces to a versioned construction. The person who reviews the results is accountable for that judgment.
 
 ## 4. Team
 
-I am the sole founder. I have a computer science degree and about five years of experience in oil and gas drilling and three in production, most recently as a data scientist at a drilling services and automation company, which I left to build FeatureGraph full time. I wrote *Hands-On Q-Learning with Python* (Packt, 2019).
+I am the sole founder. I have a computer science degree and about eight years of experience as a data scientist, most recently at a drilling services and automation company, which I left to build FeatureGraph full time. I wrote *Hands-On Q-Learning with Python* (Packt, 2019).
 
-I chose this problem because I could run essentially the same state and event detection across unrelated studies and get parallel, meaningful results. The core finding is that a small, domain-blind vocabulary of sign tests can start that analysis from a signal's own shape, with all domain knowledge supplied in the construction. The same code has run on respiration waveforms and on a chemical-process simulation.
+I chose this problem because I could run essentially the same state and event detection across unrelated studies and get parallel, meaningful results. The core finding is that a small, domain-blind vocabulary of sign tests can start that analysis from a signal's own shape, with all domain knowledge supplied in the construction. The same code has run on respiration waveforms and on a chemical-process simulation, among other domains.
 
 ## 5. Where You Are Today
 
