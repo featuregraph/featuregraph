@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22286856.svg)](https://doi.org/10.5281/zenodo.22286856)
 
-FeatureGraph is an open framework for deterministic, inspectable, and
+FeatureGraph is a research framework for deterministic, inspectable, and
 reproducible scientific data analysis. A researcher declares what the data
 contains and what should be grouped, measured, compared, and checked;
 FeatureGraph executes those declared steps and retains the evidence behind each
