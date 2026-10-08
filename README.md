@@ -7,6 +7,8 @@ behavioral objects — oscillations, accumulations, and the events and
 intervals that make them up — using deterministic, inspectable construction
 rather than a model's internal judgment.
 
+## How to use the software
+
 **This is FeatureGraph's research repository**, where the underlying compiler
 and construction logic are developed and validated against real scientific
 datasets. If you want to install and use FeatureGraph as a library, start
@@ -22,7 +24,7 @@ observational data — see
 FeatureGraph welcomes open-source contributions. To learn how to use
 FeatureGraph, follow the [tutorial learning path](notebooks/tutorials/README.md).
 
-## Research record
+# Research record
 
 Follow the research sequence:
 
@@ -60,7 +62,7 @@ observations
 
 > **Development status:** `main` is the compiler lineage, released as `v0.2.0b1`. It is not API-compatible with the 0.1 releases, which live on `alpha/v0.1.x` and `beta/v0.1.x` and remain the authority for the results they archived. There is no migration path from the 0.1 object API; a 0.1 construction is re-expressed as a state contract.
 
-## Current research studies
+# Current research studies
 
 ### 1. BIDMC: complete object workflow
 
@@ -161,7 +163,7 @@ FeatureGraph `v0.1.0b1` provides:
 
 The release constructs observations into states and events, assigns object identities, distinguishes complete from boundary-truncated objects, calculates intrinsic properties, and exposes the resulting tables to downstream queries.
 
-## Quick start
+## How to reproduce the research results
 
 Install the released 0.1 beta:
 
