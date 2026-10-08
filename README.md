@@ -2,11 +2,17 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22286856.svg)](https://doi.org/10.5281/zenodo.22286856)
 
-FeatureGraph is a research framework for deterministic, inspectable, and
-reproducible scientific data analysis. A researcher declares what the data
-contains and what should be grouped, measured, compared, and checked;
-FeatureGraph executes those declared steps and retains the evidence behind each
-result. Scientific interpretation remains with researchers and domain experts.
+FeatureGraph turns raw time-series observations into explicit, queryable
+behavioral objects — oscillations, accumulations, and the events and
+intervals that make them up — using deterministic, inspectable construction
+rather than a model's internal judgment.
+
+**This is FeatureGraph's research repository**, where the underlying compiler
+and construction logic are developed and validated against real scientific
+datasets. If you want to install and use FeatureGraph as a library, start
+with [`featuregraph-core`](https://github.com/featuregraph/featuregraph-core)
+— the stable, pip-installable developer API for constructing objects from
+your own signals.
 
 Built by Nazia Habib ([@habibdraft](https://github.com/habibdraft)).
 FeatureGraph grew out of a decade of work on representing dynamics in
@@ -16,7 +22,9 @@ observational data — see
 FeatureGraph welcomes open-source contributions. To learn how to use
 FeatureGraph, follow the [tutorial learning path](notebooks/tutorials/README.md).
 
-## Follow the research sequence
+## Research record
+
+Follow the research sequence:
 
 The current research record is organized as five linked studies:
 
