@@ -4,10 +4,10 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "featuregraph"
-version = "0.1.0b1"
+version = "0.2.0b1"
 description = "Construct explicit behavioral objects from observation sequences."
 readme = "README.md"
-requires-python = ">=3.10,<3.14"
+requires-python = ">=3.9,<3.14"
 license = "MIT"
 authors = [
     { name = "Nazia Habib" },
@@ -15,60 +15,78 @@ authors = [
 keywords = [
     "time series",
     "behavioral objects",
+    "transition",
     "oscillation",
+    "accumulation",
     "event detection",
     "signal processing",
 ]
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 3 - Alpha",
     "Intended Audience :: Science/Research",
     "Intended Audience :: Developers",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Topic :: Scientific/Engineering",
 ]
-
 dependencies = [
     "numpy>=1.26,<3",
     "pandas>=2.0,<4",
+    "scipy>=1.10,<2",
     "requests>=2.31,<3",
     "pyarrow>=14,<25",
     "openpyxl>=3.1,<4",
     "matplotlib>=3.8,<4",
-    "scikit-learn>=1.4,<2",
 ]
 
 [project.optional-dependencies]
 dev = [
     "build>=1.2,<2",
+    "jsonschema>=4.26,<5",
     "mypy>=1.10,<2",
     "pytest>=8.0,<9",
     "pytest-cov>=5.0,<8",
     "ruff>=0.6,<1",
-    "scipy>=1.10,<2",
 ]
 notebooks = [
     "ipykernel>=6.0,<8",
     "jupyterlab>=4.0,<5",
-    "nbclient>=0.10,<1",
-    "nbconvert>=7.0,<8",
-    "nbformat>=5.10,<6",
-    "scikit-learn>=1.4,<2",
-    "scipy>=1.10,<2",
 ]
-rl = [
-    "gymnasium>=1.2,<1.4",
-    "torch>=2.3,<2.4",
+study-builder = [
+    "cohere==7.1.0",
+    "jsonschema>=4.26,<5",
+]
+completeness-eval = [
+    "anthropic>=1,<2",
+    "cohere==7.1.0",
+    "jsonschema>=4.26,<5",
 ]
 postgres = [
     "psycopg[binary]>=3.1,<4",
 ]
+clap-study = [
+    "claspy==0.2.8",
+    "scikit-learn>=1.4,<2",
+]
+nori-study = [
+    "lightgbm==4.7.0",
+    "scikit-learn==1.9.0",
+    "synthefy-nori==0.20.0",
+    "xgboost-cpu==3.4.1; sys_platform == 'linux'",
+    "xgboost==3.4.1; sys_platform != 'linux'",
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+# The BIDMC source manifest must ship: without it an installed package would
+# verify nothing, silently.
+[tool.setuptools.package-data]
+featuregraph = ["datasets/*.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
