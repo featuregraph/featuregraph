@@ -3,8 +3,8 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22286856.svg)](https://doi.org/10.5281/zenodo.22286856)
 
 FeatureGraph turns raw time-series observations into explicit, queryable
-behavioral objects — oscillations, accumulations, and the events and
-intervals that make them up — using deterministic, inspectable construction
+behavioral objects: oscillations, accumulations, and the events and
+intervals that make them up, using deterministic, inspectable construction
 rather than a model's internal judgment.
 
 ## How to use the software
@@ -12,13 +12,12 @@ rather than a model's internal judgment.
 **This is FeatureGraph's research repository**, where the underlying compiler
 and construction logic are developed and validated against real scientific
 datasets. If you want to install and use FeatureGraph as a library, start
-with [`featuregraph-core`](https://github.com/featuregraph/featuregraph-core)
-— the stable, pip-installable developer API for constructing objects from
+with [`featuregraph-core`](https://github.com/featuregraph/featuregraph-core), the stable, pip-installable developer API for constructing objects from
 your own signals.
 
 Built by Nazia Habib ([@habibdraft](https://github.com/habibdraft)).
 FeatureGraph grew out of a decade of work on representing dynamics in
-observational data — see
+observational data. See
 [Origins](https://github.com/featuregraph/featuregraph-research#origins).
 
 FeatureGraph welcomes open-source contributions. To learn how to use
