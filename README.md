@@ -15,6 +15,8 @@ datasets. If you want to install and use FeatureGraph as a library, start
 with [`featuregraph-core`](https://github.com/featuregraph/featuregraph-core), the stable, pip-installable developer API for constructing objects from
 your own signals.
 
+pip install featuregraph-core
+
 Built by Nazia Habib ([@habibdraft](https://github.com/habibdraft)).
 FeatureGraph grew out of a decade of work on representing dynamics in
 observational data. See
