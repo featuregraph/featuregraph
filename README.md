@@ -7,7 +7,7 @@ behavioral objects: oscillations, accumulations, and the events and
 intervals that make them up, using deterministic, inspectable construction
 rather than a model's internal judgment.
 
-## How to use the software
+# How to use the software
 
 **This is FeatureGraph's research repository**, where the underlying compiler
 and construction logic are developed and validated against real scientific
