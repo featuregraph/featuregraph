@@ -12,7 +12,7 @@ rather than a model's internal judgment.
 **This is FeatureGraph's research repository**, where the underlying compiler
 and construction logic are developed and validated against real scientific
 datasets. If you want to install and use FeatureGraph as a library, start
-with [`featuregraph-core`](https://github.com/featuregraph/featuregraph-core), the stable, pip-installable developer API for constructing objects from
+with [`featuregraph-core`](https://github.com/featuregraph/featuregraph-core), the stable developer API for constructing objects from
 your own signals.
 
 ```text
