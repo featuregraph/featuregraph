@@ -24,9 +24,6 @@ FeatureGraph grew out of a decade of work on representing dynamics in
 observational data. See
 [Origins](https://github.com/featuregraph/featuregraph-research#origins).
 
-FeatureGraph welcomes open-source contributions. To learn how to use
-FeatureGraph, follow the [tutorial learning path](notebooks/tutorials/README.md).
-
 # Research record
 
 Follow the research sequence:
