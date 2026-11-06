@@ -188,6 +188,9 @@ def resend_sender(api_key: str, sender: str, recipient: str) -> SendEmail:
             headers={
                 "Authorization": f"Bearer {api_key}",
                 "Content-Type": "application/json",
+                # Resend sits behind a firewall that rejects the default
+                # Python-urllib agent with a bare 403.
+                "User-Agent": "featuregraph-inquiries/1.0",
             },
             method="POST",
         )
@@ -210,10 +213,23 @@ def deliver(
     try:
         send(subject, body, fields["email"])
     except (urllib.error.URLError, OSError, ValueError) as error:
-        print(f"inquiry {inquiry_id}: email failed: {error}", flush=True)
+        detail = ""
+        if isinstance(error, urllib.error.HTTPError):
+            # The status line alone ("403 Forbidden") hides the provider's reason.
+            detail = " " + error.read(300).decode("utf-8", "replace")
+        print(f"inquiry {inquiry_id}: email failed: {error}{detail}", flush=True)
         return False
     store.mark_emailed(inquiry_id)
     return True
+
+
+def resend_unsent(store: InquiryStore, send: SendEmail | None) -> int:
+    """Email every stored inquiry that was never sent. Returns how many went."""
+    sent = 0
+    for inquiry_id, kind, fields in store.unsent():
+        if deliver(store, send, inquiry_id, kind, fields):
+            sent += 1
+    return sent
 
 
 def build_handler(

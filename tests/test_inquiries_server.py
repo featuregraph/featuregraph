@@ -18,6 +18,8 @@ from apps.inquiries.server import (
     build_handler,
     clean_submission,
     render_email,
+    resend_sender,
+    resend_unsent,
 )
 
 ORIGIN = "https://featuregraph.ai"
@@ -173,3 +175,40 @@ def test_preflight_and_health(service: Service) -> None:
         assert "POST" in response.headers["Access-Control-Allow-Methods"]
     with urllib.request.urlopen(service.base + "/healthz") as response:
         assert response.status == 200
+
+
+def test_resend_sender_identifies_itself(monkeypatch: pytest.MonkeyPatch) -> None:
+    seen = {}
+
+    class Response:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc):
+            return False
+
+    def fake_urlopen(request, timeout):
+        seen["headers"] = dict(request.header_items())
+        seen["body"] = json.loads(request.data)
+        return Response()
+
+    monkeypatch.setattr(urllib.request, "urlopen", fake_urlopen)
+    resend_sender("key", "A <a@x.co>", "to@x.co")("S", "B", "v@x.co")
+    assert seen["headers"]["User-agent"].startswith("featuregraph-inquiries")
+    assert seen["headers"]["Authorization"] == "Bearer key"
+    assert seen["body"]["reply_to"] == "v@x.co"
+
+
+def test_resend_unsent_sends_each_stored_row_once(tmp_path: Path) -> None:
+    svc = Service(tmp_path, fail_email=True)
+    try:
+        svc.post(PILOT)
+        svc.post({**PILOT, "name": "Bo"})
+    finally:
+        svc.close()
+    sent: list[str] = []
+    store = svc.store
+    assert resend_unsent(store, lambda s, b, r: sent.append(r)) == 2
+    assert store.unsent() == []
+    assert resend_unsent(store, lambda s, b, r: sent.append(r)) == 0
+    assert len(sent) == 2
