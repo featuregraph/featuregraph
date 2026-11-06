@@ -1,8 +1,11 @@
 # Fly.io configuration for the featuregraph.ai inquiry-form service.
 # See README.md in this directory for the one-time setup.
 #
-# The build context is this directory (nothing here needs the rest of the repo):
-#   fly deploy apps/inquiries --config apps/inquiries/fly.toml
+# The build context is this directory (nothing here needs the rest of the repo),
+# so run flyctl from inside it. Passing a directory to `fly deploy` and also
+# --config makes flyctl look for the config relative to that directory, which
+# fails with "config file not found":
+#   cd apps/inquiries && fly deploy --remote-only
 
 # Fly app names are globally unique. If this one is taken, change it here.
 app = "featuregraph-inquiries"
