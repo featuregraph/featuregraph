@@ -17,6 +17,7 @@ from apps.inquiries.server import (
     ValidationError,
     build_handler,
     clean_submission,
+    main,
     render_email,
     resend_sender,
     resend_unsent,
@@ -212,3 +213,22 @@ def test_resend_unsent_sends_each_stored_row_once(tmp_path: Path) -> None:
     assert store.unsent() == []
     assert resend_unsent(store, lambda s, b, r: sent.append(r)) == 0
     assert len(sent) == 2
+
+
+def test_resend_unsent_flag_sends_and_does_not_start_the_server(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    database = tmp_path / "inquiries.db"
+    store = InquiryStore(database)
+    store.add("pilot", {k: v for k, v in PILOT.items() if k != "kind"})
+    sent: list[str] = []
+    monkeypatch.setenv("INQUIRIES_DB", str(database))
+    monkeypatch.setenv("RESEND_API_KEY", "key")
+    monkeypatch.setattr(
+        "apps.inquiries.server.resend_sender",
+        lambda *args: lambda subject, body, reply_to: sent.append(reply_to),
+    )
+    main(["--resend-unsent"])  # would block forever if it started the server
+    assert sent == ["ada@example.com"]
+    assert "re-sent 1 inquiries" in capsys.readouterr().out
+    assert InquiryStore(database).unsent() == []

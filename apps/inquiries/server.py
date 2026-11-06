@@ -17,6 +17,7 @@ import json
 import os
 import re
 import sqlite3
+import sys
 import threading
 import time
 import urllib.error
@@ -315,7 +316,8 @@ def build_handler(
     return Handler
 
 
-def main() -> None:
+def main(argv: list[str] | None = None) -> None:
+    argv = sys.argv[1:] if argv is None else argv
     port = int(os.environ.get("PORT", "8080"))
     store = InquiryStore(Path(os.environ.get("INQUIRIES_DB", "/data/inquiries.db")))
     api_key = os.environ.get("RESEND_API_KEY", "")
@@ -333,6 +335,9 @@ def main() -> None:
             "RESEND_API_KEY is not set: inquiries are stored but not emailed.",
             flush=True,
         )
+    if "--resend-unsent" in argv:
+        print(f"re-sent {resend_unsent(store, send)} inquiries", flush=True)
+        return
     origins = frozenset(
         origin.strip()
         for origin in os.environ.get(
