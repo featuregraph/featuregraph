@@ -46,6 +46,15 @@ Then, at IONOS:
 
 Change `INQUIRY_TO`, `INQUIRY_FROM` and `ALLOWED_ORIGINS` in `fly.toml`.
 
+## Re-sending inquiries that failed to email
+
+If Resend was misconfigured or down, rows are kept with `emailed = 0`. After
+fixing the cause, send them with:
+
+```bash
+fly ssh console -C "python server.py --resend-unsent"
+```
+
 ## Reading what has been stored
 
 ```bash
