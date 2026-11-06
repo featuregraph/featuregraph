@@ -1,0 +1,43 @@
+# Fly.io configuration for the featuregraph.ai inquiry-form service.
+# See README.md in this directory for the one-time setup.
+#
+# The build context is this directory (nothing here needs the rest of the repo):
+#   fly deploy apps/inquiries --config apps/inquiries/fly.toml
+
+# Fly app names are globally unique. If this one is taken, change it here.
+app = "featuregraph-inquiries"
+primary_region = "sjc"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  PORT = "8080"
+  INQUIRIES_DB = "/data/inquiries.db"
+  INQUIRY_TO = "nazia.habib@featuregraph.ai"
+  INQUIRY_FROM = "FeatureGraph <inquiries@featuregraph.ai>"
+  ALLOWED_ORIGINS = "https://featuregraph.ai,https://www.featuregraph.ai"
+
+# SQLite lives on this volume. A volume attaches to exactly one machine, so keep
+# the app at one machine: `fly scale count 1`.
+[mounts]
+  source = "inquiries_data"
+  destination = "/data"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+  [[http_service.checks]]
+    grace_period = "10s"
+    interval = "60s"
+    method = "GET"
+    path = "/healthz"
+    timeout = "5s"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"
