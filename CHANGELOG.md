@@ -4,6 +4,10 @@ All notable changes to FeatureGraph are documented in this file. The format foll
 
 ## [Unreleased]
 
+### Added
+
+- `apps/inquiries`: a small service that stores and emails the featuregraph.ai inquiry forms.
+
 ## [0.2.0b1] - 2026-09-03
 
 First release of the compiler lineage. `main` shares no history with the
