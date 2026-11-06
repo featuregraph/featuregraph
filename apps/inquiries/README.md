@@ -22,13 +22,18 @@ Resend is down the row is kept with `emailed = 0` and nothing is lost.
 
 ## One-time setup
 
+Run these from inside this directory (`cd apps/inquiries`). Do not pass a
+directory to `fly deploy` together with `--config`: flyctl resolves the config
+relative to that directory and reports "config file not found".
+
 ```bash
-fly launch --no-deploy --copy-config --config apps/inquiries/fly.toml
-fly volumes create inquiries_data --size 1 --region sjc --config apps/inquiries/fly.toml
-fly secrets set RESEND_API_KEY=re_... --config apps/inquiries/fly.toml
-fly deploy apps/inquiries --config apps/inquiries/fly.toml --remote-only
-fly scale count 1 --config apps/inquiries/fly.toml
-fly certs add api.featuregraph.ai --config apps/inquiries/fly.toml
+cd apps/inquiries
+fly apps create featuregraph-inquiries
+fly volumes create inquiries_data --size 1 --region sjc
+fly secrets set RESEND_API_KEY=re_...
+fly deploy --remote-only
+fly scale count 1
+fly certs add api.featuregraph.ai
 ```
 
 Then, at IONOS:
@@ -44,8 +49,8 @@ Change `INQUIRY_TO`, `INQUIRY_FROM` and `ALLOWED_ORIGINS` in `fly.toml`.
 ## Reading what has been stored
 
 ```bash
-fly ssh console --config apps/inquiries/fly.toml -C \
+fly ssh console -C \
   "python -c \"import sqlite3;[print(r) for r in sqlite3.connect('/data/inquiries.db').execute('select id,received_at,kind,emailed,fields from inquiries')]\""
 ```
 
-Back the volume up with `fly volumes snapshots`; Fly also takes daily snapshots.
+Back the volume up with `fly volumes snapshots list`; Fly also takes daily snapshots.
