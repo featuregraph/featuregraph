@@ -1,0 +1,93 @@
+name: GitHub traffic to PostHog
+
+# Copies GitHub's repo traffic (kept by GitHub for only 14 days) into PostHog once a day,
+# so the history builds up and the FeatureGraph Desk dashboard can show it.
+#
+# Needs one repository secret: GH_TRAFFIC_TOKEN, a fine-grained personal access token
+# with read-only "Administration" permission on the repos listed in REPOS below.
+
+on:
+  schedule:
+    - cron: "17 3 * * *" # daily, 03:17 UTC
+  workflow_dispatch:
+    inputs:
+      backfill:
+        description: "Send all 14 days GitHub still holds (use once, on the first run)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  traffic:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send traffic to PostHog
+        env:
+          GH_TOKEN: ${{ secrets.GH_TRAFFIC_TOKEN }}
+          BACKFILL: ${{ inputs.backfill || 'false' }}
+          REPOS: "featuregraph/featuregraph featuregraph/featuregraph-research featuregraph/state-detection featuregraph/event-dsl featuregraph/featuregraph.github.io"
+          # Public project token (the same one the website snippet uses); it can only send events.
+          POSTHOG_TOKEN: phc_pR2JsfuNKv2VLjZ8KffGCMzp8PsbHHYmdpEaUPsGTgqy
+          POSTHOG_HOST: https://us.i.posthog.com
+        run: |
+          python3 - <<'PY'
+          import datetime as dt, json, os, urllib.request
+
+          token = os.environ["GH_TOKEN"]
+          if not token:
+              raise SystemExit("GH_TRAFFIC_TOKEN secret is not set")
+          backfill = os.environ["BACKFILL"].lower() == "true"
+          yesterday = (dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=1)).date().isoformat()
+
+          def gh(path):
+              req = urllib.request.Request(
+                  f"https://api.github.com/{path}",
+                  headers={"Authorization": f"Bearer {token}",
+                           "Accept": "application/vnd.github+json",
+                           "X-GitHub-Api-Version": "2022-11-28"})
+              with urllib.request.urlopen(req) as r:
+                  return json.load(r)
+
+          def ev(name, ts, props):
+              return {"event": name, "distinct_id": "github-traffic-action", "timestamp": ts,
+                      "properties": {"$lib": "github-actions", "$process_person_profile": False, **props}}
+
+          batch = []
+          now = dt.datetime.now(dt.timezone.utc).isoformat()
+          for repo in os.environ["REPOS"].split():
+              try:
+                  views = {d["timestamp"][:10]: d for d in gh(f"repos/{repo}/traffic/views?per=day")["views"]}
+                  clones = {d["timestamp"][:10]: d for d in gh(f"repos/{repo}/traffic/clones?per=day")["clones"]}
+              except Exception as e:
+                  print(f"skip {repo}: {e}")
+                  continue
+              days = sorted(set(views) | set(clones)) if backfill else [yesterday]
+              for day in days:
+                  v, c = views.get(day, {}), clones.get(day, {})
+                  batch.append(ev("github_traffic_day", f"{day}T12:00:00Z", {
+                      "repo": repo, "day": day,
+                      "views": v.get("count", 0), "unique_visitors": v.get("uniques", 0),
+                      "clones": c.get("count", 0), "unique_cloners": c.get("uniques", 0)}))
+              # 14-day snapshots of where visitors came from and what they opened
+              for r in gh(f"repos/{repo}/traffic/popular/referrers"):
+                  batch.append(ev("github_referrer_14d", now, {"repo": repo, "referrer": r["referrer"],
+                                  "views": r["count"], "unique_visitors": r["uniques"], "snapshot_day": yesterday}))
+              for p in gh(f"repos/{repo}/traffic/popular/paths"):
+                  batch.append(ev("github_path_14d", now, {"repo": repo, "path": p["path"], "title": p["title"],
+                                  "views": p["count"], "unique_visitors": p["uniques"], "snapshot_day": yesterday}))
+              info = gh(f"repos/{repo}")
+              stars = [s["login"] for s in gh(f"repos/{repo}/stargazers?per_page=100")]
+              forks = [f["owner"]["login"] for f in gh(f"repos/{repo}/forks?per_page=100")]
+              batch.append(ev("github_repo_stats", now, {"repo": repo, "snapshot_day": yesterday,
+                              "stars": info["stargazers_count"], "forks": info["forks_count"],
+                              "watchers": info.get("subscribers_count", 0),
+                              "stargazers": stars, "forked_by": forks}))
+
+          body = json.dumps({"api_key": os.environ["POSTHOG_TOKEN"], "batch": batch}).encode()
+          req = urllib.request.Request(f"{os.environ['POSTHOG_HOST']}/batch/", data=body,
+                                       headers={"Content-Type": "application/json"})
+          with urllib.request.urlopen(req) as r:
+              print(f"sent {len(batch)} events to PostHog: HTTP {r.status}")
+          PY
