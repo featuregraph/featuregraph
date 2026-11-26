@@ -90,7 +90,8 @@ jobs:
                   for p in safe("paths", lambda: gh(f"repos/{repo}/traffic/popular/paths"), []):
                       batch.append(ev("github_path_14d", now, {"repo": repo, "path": p["path"], "title": p["title"],
                                       "views": p["count"], "unique_visitors": p["uniques"], "snapshot_day": yesterday}))
-              info = safe("repo info", lambda: gh_public(f"repos/{repo}"), None)
+              # Private repos aren't visible without the token, so fall back to it.
+              info = safe("repo info", lambda: gh_public(f"repos/{repo}"), None) or safe("repo info (token)", lambda: gh(f"repos/{repo}"), None)
               if info is not None:
                   stars = safe("stargazers", lambda: [x["login"] for x in gh_public(f"repos/{repo}/stargazers?per_page=100")], [])
                   forks = safe("forks", lambda: [x["owner"]["login"] for x in gh_public(f"repos/{repo}/forks?per_page=100")], [])
