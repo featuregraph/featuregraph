@@ -27,7 +27,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TRAFFIC_TOKEN }}
           BACKFILL: ${{ inputs.backfill || 'false' }}
-          REPOS: "featuregraph/featuregraph featuregraph/featuregraph-research featuregraph/state-detection featuregraph/event-dsl featuregraph/featuregraph.github.io featuregraph/featuregraph-core"
+          REPOS: "featuregraph/featuregraph featuregraph/featuregraph-research featuregraph/state-detection featuregraph/featuregraph-event-dsl featuregraph/featuregraph.github.io featuregraph/featuregraph-core"
           # Public project token (the same one the website snippet uses); it can only send events.
           POSTHOG_TOKEN: phc_pR2JsfuNKv2VLjZ8KffGCMzp8PsbHHYmdpEaUPsGTgqy
           POSTHOG_HOST: https://us.i.posthog.com
