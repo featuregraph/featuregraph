@@ -27,7 +27,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TRAFFIC_TOKEN }}
           BACKFILL: ${{ inputs.backfill || 'false' }}
-          REPOS: "featuregraph/featuregraph featuregraph/featuregraph-research featuregraph/state-detection featuregraph/event-dsl featuregraph/featuregraph.github.io"
+          REPOS: "featuregraph/featuregraph featuregraph/featuregraph-research featuregraph/state-detection featuregraph/event-dsl featuregraph/featuregraph.github.io featuregraph/featuregraph-core"
           # Public project token (the same one the website snippet uses); it can only send events.
           POSTHOG_TOKEN: phc_pR2JsfuNKv2VLjZ8KffGCMzp8PsbHHYmdpEaUPsGTgqy
           POSTHOG_HOST: https://us.i.posthog.com
@@ -56,35 +56,51 @@ jobs:
 
           batch = []
           now = dt.datetime.now(dt.timezone.utc).isoformat()
-          for repo in os.environ["REPOS"].split():
-              try:
-                  views = {d["timestamp"][:10]: d for d in gh(f"repos/{repo}/traffic/views?per=day")["views"]}
-                  clones = {d["timestamp"][:10]: d for d in gh(f"repos/{repo}/traffic/clones?per=day")["clones"]}
-              except Exception as e:
-                  print(f"skip {repo}: {e}")
-                  continue
-              days = sorted(set(views) | set(clones)) if backfill else [yesterday]
-              for day in days:
-                  v, c = views.get(day, {}), clones.get(day, {})
-                  batch.append(ev("github_traffic_day", f"{day}T12:00:00Z", {
-                      "repo": repo, "day": day,
-                      "views": v.get("count", 0), "unique_visitors": v.get("uniques", 0),
-                      "clones": c.get("count", 0), "unique_cloners": c.get("uniques", 0)}))
-              # 14-day snapshots of where visitors came from and what they opened
-              for r in gh(f"repos/{repo}/traffic/popular/referrers"):
-                  batch.append(ev("github_referrer_14d", now, {"repo": repo, "referrer": r["referrer"],
-                                  "views": r["count"], "unique_visitors": r["uniques"], "snapshot_day": yesterday}))
-              for p in gh(f"repos/{repo}/traffic/popular/paths"):
-                  batch.append(ev("github_path_14d", now, {"repo": repo, "path": p["path"], "title": p["title"],
-                                  "views": p["count"], "unique_visitors": p["uniques"], "snapshot_day": yesterday}))
-              info = gh(f"repos/{repo}")
-              stars = [s["login"] for s in gh(f"repos/{repo}/stargazers?per_page=100")]
-              forks = [f["owner"]["login"] for f in gh(f"repos/{repo}/forks?per_page=100")]
-              batch.append(ev("github_repo_stats", now, {"repo": repo, "snapshot_day": yesterday,
-                              "stars": info["stargazers_count"], "forks": info["forks_count"],
-                              "watchers": info.get("subscribers_count", 0),
-                              "stargazers": stars, "forked_by": forks}))
 
+          def gh_public(path):
+              # Stars and forks are public; ask without the token so its narrow permissions don't matter.
+              req = urllib.request.Request(f"https://api.github.com/{path}",
+                  headers={"Accept": "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28"})
+              with urllib.request.urlopen(req) as r:
+                  return json.load(r)
+
+          def safe(label, fn, default):
+              try:
+                  return fn()
+              except Exception as e:
+                  print(f"  {label}: {e}")
+                  return default
+
+          for repo in os.environ["REPOS"].split():
+              print(repo)
+              views = safe("views", lambda: {d["timestamp"][:10]: d for d in gh(f"repos/{repo}/traffic/views?per=day")["views"]}, None)
+              clones = safe("clones", lambda: {d["timestamp"][:10]: d for d in gh(f"repos/{repo}/traffic/clones?per=day")["clones"]}, {})
+              if views is not None:
+                  days = sorted(set(views) | set(clones)) if backfill else [yesterday]
+                  for day in days:
+                      v, c = views.get(day, {}), clones.get(day, {})
+                      batch.append(ev("github_traffic_day", f"{day}T12:00:00Z", {
+                          "repo": repo, "day": day,
+                          "views": v.get("count", 0), "unique_visitors": v.get("uniques", 0),
+                          "clones": c.get("count", 0), "unique_cloners": c.get("uniques", 0)}))
+                  # 14-day snapshots of where visitors came from and what they opened
+                  for r in safe("referrers", lambda: gh(f"repos/{repo}/traffic/popular/referrers"), []):
+                      batch.append(ev("github_referrer_14d", now, {"repo": repo, "referrer": r["referrer"],
+                                      "views": r["count"], "unique_visitors": r["uniques"], "snapshot_day": yesterday}))
+                  for p in safe("paths", lambda: gh(f"repos/{repo}/traffic/popular/paths"), []):
+                      batch.append(ev("github_path_14d", now, {"repo": repo, "path": p["path"], "title": p["title"],
+                                      "views": p["count"], "unique_visitors": p["uniques"], "snapshot_day": yesterday}))
+              info = safe("repo info", lambda: gh_public(f"repos/{repo}"), None)
+              if info is not None:
+                  stars = safe("stargazers", lambda: [x["login"] for x in gh_public(f"repos/{repo}/stargazers?per_page=100")], [])
+                  forks = safe("forks", lambda: [x["owner"]["login"] for x in gh_public(f"repos/{repo}/forks?per_page=100")], [])
+                  batch.append(ev("github_repo_stats", now, {"repo": repo, "snapshot_day": yesterday,
+                                  "stars": info["stargazers_count"], "forks": info["forks_count"],
+                                  "watchers": info.get("subscribers_count", 0),
+                                  "stargazers": stars, "forked_by": forks}))
+
+          if not batch:
+              raise SystemExit("Nothing collected: check that GH_TRAFFIC_TOKEN has read-only Administration on these repos")
           body = json.dumps({"api_key": os.environ["POSTHOG_TOKEN"], "batch": batch}).encode()
           req = urllib.request.Request(f"{os.environ['POSTHOG_HOST']}/batch/", data=body,
                                        headers={"Content-Type": "application/json"})
